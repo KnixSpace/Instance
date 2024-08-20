@@ -1,6 +1,7 @@
 require("dotenv").config();
 require("./passport");
 
+const { googleIntegration } = require("../integrations");
 const authRoute = require("../routes/auth");
 const passport = require("passport");
 const MongoStore = require("connect-mongo");
@@ -36,6 +37,9 @@ app.use(passport.session());
 
 //Routes
 app.use("/auth", authRoute);
+
+//integrations
+app.use("/integration/auth/google", googleIntegration);
 
 //Error handling Middleware
 app.use((err, req, res, next) => {
