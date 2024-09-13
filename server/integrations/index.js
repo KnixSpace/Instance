@@ -1,3 +1,4 @@
 const googleIntegration = require("./googleIntegration");
 const linkedinIntegration = require("./linkedinIntegration"); 
-module.exports = { googleIntegration,linkedinIntegration};
+const githubIntegration=require("./githubIntegration");
+module.exports = { googleIntegration,linkedinIntegration,githubIntegration};
