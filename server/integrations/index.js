@@ -1,3 +1,3 @@
 const googleIntegration = require("./googleIntegration");
-
-module.exports = { googleIntegration };
+const linkedinIntegration = require("./linkedinIntegration"); 
+module.exports = { googleIntegration,linkedinIntegration};

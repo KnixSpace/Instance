@@ -1,7 +1,8 @@
 require("dotenv").config();
 require("./passport");
 
-const { googleIntegration } = require("../integrations");
+const { googleIntegration,linkedinIntegration,shareOnlinkedin } = require("../integrations");
+
 const authRoute = require("../routes/auth");
 const passport = require("passport");
 const MongoStore = require("connect-mongo");
@@ -40,7 +41,7 @@ app.use("/auth", authRoute);
 
 //integrations
 app.use("/integration/auth/google", googleIntegration);
-
+app.use("/integration/auth/linkedin",linkedinIntegration);
 //Error handling Middleware
 app.use((err, req, res, next) => {
   console.error(err.stack); // Log the error stack for debugging

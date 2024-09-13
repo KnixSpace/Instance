@@ -31,7 +31,7 @@ router.get("/callback", async (req, res) => {
     const { code } = req.query;
     if (!code) {
       return res.status(400).json({ message: "Authorization code is missing" });
-    }
+    } 
 
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
@@ -43,10 +43,10 @@ router.get("/callback", async (req, res) => {
 
     const userInfo = await oauth2.userinfo.get();
     const { id, email, picture } = userInfo.data;
-
+    
     await handleIntegration(req.user.userId, id, email, picture, tokens);
-    res.redirect(process.env.CLIENT_BASE_URL);
-  } catch (error) {
+    res.redirect(process.env.WEB_URL);
+  } catch (error) { 
     console.error("Error handling Google callback:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -87,7 +87,7 @@ async function updateExistingIntegration(
       email,
       avatar,
       accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
+      refreshToken: tokens.refresh_token, 
     });
     await integration.save();
   }
@@ -113,5 +113,4 @@ async function createNewIntegration(userId, accountId, email, avatar, tokens) {
   user.integrations.push(newIntegration._id);
   await user.save();
 }
-
 module.exports = router;
