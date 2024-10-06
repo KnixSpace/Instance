@@ -1,15 +1,8 @@
 require("dotenv").config();
 const { google } = require("googleapis");
-const { Integration } = require("../models/Integration");
-const mongoose = require("mongoose");
-const { User } = require("../models/User");
-const router = require("express").Router();
-
-const SCOPES = [
-  "https://www.googleapis.com/auth/userinfo.profile",
-  "https://www.googleapis.com/auth/userinfo.email",
-  "https://www.googleapis.com/auth/drive.readonly",
-];
+const { Integration } = require("../../models/Integration");
+const { User } = require("../../models/User");
+const { Google } = require("../../models/Google");
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -17,21 +10,37 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_INTEGRATION_CALLBACK_URI
 );
 
-router.get("/register", (req, res) => {
+const register = async (req, res) => {
+  const SCOPES = [
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/userinfo.email",
+  ];
+
+  // const { scope } = req.body;\
+  const scope = "drive";
+
+  switch (scope) {
+    case "drive":
+      SCOPES.push("https://www.googleapis.com/auth/drive.readonly");
+      break;
+    default:
+      break;
+  }
+
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: SCOPES,
     prompt: "consent",
   });
   res.redirect(authUrl);
-});
+};
 
-router.get("/callback", async (req, res) => {
+const callback = async (req, res) => {
   try {
     const { code } = req.query;
     if (!code) {
       return res.status(400).json({ message: "Authorization code is missing" });
-    } 
+    }
 
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
@@ -43,23 +52,25 @@ router.get("/callback", async (req, res) => {
 
     const userInfo = await oauth2.userinfo.get();
     const { id, email, picture } = userInfo.data;
-    
+
     await handleIntegration(req.user.userId, id, email, picture, tokens);
-    res.redirect(process.env.WEB_URL);
-  } catch (error) { 
+    res.redirect(process.env.CLIENT_BASE_URL);
+  } catch (error) {
     console.error("Error handling Google callback:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
-});
+};
 
 async function handleIntegration(userId, accountId, email, avatar, tokens) {
-  let existingIntegration = await Integration.findOne({
-    userId: userId,
+  const existingIntegration = await Integration.findOne({
+    userId,
     provider: "google",
-  });
+  }).populate({ path: "accounts", select: "accountId email" });
+  console.log(existingIntegration);
 
   if (existingIntegration) {
     await updateExistingIntegration(
+      userId,
       existingIntegration,
       accountId,
       email,
@@ -67,50 +78,67 @@ async function handleIntegration(userId, accountId, email, avatar, tokens) {
       tokens
     );
   } else {
+    console.log("new");
     await createNewIntegration(userId, accountId, email, avatar, tokens);
   }
 }
 
 async function updateExistingIntegration(
+  userId,
   integration,
   accountId,
   email,
   avatar,
   tokens
 ) {
-  const accountExists = integration.accounts.some(
+  const accounExists = integration.accounts.some(
     (account) => account.accountId === accountId
   );
-  if (!accountExists) {
-    integration.accounts.push({
-      accountId,
-      email,
+
+  if (!accounExists) {
+    let newAccount = new Google({
+      userId,
+      integrationId: integration._id,
       avatar,
+      email,
+      accountId,
       accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token, 
+      refreshToken: tokens.refresh_token,
     });
+
+    newAccount = await newAccount.save();
+    integration.accounts.push(newAccount._id);
     await integration.save();
+  } else {
+    return;
   }
 }
 
 async function createNewIntegration(userId, accountId, email, avatar, tokens) {
-  const newIntegration = new Integration({
+  let newIntegration = new Integration({
     userId,
     provider: "google",
-    accounts: [
-      {
-        accountId,
-        email,
-        avatar,
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
-      },
-    ],
   });
+  newIntegration = await newIntegration.save();
+
+  let newAccount = new Google({
+    userId,
+    integrationId: newIntegration._id,
+    avatar,
+    email,
+    accountId,
+    accessToken: tokens.access_token,
+    refreshToken: tokens.refresh_token,
+  });
+  newAccount = await newAccount.save();
+
+  newIntegration = await Integration.findOne({ userId, provider: "google" });
+  newIntegration.accounts.push(newAccount._id);
   await newIntegration.save();
 
   const user = await User.findById(userId);
   user.integrations.push(newIntegration._id);
   await user.save();
 }
-module.exports = router;
+
+module.exports = { register, callback };
