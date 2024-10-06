@@ -14,11 +14,8 @@ const integrationSchema = new mongoose.Schema(
     },
     accounts: [
       {
-        avatar: { type: String },
-        email: { type: String },
-        accountId: { type: String },
-        accessToken: { type: String, required: true },
-        refreshToken: { type: String },
+        type: mongoose.Schema.Types.ObjectId,
+        refPath: "provider",
       },
     ],
   },
