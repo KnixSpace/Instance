@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*{
+  margin: 0px;
+  padding: 0px;
+}
+
+body {
+  color: #fbfeff;
+  background: #0f1318;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .outerContainer {
+    @apply flex justify-center items-center;
+  }
+  .innerContainer {
+    @apply max-w-[1200px] w-full p-6; 
+  }
+}

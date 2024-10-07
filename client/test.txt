@@ -1,6 +1,0 @@
-Just for initializing client folder on github delete this file as you start work on frontend.
-
-1. To find pre-built templates for the landing page and home page
-2. Folder structure of whole Front-end
-3. Install NextJS
-4. 
