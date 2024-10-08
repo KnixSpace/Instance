@@ -46,7 +46,6 @@ const callback = async (req, res) => {
 
     userResponse = await userResponse.json();
     const { id, avatar_url, email } = userResponse;
-    console.log("hello", id, avatar_url, email);
 
     await handleIntegration(
       req.user.userId,
@@ -55,10 +54,9 @@ const callback = async (req, res) => {
       avatar_url,
       tokenResponse
     );
-    console.log("User Saved");
     res.redirect(process.env.CLIENT_BASE_URL);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).send("error duing authorization");
   }
 };
@@ -91,7 +89,6 @@ async function updateExistingIntegration(
   avatar,
   tokens
 ) {
-  console.log("Existing")
   const accounExists = integration.accounts.find(
     (account) => account.accountId === accountId.toString()
   );
@@ -110,21 +107,17 @@ async function updateExistingIntegration(
     integration.accounts.push(newAccount._id);
     await integration.save();
   } else {
-      accounExists.accessToken = tokens.access_token;
-      await accounExists.save();
-
+    accounExists.accessToken = tokens.access_token;
+    await accounExists.save();
   }
-
 }
 
 async function createNewIntegration(userId, accountId, email, avatar, tokens) {
-  console.log("New")
   let newIntegration = new Integration({
     userId,
     provider: "github",
   });
   newIntegration = await newIntegration.save();
-
 
   let newAccount = new Github({
     userId,
@@ -135,8 +128,7 @@ async function createNewIntegration(userId, accountId, email, avatar, tokens) {
     accessToken: tokens.access_token,
   });
   newAccount = await newAccount.save();
-  console.log(newAccount);
-  
+
   newIntegration = await Integration.findOne({ userId, provider: "github" });
   newIntegration.accounts.push(newAccount._id);
   await newIntegration.save();
