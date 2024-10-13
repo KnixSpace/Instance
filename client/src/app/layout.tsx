@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
+import NavbarWrapper from "@/components/Layout/NavbarWrapper";
 
 export const metadata: Metadata = {
   title: "Instance",
@@ -18,7 +19,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${dm_sans.className} antialiased`}>{children}</body>
+      <body className={`${dm_sans.className} antialiased`}>
+        <NavbarWrapper />
+        {children}
+      </body>
     </html>
   );
 }

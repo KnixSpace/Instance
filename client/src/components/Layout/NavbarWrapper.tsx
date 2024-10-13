@@ -5,21 +5,32 @@ import { usePathname } from "next/navigation";
 import { TextGenerateEffect } from "../ui/text-generate-effect";
 
 type Props = {};
-const Navbar = (props: Props) => {
+const NavbarWrapper = (props: Props) => {
+  const pathname = usePathname();
+  const isDashboard = pathname.startsWith("/dashboard");
+  if (isDashboard) {
+    return null;
+  }
+
+  return <Navbar />;
+};
+export default NavbarWrapper;
+
+function Navbar() {
   const path = usePathname();
   return (
-    <header className="w-full fixed top-0 left-0 right-0 py-6 px-12 flex  items-center justify-between z-30">
+    <header className="w-full fixed top-0 left-0 right-0 py-6 px-4 sm:px-12 flex  items-center justify-between z-30">
       <aside className="flex-1 flex gap-2 items-center">
-        <img src="/logo.webp" alt="" className="size-10" />
+        <img src="/logo.webp" alt="" className="size-8 sm:size-10" />
         <div>
-          <h1 className="font-semibold">Instance</h1>
+          <h1 className="font-semibold max-sm:text-lg">Instance</h1>
           <TextGenerateEffect
             words="Automation Flow Builder"
-            className="text-xs"
+            className="text-xs hidden sm:block"
           />
         </div>
       </aside>
-      <div className="">
+      <div className="hidden sm:block">
         <div
           className={`rounded-full w-5 h-1 bg-white shadow-[0px_2px_25px_2px_#ffffff] -mb-[2.2px] transition-all ease-in-out duration-500 ${
             path === "/" ? "ml-7" : "ml-[104px]"
@@ -40,5 +51,4 @@ const Navbar = (props: Props) => {
       </aside>
     </header>
   );
-};
-export default Navbar;
+}
