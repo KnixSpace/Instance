@@ -14,6 +14,19 @@ const config: Config = {
         cta: "#7441fe",
         secondary: "#545768",
       },
+      animation: {
+        "shiny-text": "shiny-text 8s infinite alternate-reverse",
+      },
+      keyframes: {
+        "shiny-text": {
+          "0%, 90%, 100%": {
+            "background-position": "calc(-100% - var(--shimmer-width)) 0",
+          },
+          "30%, 60%": {
+            "background-position": "calc(100% + var(--shimmer-width)) 0",
+          },
+        },
+      },
     },
   },
   plugins: [],
