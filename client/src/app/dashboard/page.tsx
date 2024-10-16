@@ -104,9 +104,8 @@ export const Logo = () => {
   return (
     <Link
       href="#"
-      className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
+      className="font-normal flex gap-2 items-center text-sm text-black py-1 relative z-20"
     >
-      <div />
       <Image
         src="/logo.webp" // Path to your image in the public folder
         alt="Logo"
