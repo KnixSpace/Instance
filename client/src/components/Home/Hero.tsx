@@ -41,7 +41,7 @@ const Hero = (props: Props) => {
         </div>
       </div>
       <Link
-        href={"/register"}
+        href={"/dashboard"}
         className="relative flex justify-center items-center overflow-hidden rounded-full p-px"
       >
         <span className="z-10 flex items-center justify-center px-8 py-2 bg-background rounded-full h-full w-full">

@@ -9,7 +9,7 @@ const page = () => {
     <section className="outerContainer flex-col">
       <Hero />
       {/* <Interactive /> */}
-      <Features />
+      <Features /> <br /><br /><br /><br />
       <Footer />
     </section>
   );
