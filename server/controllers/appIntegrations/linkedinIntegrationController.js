@@ -8,7 +8,6 @@ const LINKEDIN_OAUTH_URL = "https://www.linkedin.com/oauth/v2/authorization";
 const LINKEDIN_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken";
 const LINKEDIN_PROFILE_URL = "https://api.linkedin.com/v2/userinfo";
 
-
 const register = async (req, res) => {
 
   const LINKEDIN_SCOPES = [
