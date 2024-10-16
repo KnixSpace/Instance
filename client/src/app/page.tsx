@@ -1,4 +1,4 @@
-import Features from "@/components/Home/Features";
+import { Features } from "@/components/Home/Features";
 import Hero from "@/components/Home/Hero";
 import Interactive from "@/components/Home/Interactive";
 import Footer from "@/components/Layout/Footer";
