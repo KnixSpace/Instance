@@ -2,8 +2,11 @@ const { google } = require("googleapis");
 const {
   getAllSpreadsheet,
   getAllSpreadsheetSheets,
+  getFileMetadata,
+  getAllFiles,
 } = require("../controllers/google/services");
 const { oauth2Client } = require("../controllers/google/config");
+const { createFile, createFolder } = require("../controllers/google/actions");
 
 const router = require("express").Router();
 let lastProcessedRow = 2;
@@ -21,6 +24,30 @@ router.post("/get", async (req, res) => {
     userId,
     accountEmail
   );
+  res.status(200).json(response);
+});
+
+router.post("/files", async (req, res) => {
+  const { userId, accountEmail, pageToken, mimeType } = req.body;
+  const response = await getAllFiles(userId, accountEmail, pageToken, mimeType);
+  res.status(200).json(response);
+});
+
+router.post("/data", async (req, res) => {
+  const { fileId, userId, accountEmail } = req.body;
+  const response = await getFileMetadata(fileId, userId, accountEmail);
+  res.status(200).json(response);
+});
+
+router.post("/create/folder", async (req, res) => {
+  const { folderName, userId, accountEmail } = req.body;
+  const response = await createFolder(folderName, userId, accountEmail);
+  res.status(200).json(response);
+});
+
+router.post("/create/file", async (req, res) => {
+  const { fileName, fileType, userId, accountEmail } = req.body;
+  const response = await createFile(fileName, fileType, userId, accountEmail);
   res.status(200).json(response);
 });
 

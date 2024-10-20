@@ -6,7 +6,7 @@ const sheets = google.sheets("v4");
 const drive = google.drive("v3");
 
 //drive services
-async function getAllDriveFiles(userId, email) {
+async function getAllFiles(userId, email, pageToken, mimeType) {
   const account = await Google.findOne({ userId, email });
 
   if (!account) {
@@ -22,12 +22,30 @@ async function getAllDriveFiles(userId, email) {
 
   oauth2Client.setCredentials({ access_token });
 
+  let query = "";
+
+  switch (mimeType) {
+    case "docs":
+      query = "mimeType='application/vnd.google-apps.document'";
+      break;
+    case "sheets":
+      query = "mimeType='application/vnd.google-apps.spreadsheet'";
+      break;
+    case "folders":
+      query = "mimeType='application/vnd.google-apps.folder'";
+      break;
+  }
+
+  console.log(query);
+
   const response = await drive.files.list({
     auth: oauth2Client,
-    fields: "files(id, name, mimeType, webViewLink, modifiedTime)",
+    pageSize: 10,
+    pageToken: pageToken || null,
+    q: query,
   });
 
-  return response.data.files;
+  return response.data;
 }
 
 async function getFileMetadata(fileId, userId, email) {
@@ -49,34 +67,11 @@ async function getFileMetadata(fileId, userId, email) {
   const response = await drive.files.get({
     auth: oauth2Client,
     fileId,
-    fields: "id, name, mimeType, size, webViewLink, modifiedTime",
+    fields:
+      "kind, id, name, mimeType, webViewLink, owners, ownedByMe, permissions",
   });
 
   return response.data;
-}
-
-async function getAllSpreadsheet(userId, email) {
-  const account = await Google.findOne({ userId, email });
-
-  if (!account) {
-    return res.status(404).send("No account found!!");
-  }
-
-  let access_token = account.tokens.accessToken;
-
-  if (isTokenExpired(account.tokens.expiry)) {
-    const tokens = await updateTokens(account);
-    access_token = tokens.access_token;
-  }
-  oauth2Client.setCredentials({ access_token });
-
-  const response = await drive.files.list({
-    auth: oauth2Client,
-    q: "mimeType='application/vnd.google-apps.spreadsheet'",
-    fields: "files(id, name, webViewLink)",
-  });
-
-  return response.data.files;
 }
 
 async function getAllSpreadsheetSheets(spreadsheetId, userId, email) {
@@ -102,6 +97,31 @@ async function getAllSpreadsheetSheets(spreadsheetId, userId, email) {
 
   const payload = { sheets: response.data.sheets };
   return payload;
+}
+
+async function getSheetData(spreadsheetId, range, userId, email) {
+  const account = await Google.findOne({ userId, email });
+
+  if (!account) {
+    throw new Error("No Google account found");
+  }
+
+  let access_token = account.tokens.accessToken;
+
+  if (isTokenExpired(account.tokens.expiry)) {
+    const tokens = await updateTokens(account);
+    access_token = tokens.access_token;
+  }
+
+  oauth2Client.setCredentials({ access_token });
+
+  const response = await sheets.spreadsheets.values.get({
+    auth: oauth2Client,
+    spreadsheetId,
+    range,
+  });
+
+  return response.data.values;
 }
 
 async function getNewEntryOfSheet(
@@ -132,9 +152,9 @@ async function getNewEntryOfSheet(
 }
 
 module.exports = {
-  getAllDriveFiles,
+  getAllFiles,
   getFileMetadata,
-  getAllSpreadsheet,
   getAllSpreadsheetSheets,
+  getSheetData,
   getNewEntryOfSheet,
 };
