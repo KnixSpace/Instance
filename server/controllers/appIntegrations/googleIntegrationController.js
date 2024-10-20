@@ -21,7 +21,8 @@ const register = async (req, res) => {
 
   switch (scope) {
     case "drive":
-      SCOPES.push("https://www.googleapis.com/auth/drive.readonly");
+      SCOPES.push("https://www.googleapis.com/auth/drive");
+      SCOPES.push("https://www.googleapis.com/auth/spreadsheets");
       break;
     default:
       break;
@@ -102,8 +103,11 @@ async function updateExistingIntegration(
       avatar,
       email,
       accountId,
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
+      tokens: {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiry: tokens.expiry_date,
+      },
     });
 
     newAccount = await newAccount.save();
@@ -127,8 +131,11 @@ async function createNewIntegration(userId, accountId, email, avatar, tokens) {
     avatar,
     email,
     accountId,
-    accessToken: tokens.access_token,
-    refreshToken: tokens.refresh_token,
+    tokens: {
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiry: tokens.expiry_date,
+    },
   });
   newAccount = await newAccount.save();
 
