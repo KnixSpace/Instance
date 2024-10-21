@@ -1,6 +1,6 @@
 const { EventEmitter } = require("events");
 const { WorkFlow } = require("../models/Workflow");
-const { serviceHandlers } = require("./serviceHandlers");
+const { serviceHandlers, getHanderData } = require("./serviceHandlers");
 
 class FlowEngine extends EventEmitter {
   constructor() {
@@ -9,20 +9,14 @@ class FlowEngine extends EventEmitter {
     this.executionContext = new Map();
   }
 
-  async loadWorkFlows() {
-    const workflows = await WorkFlow.find({ status: "active" });
-
-    workflows.forEach((workflow) => this.workflows.set(workflow._id, workflow));
-  }
-
   async handleTrigger(triggerType, payload) {
-    const triggeredWorkflows = Array.from(this.workflows.values()).filter(
-      (workflow) =>
-        workflow.nodes.some(
-          (node) =>
-            node.type === "trigger" && node.config.triggerType === triggerType
-        )
-    );
+    // const triggeredWorkflows = Array.from(this.workflows.values()).filter(
+    //   (workflow) =>
+    //     workflow.nodes.some(
+    //       (node) =>
+    //         node.type === "trigger" && node.config.triggerType === triggerType
+    //     )
+    // );
 
     for (const workflow of triggeredWorkflows) {
       await this.executeWorkflow(workflow, payload);
@@ -42,10 +36,10 @@ class FlowEngine extends EventEmitter {
     this.executionContexts.set(executionId, executionContext);
 
     const startNode = workflow.nodes.find((node) => node.type === "trigger");
-    await this.executeNode(workflow, startNode, executionContext);
+    await this.executeNode(workflow, startNode, executionContext, null);
   }
 
-  async executeNode(workflow, currentNode, context) {
+  async executeNode(workflow, currentNode, context, previousNode) {
     try {
       context.nodeStatus.set(currentNode.id, "running");
       this.emit("nodeStatusUpdate", {
@@ -58,7 +52,11 @@ class FlowEngine extends EventEmitter {
       if (currentNode.type === "trigger") {
         result = await this.executeTriggerNode(currentNode, context);
       } else {
-        result = await this.executeActionNode(currentNode, context);
+        result = await this.executeActionNode(
+          currentNode,
+          context,
+          previousNode
+        );
       }
 
       context.data[currentNode.id] = result;
@@ -78,7 +76,7 @@ class FlowEngine extends EventEmitter {
           (n) => n.id === edge.target.nodeId
         );
         if (nextNode) {
-          await this.executeNode(workflow, nextNode, context);
+          await this.executeNode(workflow, nextNode, context, currentNode);
         }
       }
     } catch (error) {
@@ -109,24 +107,14 @@ class FlowEngine extends EventEmitter {
     }
   }
 
-  async executeActionNode(node, context) {
+  async executeActionNode(node, context, previousNode) {
     const { service, action } = node.config;
-    const handler = this.getActionHandler(service, action);
-    return await handler(node.config, context.data);
-  }
-
-  getActionHandler(service, action) {
-    const serviceHandler = serviceHandlers[service];
-    if (!serviceHandler) {
-      throw new Error(`No handler found for service: ${service}`);
-    }
-    const actionHandler = serviceHandler[action];
-    if (!actionHandler) {
-      throw new Error(
-        `No handler found for action: ${action} in service: ${service}`
-      );
-    }
-    return actionHandler;
+    return getHanderData(
+      service,
+      action,
+      node.config,
+      context.data[previousNode.config.service]
+    );
   }
 
   handleExecutionError(context, node, error) {
