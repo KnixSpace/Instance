@@ -12,10 +12,6 @@ const nodeSchema = new mongoose.Schema({
     required: true,
     enum: ["trigger", "action", "condition", "loop"],
   },
-  name: {
-    type: String,
-    required: true,
-  },
   config: {
     type: mongoose.Schema.Types.Mixed,
     default: {},

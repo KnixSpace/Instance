@@ -1,39 +1,18 @@
 const { EventEmitter } = require("events");
-const { WorkFlow } = require("../models/Workflow");
-const { serviceHandlers, getHanderData } = require("./serviceHandlers");
+const { getHanderData } = require("./serviceHandlers");
 
 class FlowEngine extends EventEmitter {
   constructor() {
     super();
-    this.workflows = new Map();
-    this.executionContext = new Map();
-  }
-
-  async handleTrigger(triggerType, payload) {
-    // const triggeredWorkflows = Array.from(this.workflows.values()).filter(
-    //   (workflow) =>
-    //     workflow.nodes.some(
-    //       (node) =>
-    //         node.type === "trigger" && node.config.triggerType === triggerType
-    //     )
-    // );
-
-    for (const workflow of triggeredWorkflows) {
-      await this.executeWorkflow(workflow, payload);
-    }
   }
 
   async executeWorkflow(workflow, initialData) {
-    const executionId = generateExecutionId();
     const executionContext = {
       workflowId: workflow._id,
-      executionId,
-      data: { ...initialData },
+      data: {},
       nodeStatus: new Map(),
       logs: [],
     };
-
-    this.executionContexts.set(executionId, executionContext);
 
     const startNode = workflow.nodes.find((node) => node.type === "trigger");
     await this.executeNode(workflow, startNode, executionContext, null);
@@ -59,7 +38,7 @@ class FlowEngine extends EventEmitter {
         );
       }
 
-      context.data[currentNode.id] = result;
+      context.data[currentNode.data.service] = result;
 
       context.nodeStatus.set(currentNode.id, "success");
       this.emit("nodeStatusUpdate", {
@@ -71,6 +50,7 @@ class FlowEngine extends EventEmitter {
       const nextEdges = workflow.edges.filter(
         (edge) => edge.source.nodeId === currentNode.id
       );
+
       for (const edge of nextEdges) {
         const nextNode = workflow.nodes.find(
           (n) => n.id === edge.target.nodeId
@@ -94,7 +74,7 @@ class FlowEngine extends EventEmitter {
   async executeTriggerNode(node, context) {
     switch (node.config.triggerType) {
       case "automatic":
-        return context.data;
+        return node.config.data;
       case "scheduled":
         if (this.isScheduledTriggerDue(node.config)) {
           return await this.executeScheduledTrigger(node.config);
@@ -109,7 +89,7 @@ class FlowEngine extends EventEmitter {
 
   async executeActionNode(node, context, previousNode) {
     const { service, action } = node.config;
-    return getHanderData(
+    return await getHanderData(
       service,
       action,
       node.config,
@@ -126,10 +106,13 @@ class FlowEngine extends EventEmitter {
     });
   }
 
+  //WIP
   isScheduledTriggerDue(triggerConfig) {}
 
+  //WIP
   async executeScheduledTrigger(triggerConfig) {}
 
+  //WIP
   async waitForUserInput(triggerConfig) {}
 }
 
