@@ -1,13 +1,11 @@
 require("dotenv").config();
+const { Github } = require("../../models/Github");
 const { Integration } = require("../../models/Integration");
 const { User } = require("../../models/User");
-const { Github } = require("../../models/Github");
-
-// const SCOPES = ["user", "repo"];
-//${SCOPES.join()}
+const scope = "user,repo,admin:repo_hook";
 
 const register = async (req, res) => {
-  const authorizeUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&scope=user,repo`;
+  const authorizeUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&scope=${scope}`;
   res.redirect(authorizeUrl);
 };
 
@@ -45,14 +43,16 @@ const callback = async (req, res) => {
     });
 
     userResponse = await userResponse.json();
-    const { id, avatar_url, email } = userResponse;
+    const { id, avatar_url, email, login } = userResponse;
+
 
     await handleIntegration(
       req.user.userId,
       id,
       email,
       avatar_url,
-      tokenResponse
+      tokenResponse,
+      login
     );
     res.redirect(process.env.CLIENT_BASE_URL);
   } catch (error) {
@@ -61,7 +61,7 @@ const callback = async (req, res) => {
   }
 };
 
-async function handleIntegration(userId, accountId, email, avatar, tokens) {
+async function handleIntegration(userId, accountId, email, avatar, tokens, gituserName) {
   const existingIntegration = await Integration.findOne({
     userId,
     provider: "github",
@@ -74,10 +74,11 @@ async function handleIntegration(userId, accountId, email, avatar, tokens) {
       accountId,
       email,
       avatar,
-      tokens
+      tokens,
+      gituserName
     );
   } else {
-    await createNewIntegration(userId, accountId, email, avatar, tokens);
+    await createNewIntegration(userId, accountId, email, avatar, tokens, gituserName);
   }
 }
 
@@ -87,7 +88,8 @@ async function updateExistingIntegration(
   accountId,
   email,
   avatar,
-  tokens
+  tokens,
+  gituserName
 ) {
   const accounExists = integration.accounts.find(
     (account) => account.accountId === accountId.toString()
@@ -101,6 +103,7 @@ async function updateExistingIntegration(
       email,
       accountId,
       accessToken: tokens.access_token,
+      gituserName
     });
 
     newAccount = await newAccount.save();
@@ -112,7 +115,7 @@ async function updateExistingIntegration(
   }
 }
 
-async function createNewIntegration(userId, accountId, email, avatar, tokens) {
+async function createNewIntegration(userId, accountId, email, avatar, tokens, gituserName) {
   let newIntegration = new Integration({
     userId,
     provider: "github",
@@ -126,6 +129,7 @@ async function createNewIntegration(userId, accountId, email, avatar, tokens) {
     email,
     accountId,
     accessToken: tokens.access_token,
+    gituserName
   });
   newAccount = await newAccount.save();
 
