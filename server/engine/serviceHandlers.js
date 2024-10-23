@@ -1,16 +1,11 @@
-import {
-  appendRowToSheet,
-  appendTextToDocument,
+const {
   createFile,
   createFolder,
-} from "../controllers/google/actions";
+  appendTextToDocument,
+  appendRowToSheet,
+} = require("../controllers/google/actions");
 
-export const getHanderData = async (
-  service,
-  action,
-  currentData,
-  previousData
-) => {
+const executeHandler = async (service, action, currentData, previousData) => {
   switch (service) {
     case "google":
       switch (action) {
@@ -51,3 +46,5 @@ export const getHanderData = async (
       break;
   }
 };
+
+module.exports = { executeHandler };

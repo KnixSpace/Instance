@@ -1,5 +1,5 @@
 const { EventEmitter } = require("events");
-const { getHanderData } = require("./serviceHandlers");
+const { executeHandler } = require("./serviceHandlers");
 
 class FlowEngine extends EventEmitter {
   constructor() {
@@ -89,7 +89,8 @@ class FlowEngine extends EventEmitter {
 
   async executeActionNode(node, context, previousNode) {
     const { service, action } = node.config;
-    return await getHanderData(
+
+    return await executeHandler(
       service,
       action,
       node.config,
@@ -116,4 +117,4 @@ class FlowEngine extends EventEmitter {
   async waitForUserInput(triggerConfig) {}
 }
 
-module.exports = new FlowEngine();
+module.exports = { FlowEngine };
