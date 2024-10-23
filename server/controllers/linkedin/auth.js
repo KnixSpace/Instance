@@ -98,7 +98,7 @@ async function updateExistingIntegration(
   );
 
   if (!accountExists) {
-    let newAccount = new Linkedin({
+    const newAccount = await new Linkedin({
       userId,
       integrationId: integration._id,
       avatar,
@@ -106,8 +106,8 @@ async function updateExistingIntegration(
       accountId,
       accessToken: tokens.access_token,
       refreshToken: tokens.refresh_token,
-    });
-    newAccount = await newAccount.save();
+    }).save();
+
     integration.accounts.push(newAccount._id);
     await integration.save();
   } else {
@@ -122,12 +122,12 @@ async function createNewIntegration(
   avatar,
   tokens
 ) {
-  const newIntegration = new Integration({
+  const newIntegration = await new Integration({
     userId,
     provider: "linkedin",
   }).save();
 
-  const newAccount = new Linkedin({
+  const newAccount = await new Linkedin({
     userId,
     integrationId: newIntegration._id,
     avatar,
@@ -135,10 +135,8 @@ async function createNewIntegration(
     accountId,
     accessToken: tokens.access_token,
     refreshToken: tokens.refresh_token,
-  });
-  newAccount = await newAccount.save();
+  }).save();
 
-  newIntegration = await Integration.findOne({ userId, provider: "linkedin" });
   newIntegration.accounts.push(newAccount._id);
   await newIntegration.save();
 
