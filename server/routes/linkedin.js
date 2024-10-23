@@ -1,4 +1,4 @@
-const { register, callback } = require("../controllers/google/auth");
+const { register, callback } = require("../controllers/linkedin/auth");
 
 const router = require("express").Router();
 

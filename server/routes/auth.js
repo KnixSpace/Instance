@@ -10,7 +10,7 @@ router.get(
 );
 
 router.get(
-  "/google/callback",
+  "/callback",
   passport.authenticate("google", {
     successRedirect: "/",
     failureRedirect: "/login",
