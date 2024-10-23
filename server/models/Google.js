@@ -1,15 +1,4 @@
 const mongoose = require("mongoose");
-
-const webhookSchema = new mongoose.Schema({
-  service: {
-    type: String,
-    enum: ["drive", "gmail", "calendar"],
-    required: true,
-  },
-  webhookId: { type: String, required: true },
-  expiration: { type: Date, required: true },
-});
-
 const googleAccountSchema = new mongoose.Schema(
   {
     userId: {
@@ -30,7 +19,6 @@ const googleAccountSchema = new mongoose.Schema(
       refreshToken: { type: String, required: true },
       expiry: { type: Date, required: true },
     },
-    webhooks: [webhookSchema],
   },
   { timestamps: true }
 );

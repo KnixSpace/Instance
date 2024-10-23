@@ -1,7 +1,4 @@
-const {
-  register,
-  callback,
-} = require("../../controllers/appIntegrations/googleIntegrationController");
+const { register, callback } = require("../../controllers/google/auth");
 
 const router = require("express").Router();
 

@@ -3,26 +3,26 @@ const { google } = require("googleapis");
 const { Integration } = require("../../models/Integration");
 const { User } = require("../../models/User");
 const { Google } = require("../../models/Google");
+const { oauth2Client } = require("./config");
 
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_INTEGRATION_CALLBACK_URI
-);
-
-const register = async (req, res) => {
+async function register(req, res) {
   const SCOPES = [
     "https://www.googleapis.com/auth/userinfo.profile",
     "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/drive",
   ];
 
-  // const { scope } = req.body;\
-  const scope = "drive";
+  let scope = req.body.scope;
 
   switch (scope) {
     case "drive":
       SCOPES.push("https://www.googleapis.com/auth/drive");
+      break;
+    case "sheets":
       SCOPES.push("https://www.googleapis.com/auth/spreadsheets");
+      break;
+    case "docs":
+      SCOPES.push("https://www.googleapis.com/auth/documents");
       break;
     default:
       break;
@@ -33,12 +33,14 @@ const register = async (req, res) => {
     scope: SCOPES,
     prompt: "consent",
   });
-  res.redirect(authUrl);
-};
 
-const callback = async (req, res) => {
+  res.redirect(authUrl);
+}
+
+async function callback(req, res) {
   try {
     const { code } = req.query;
+
     if (!code) {
       return res.status(400).json({ message: "Authorization code is missing" });
     }
@@ -53,34 +55,37 @@ const callback = async (req, res) => {
 
     const userInfo = await oauth2.userinfo.get();
     const { id, email, picture } = userInfo.data;
-
     await handleIntegration(req.user.userId, id, email, picture, tokens);
     res.redirect(process.env.CLIENT_BASE_URL);
   } catch (error) {
     console.error("Error handling Google callback:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error", error: error });
   }
-};
+}
 
-async function handleIntegration(userId, accountId, email, avatar, tokens) {
+async function handleIntegration(
+  userId,
+  accountId,
+  accountEmail,
+  avatar,
+  tokens
+) {
   const existingIntegration = await Integration.findOne({
     userId,
     provider: "google",
   }).populate({ path: "accounts", select: "accountId email" });
-  console.log(existingIntegration);
 
   if (existingIntegration) {
     await updateExistingIntegration(
       userId,
       existingIntegration,
       accountId,
-      email,
+      accountEmail,
       avatar,
       tokens
     );
   } else {
-    console.log("new");
-    await createNewIntegration(userId, accountId, email, avatar, tokens);
+    await createNewIntegration(userId, accountId, accountEmail, avatar, tokens);
   }
 }
 
@@ -88,20 +93,26 @@ async function updateExistingIntegration(
   userId,
   integration,
   accountId,
-  email,
+  accountEmail,
   avatar,
   tokens
 ) {
-  const accounExists = integration.accounts.some(
+  const accountExist = integration.accounts.some(
     (account) => account.accountId === accountId
   );
 
-  if (!accounExists) {
+  if (accountExist) {
+    const account = await Google.findOne({ accountId });
+    account.tokens.accessToken = tokens.access_token;
+    account.tokens.refreshToken = tokens.refresh_token;
+    account.tokens.expiry = tokens.expiry_date;
+    await account.save();
+  } else {
     let newAccount = new Google({
       userId,
       integrationId: integration._id,
       avatar,
-      email,
+      email: accountEmail,
       accountId,
       tokens: {
         accessToken: tokens.access_token,
@@ -113,39 +124,44 @@ async function updateExistingIntegration(
     newAccount = await newAccount.save();
     integration.accounts.push(newAccount._id);
     await integration.save();
-  } else {
-    return;
   }
 }
 
-async function createNewIntegration(userId, accountId, email, avatar, tokens) {
-  let newIntegration = new Integration({
-    userId,
-    provider: "google",
-  });
-  newIntegration = await newIntegration.save();
+async function createNewIntegration(
+  userId,
+  accountId,
+  accountEmail,
+  avatar,
+  tokens
+) {
+  try {
+    const newIntegration = await new Integration({
+      userId,
+      provider: "google",
+    }).save();
 
-  let newAccount = new Google({
-    userId,
-    integrationId: newIntegration._id,
-    avatar,
-    email,
-    accountId,
-    tokens: {
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      expiry: tokens.expiry_date,
-    },
-  });
-  newAccount = await newAccount.save();
+    const newAccount = await new Google({
+      userId,
+      integrationId: newIntegration._id,
+      avatar,
+      email: accountEmail,
+      accountId,
+      tokens: {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiry: tokens.expiry_date,
+      },
+    }).save();
 
-  newIntegration = await Integration.findOne({ userId, provider: "google" });
-  newIntegration.accounts.push(newAccount._id);
-  await newIntegration.save();
+    newIntegration.accounts.push(newAccount._id);
+    await newIntegration.save();
 
-  const user = await User.findById(userId);
-  user.integrations.push(newIntegration._id);
-  await user.save();
+    const user = await User.findById(userId);
+    user.integrations.push(newIntegration._id);
+    await user.save();
+  } catch (error) {
+    console.error("Error creating new integration:", error);
+  }
 }
 
 module.exports = { register, callback };
