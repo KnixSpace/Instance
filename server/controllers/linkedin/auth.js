@@ -1,5 +1,5 @@
 require("dotenv").config();
-const axios = require("axios")
+const axios = require("axios");
 const { Integration } = require("../../models/Integration");
 const { User } = require("../../models/User");
 const { Linkedin } = require("../../models/Linkedin");
@@ -8,23 +8,18 @@ const LINKEDIN_OAUTH_URL = "https://www.linkedin.com/oauth/v2/authorization";
 const LINKEDIN_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken";
 const LINKEDIN_PROFILE_URL = "https://api.linkedin.com/v2/userinfo";
 
-const register = async (req, res) => {
+async function register(req, res) {
+  const LINKEDIN_SCOPES = ["openid", "profile", "email", "w_member_social"];
 
-  const LINKEDIN_SCOPES = [
-    "openid",
-    "profile",
-    "email",
-    "w_member_social"
-  ];
-
-  const authUrl = `${LINKEDIN_OAUTH_URL}?response_type=code&client_id=${process.env.LINKEDIN_CLIENT_ID
-    }&redirect_uri=${process.env.LINKEDIN_CALLBACK_URI
-    }&state=123456&scope=${LINKEDIN_SCOPES.join(" ")}`;
+  const authUrl = `${LINKEDIN_OAUTH_URL}?response_type=code&client_id=${
+    process.env.LINKEDIN_CLIENT_ID
+  }&redirect_uri=${
+    process.env.LINKEDIN_CALLBACK_URI
+  }&state=123456&scope=${LINKEDIN_SCOPES.join(" ")}`;
   res.redirect(authUrl);
+}
 
-};
-
-const callback = async (req, res) => {
+async function callback(req, res) {
   try {
     const { code } = req.query;
     if (!code) {
@@ -32,6 +27,7 @@ const callback = async (req, res) => {
         .status(400)
         .json({ message: "Authorization code is missing " });
     }
+
     const tokenResponse = await axios.post(LINKEDIN_TOKEN_URL, null, {
       params: {
         grant_type: "authorization_code",
@@ -54,41 +50,38 @@ const callback = async (req, res) => {
     const email = profileResponse.data.email;
     const picture = profileResponse.data.avatar;
 
-    await handleIntegration(
-      req.user.userId,
-      id,
-      email,
-      picture,
-      tokens
-    );
+    await handleIntegration(req.user.userId, id, email, picture, tokens);
 
     res.redirect(process.env.CLIENT_BASE_URL);
   } catch (error) {
     console.error("Error handling LinkedIn callback:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
-};
+}
 
-async function handleIntegration(userId, accountId, email, avatar, tokens) {
+async function handleIntegration(
+  userId,
+  accountId,
+  accountEmail,
+  avatar,
+  tokens
+) {
   const existingIntegration = await Integration.findOne({
     userId,
     provider: "linkedin",
   }).populate({ path: "accounts", select: "accountId email" });
- 
-  console.log()
 
   if (existingIntegration) {
     await updateExistingIntegration(
       userId,
       existingIntegration,
       accountId,
-      email,
+      accountEmail,
       avatar,
       tokens
     );
   } else {
-   
-    await createNewIntegration(userId, accountId, email, avatar, tokens);
+    await createNewIntegration(userId, accountId, accountEmail, avatar, tokens);
   }
 }
 
@@ -96,7 +89,7 @@ async function updateExistingIntegration(
   userId,
   integration,
   accountId,
-  email,
+  accountEmail,
   avatar,
   tokens
 ) {
@@ -109,7 +102,7 @@ async function updateExistingIntegration(
       userId,
       integrationId: integration._id,
       avatar,
-      email,
+      email: accountEmail,
       accountId,
       accessToken: tokens.access_token,
       refreshToken: tokens.refresh_token,
@@ -121,18 +114,24 @@ async function updateExistingIntegration(
     return;
   }
 }
-async function createNewIntegration(userId, accountId, email, avatar, tokens) {
-  let newIntegration = new Integration({
+
+async function createNewIntegration(
+  userId,
+  accountId,
+  accountEmail,
+  avatar,
+  tokens
+) {
+  const newIntegration = new Integration({
     userId,
     provider: "linkedin",
-  });
-  newIntegration = await newIntegration.save();
+  }).save();
 
-  let newAccount = new Linkedin({
+  const newAccount = new Linkedin({
     userId,
     integrationId: newIntegration._id,
     avatar,
-    email,
+    email: accountEmail,
     accountId,
     accessToken: tokens.access_token,
     refreshToken: tokens.refresh_token,
@@ -147,4 +146,5 @@ async function createNewIntegration(userId, accountId, email, avatar, tokens) {
   user.integrations.push(newIntegration._id);
   await user.save();
 }
+
 module.exports = { register, callback };
