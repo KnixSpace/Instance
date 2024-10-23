@@ -8,14 +8,13 @@ async function createWebhook(req, res) {
   const { repoId, repoName, events } = req.body; // Get repoId, repoName, and events from the request body
   const userId = '67138acaf879ca81f8fc428a'; // Example user ID, adjust as needed
   try {
-    // Find the GitHub account details for the user
     const githubAccount = await Github.findOne({ userId });
 
     if (!githubAccount) {
       return res.status(404).json({ message: 'GitHub account not linked' });
     }
 
-    const accessToken = githubAccount.accessToken; // Get user's access token
+    const accessToken = githubAccount.accessToken;
 
     let webhookUrl = `${process.env.HOST_URL}/api/v1/integration/auth/github/webhookInfo`;
 
@@ -24,20 +23,17 @@ async function createWebhook(req, res) {
     );
 
     if (existingWebhook) {
-      // Webhook exists, check if the events are the same
-      const existingEvents = existingWebhook.events;
 
-      // Compare the events array
+      const existingEvents = existingWebhook.events;
       const areEventsSame = JSON.stringify(events.sort()) === JSON.stringify(existingEvents.sort());
 
       if (areEventsSame) {
-        // If events are the same, return the existing webhook ID
+
         return res.json({
           message: 'Webhook already exists with the same events',
           webhookId: existingWebhook.webhookId,
         });
       } else {
-        // If events are different, update the webhook on GitHub
         const updateResponse = await axios.patch(
           `https://api.github.com/repos/${repoName}/hooks/${existingWebhook.webhookId}`,
           {
@@ -56,7 +52,6 @@ async function createWebhook(req, res) {
           }
         );
 
-        // Update webhook details in the database
         existingWebhook.events = events;
         await githubAccount.save();
 
@@ -67,8 +62,6 @@ async function createWebhook(req, res) {
       }
     }
     else {
-
-      // If webhook doesn't exist, create a new one
       const webhookResponse = await axios.post(
         `https://api.github.com/repos/${repoName}/hooks`,
         {
@@ -77,7 +70,7 @@ async function createWebhook(req, res) {
             url: webhookUrl,
             content_type: 'json',
           },
-          events: events, // Specify the events for the webhook
+          events: events, 
           active: true,
         },
         {
@@ -88,7 +81,6 @@ async function createWebhook(req, res) {
         }
       );
 
-      // Save the new webhook details in the database
       githubAccount.webhooks.push({
         repoId,
         repoName,
@@ -109,37 +101,31 @@ async function createWebhook(req, res) {
 }
 async function handleWebhookEvent(req, res) {
   try {
-    // Extract data from the headers
-    const eventType = req.headers['x-github-event']; // Event type (e.g., 'push')
-    const hookId = req.headers['x-github-hook-id']; // Webhook ID
-    const targetType = req.headers['x-github-hook-installation-target-type']; // Target type (e.g., 'repository')
-    const userAgent = req.headers['user-agent']; // User-agent name
 
-    // Extract data from the payload (body)
+    const eventType = req.headers['x-github-event']; 
+    const hookId = req.headers['x-github-hook-id']; 
+    const targetType = req.headers['x-github-hook-installation-target-type']; 
+    const userAgent = req.headers['user-agent'];
+
     const {
       repository,
       pusher,
       head_commit
     } = req.body;
 
-    // Extract details from the repository object
-    const repoName = repository.full_name; // Full name of the repo (e.g., 'flowmakerapp/firt')
-    const repoUrl = repository.html_url; // Repo URL
+    const repoName = repository.full_name; 
+    const repoUrl = repository.html_url; 
 
-    // Extract pusher details
-    const pusherId = pusher.id; // Pusher ID
-    const pusherEmail = pusher.email; // Pusher email
-    const pusherName = pusher.name; // Pusher name
+    const pusherId = pusher.id; 
+    const pusherEmail = pusher.email;
+    const pusherName = pusher.name; 
 
-    // Extract commit details
-    const commitId = head_commit.id; // Commit ID
-    const commitMessage = head_commit.message; // Commit message
-    const commitUrl = head_commit.url; // Commit URL
+    const commitId = head_commit.id;
+    const commitMessage = head_commit.message;
+    const commitUrl = head_commit.url;
 
-    // Extract modified files from head_commit
-    const modifiedFiles = head_commit.modified; // Array of modified files (e.g., ['1.txt'])
+    const modifiedFiles = head_commit.modified; 
 
-    // Create an object with all the extracted data
     const eventData = {
       eventType,
       hookId,
@@ -162,8 +148,34 @@ async function handleWebhookEvent(req, res) {
       }
     };
 
-    console.log(eventData);
-    
+    // console.log(eventData);
+
+    const query = {
+      status: "active",
+      'nodes': {
+        $elemMatch: {
+          type: "trigger", 
+          'config.webhookId': eventData.hookId, 
+          'config.events': { $in: [eventData.eventType] },
+        }
+      }
+    };
+
+    const matchingWorkflows = await WorkFlow.find(query).exec();
+    // const workflows="";
+    // if (matchingWorkflows.length > 0) {
+    //   res.status(200).json({
+    //     message: 'Matching workflows found',
+    //     workflows: matchingWorkflows,
+    //   });
+    // }
+
+
+    for (const workflow of matchingWorkflows) {
+      await flowEngine.executeWorkflow(workflow, { "trigger-node": eventData })
+
+      res.status(200).json({ message: 'Webhook event processed successfully', eventData });
+    }
     
   } catch (error) {
     console.error('Error handling webhook event:', error);

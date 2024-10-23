@@ -1,57 +1,69 @@
 const { default: axios } = require("axios");
 const { Github } = require("../../models/Github");
-// take the useris from the browser and other then that take the selected events as the array
-// here i take the events array for future services and usefor different evets to change the sortof the array
-// have to set the error codes according to the errors
 
 async function getRepoDetails(req, res) {
   const userId = req.body.userId;
   const events = req.body.events;
-  // const userid='6710c6a43bac3357d7fa895b'; // Extract the events array from the request body
-
 
   if (!userId || !Array.isArray(events) || events.length === 0) {
     return res.status(400).json({ message: 'Invalid input. Please provide userId and events array.' });
   }
 
   try {
-    // Find the GitHub account using the userId
     const gitAccount = await Github.findOne({ userId });
     if (!gitAccount) {
-      //   return res.status(404).json({ message: 'GitHub account not linked' });
-      res.redirect(`${process.env.HOST_URL}/api/v1/integration/auth/github/register`);
-    }
-    else {
-      // Fetch the repositories for the user using GitHub API
-      const reposResponse = await axios.get(
-        `https://api.github.com/users/${gitAccount.gituserName}/repos`,
-        {
-          headers: {
-            Authorization: `Bearer ${gitAccount.accessToken}`,
-            Accept: 'application/vnd.github.v3+json',
-          },
-          params: {
-            type: 'all', // Fetch all types of repositories (public, private, forks, etc.)
-            sort: 'created', // 'created', 'updated', 'pushed', 'full_name'
-            direction: 'desc', // In descending order
-          },
+      res.redirect(`${process.env.HOST_URL}/api/v1/github/integration/register`);
+    } else {
+      // Function to fetch all repositories (handle pagination)
+      const getAllRepos = async (accessToken) => {
+        let allRepos = [];
+        let page = 1;
+        let fetchMore = true;
+
+        while (fetchMore) {
+          const reposResponse = await axios.get(
+            // `https://api.github.com/users/${username}/repos`, //this will give only the public repos not private ones 
+            `https://api.github.com/user/repos`, // this api give all private and public repo of the user
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                Accept: 'application/vnd.github.v3+json',
+              },
+              params: {
+                type: 'all', 
+                sort: 'created', 
+                direction: 'desc',
+                per_page: 100, // Max items per page
+                page, 
+              },
+            }
+          );
+
+          const repos = reposResponse.data;
+          allRepos = allRepos.concat(repos);
+
+          // Check if fewer than 100 repos are returned (end of pages)
+          if (repos.length < 100) {
+            fetchMore = false;
+          } else {
+            page++; // Fetch the next page
+          }
         }
-      );
+
+        return allRepos;
+      };
 
 
-      const repos = reposResponse.data; // Repositories fetched from GitHub API
+      const repos = await getAllRepos(gitAccount.accessToken);
 
-      // Create a response array with the repository name, ID, and the events array
       const repoDetails = repos.map((repo) => ({
         repoId: repo.id,
-        repoName: repo.full_name, // repo.full_name gives the 'owner/repo' format
-        events: events, // The events array provided by the frontend
-      }))
-
-      // Respond with the array of repositories, events, and status 200
+        repoName: repo.full_name, 
+      }));
       res.status(200).json({
         message: 'Repositories fetched successfully',
-        repoDetails, // Include repo details with the events array
+        repoDetails,
+        events 
       });
     }
   } catch (error) {
@@ -59,4 +71,5 @@ async function getRepoDetails(req, res) {
     res.status(500).json({ message: 'Failed to fetch repositories' });
   }
 }
+
 module.exports = { getRepoDetails };
