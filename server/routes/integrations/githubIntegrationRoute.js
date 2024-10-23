@@ -1,9 +1,9 @@
-const {
-    register,
-    callback,
-} = require("../../controllers/appIntegrations/githubIntegrationController");
+const { register, callback } = require("../../controllers/github/auth");
 const { getRepoDetails } = require("../../controllers/github/services");
-const { createWebhook, handleWebhookEvent } = require("../../controllers/github/triggers");
+const {
+  createWebhook,
+  handleWebhookEvent,
+} = require("../../controllers/github/triggers");
 
 const router = require("express").Router();
 

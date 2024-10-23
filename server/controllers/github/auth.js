@@ -2,16 +2,18 @@ require("dotenv").config();
 const { Github } = require("../../models/Github");
 const { Integration } = require("../../models/Integration");
 const { User } = require("../../models/User");
-const scope = "user,repo,admin:repo_hook";
 
-const register = async (req, res) => {
-  const authorizeUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&scope=${scope}`;
+const SCOPE = "user,repo,admin:repo_hook";
+
+async function register(req, res) {
+  const authorizeUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&scope=${SCOPE}`;
+
   res.redirect(authorizeUrl);
-};
+}
 
-const callback = async (req, res) => {
+async function callback(req, res) {
   const { code } = req.query;
-  // console.log(code);
+
   try {
     const response = await fetch(
       "https://github.com/login/oauth/access_token",
@@ -38,13 +40,12 @@ const callback = async (req, res) => {
       method: "GET",
       headers: {
         Authorization: `bearer ${access_token}`,
-        Accept: "application/vnd.github.v3+json", // Optional, but often useful to specify the API version
+        Accept: "application/vnd.github.v3+json",
       },
     });
 
     userResponse = await userResponse.json();
     const { id, avatar_url, email, login } = userResponse;
-
 
     await handleIntegration(
       req.user.userId,
@@ -59,9 +60,16 @@ const callback = async (req, res) => {
     console.log(error);
     res.status(500).send("error duing authorization");
   }
-};
+}
 
-async function handleIntegration(userId, accountId, email, avatar, tokens, gituserName) {
+async function handleIntegration(
+  userId,
+  accountId,
+  accountEmail,
+  avatar,
+  tokens,
+  gituserName
+) {
   const existingIntegration = await Integration.findOne({
     userId,
     provider: "github",
@@ -72,13 +80,20 @@ async function handleIntegration(userId, accountId, email, avatar, tokens, gitus
       userId,
       existingIntegration,
       accountId,
-      email,
+      accountEmail,
       avatar,
       tokens,
       gituserName
     );
   } else {
-    await createNewIntegration(userId, accountId, email, avatar, tokens, gituserName);
+    await createNewIntegration(
+      userId,
+      accountId,
+      accountEmail,
+      avatar,
+      tokens,
+      gituserName
+    );
   }
 }
 
@@ -86,7 +101,7 @@ async function updateExistingIntegration(
   userId,
   integration,
   accountId,
-  email,
+  accountEmail,
   avatar,
   tokens,
   gituserName
@@ -96,17 +111,16 @@ async function updateExistingIntegration(
   );
 
   if (!accounExists) {
-    let newAccount = new Github({
+    const newAccount = await new Github({
       userId,
       integrationId: integration._id,
       avatar,
-      email,
+      email: accountEmail,
       accountId,
       accessToken: tokens.access_token,
-      gituserName
-    });
+      gituserName,
+    }).save();
 
-    newAccount = await newAccount.save();
     integration.accounts.push(newAccount._id);
     await integration.save();
   } else {
@@ -115,25 +129,29 @@ async function updateExistingIntegration(
   }
 }
 
-async function createNewIntegration(userId, accountId, email, avatar, tokens, gituserName) {
-  let newIntegration = new Integration({
+async function createNewIntegration(
+  userId,
+  accountId,
+  accountEmail,
+  avatar,
+  tokens,
+  gituserName
+) {
+  const newIntegration = await new Integration({
     userId,
     provider: "github",
-  });
-  newIntegration = await newIntegration.save();
+  }).save();
 
-  let newAccount = new Github({
+  const newAccount = await new Github({
     userId,
     integrationId: newIntegration._id,
     avatar,
-    email,
+    email: accountEmail,
     accountId,
     accessToken: tokens.access_token,
-    gituserName
-  });
-  newAccount = await newAccount.save();
+    gituserName,
+  }).save();
 
-  newIntegration = await Integration.findOne({ userId, provider: "github" });
   newIntegration.accounts.push(newAccount._id);
   await newIntegration.save();
 
