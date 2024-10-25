@@ -6,7 +6,7 @@ class FlowEngine extends EventEmitter {
     super();
   }
 
-  async executeWorkflow(workflow, initialData) {
+  async executeEngine(workflow, initialData) {
     const executionContext = {
       workflowId: workflow._id,
       data: {},
