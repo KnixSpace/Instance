@@ -1,16 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { navList } from "@/lib/constants";
 
 type Props = {};
-
-const navList = [
-  { label: "Create Workflow", href: "dashboard/new", icon: "account_tree" },
-  { label: "Home", href: "dashboard", icon: "home" },
-  { label: "Connected Apps", href: "dashboard/apps", icon: "apps" },
-  { label: "Logs", href: "dashboard/logs", icon: "analytics" },
-];
 
 const Navigation = (props: Props) => {
   return (
@@ -27,7 +20,7 @@ const Navigation = (props: Props) => {
             href={nav.href}
             className={`flex gap-2 items-center p-1 rounded-md mb-1 ${
               nav.label === "Create Workflow"
-                ? "hover:bg-[#8154fe] bg-cta"
+                ? "hover:bg-[#8f66fe] bg-cta"
                 : "hover:bg-lightbackground"
             }`}
             key={i}
@@ -58,12 +51,14 @@ const Navigation = (props: Props) => {
             </div>
             <span className="text-sm">Krupal Patel</span>
           </Link>
-          <span
-            className="material-symbols-rounded"
-            style={{ fontSize: "20px" }}
-          >
-            logout
-          </span>
+          <div className="min-h-8 min-w-8 flex justify-center items-center rounded-md hover:bg-lightbackground cursor-pointer">
+            <span
+              className="material-symbols-rounded"
+              style={{ fontSize: "20px" }}
+            >
+              logout
+            </span>
+          </div>
         </div>
       </div>
     </div>

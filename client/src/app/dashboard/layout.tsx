@@ -8,9 +8,9 @@ export default function DashboardLayout({
   return (
     <section className="w-full flex divide-x divide-secondary">
       <Navigation />
-      <div className="flex-1">
-        <main className="p-4">{children}</main>
-      </div>
+      <main className="flex-1 w-full">{children}</main>
+      {/* <div className="flex-1 w-full">
+      </div> */}
     </section>
   );
 }
