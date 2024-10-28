@@ -1,6 +1,6 @@
-import { Features } from "@/components/Home/Features";
-import Hero from "@/components/Home/Hero";
-import Interactive from "@/components/Home/Interactive";
+import { Features } from "@/components/home/Features";
+import Hero from "@/components/home/Hero";
+import Interactive from "@/components/home/Interactive";
 import Footer from "@/components/Layout/Footer";
 import React from "react";
 
