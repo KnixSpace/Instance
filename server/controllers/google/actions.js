@@ -84,9 +84,10 @@ async function createFile(fileName, fileType, userId, email) {
     });
 
     return {
-      id: response.data.id,
-      name: response.data.name,
-      webViewLink: response.data.webViewLink,
+      //data return with tag file because in the context data all ids get mixed up
+      fileId: response.data.id,
+      fileName: response.data.name,
+      fileWebViewLink: response.data.webViewLink,
     };
   } catch (error) {
     console.error("Error creating file:", error);

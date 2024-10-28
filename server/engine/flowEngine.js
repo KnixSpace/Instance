@@ -13,12 +13,12 @@ class FlowEngine extends EventEmitter {
       nodeStatus: new Map(),
       logs: [],
     };
-
+// initial data have to be added
     const startNode = workflow.nodes.find((node) => node.type === "trigger");
-    await this.executeNode(workflow, startNode, executionContext, null);
+    await this.executeNode(workflow, startNode, executionContext, null,initialData);
   }
 
-  async executeNode(workflow, currentNode, context, previousNode) {
+  async executeNode(workflow, currentNode, context, previousNode,initialData) {
     try {
       context.nodeStatus.set(currentNode.id, "running");
       this.emit("nodeStatusUpdate", {
@@ -29,7 +29,7 @@ class FlowEngine extends EventEmitter {
 
       let result;
       if (currentNode.type === "trigger") {
-        result = await this.executeTriggerNode(currentNode, context);
+        result = await this.executeTriggerNode(currentNode, context,initialData);
       } else {
         result = await this.executeActionNode(
           currentNode,
@@ -37,15 +37,21 @@ class FlowEngine extends EventEmitter {
           previousNode
         );
       }
+      // context.data[currentNode.config.service] = result;
+       //this code will append the data to the same service , the last code was replacing the data
+      if (!context.data[currentNode.config.service]) {
+        context.data[currentNode.config.service] = {}; // Initialize it as an empty object if undefined
+      }
 
-      context.data[currentNode.data.service] = result;
-
+      Object.assign(context.data[currentNode.config.service], result);
+     
       context.nodeStatus.set(currentNode.id, "success");
       this.emit("nodeStatusUpdate", {
         workflowId: context.workflowId,
         nodeId: currentNode.id,
         status: "success",
       });
+console.log(context);
 
       const nextEdges = workflow.edges.filter(
         (edge) => edge.source.nodeId === currentNode.id
@@ -71,10 +77,11 @@ class FlowEngine extends EventEmitter {
     }
   }
 
-  async executeTriggerNode(node, context) {
+  async executeTriggerNode(node, context,initialData) {
     switch (node.config.triggerType) {
       case "automatic":
-        return node.config.data;
+        context.data[node.config.service]=initialData;
+        return {};
       case "scheduled":
         if (this.isScheduledTriggerDue(node.config)) {
           return await this.executeScheduledTrigger(node.config);
@@ -95,7 +102,7 @@ class FlowEngine extends EventEmitter {
       action,
       node.config,
       context.data[previousNode.config.service]
-    );
+    );    
   }
 
   handleExecutionError(context, node, error) {

@@ -15,7 +15,7 @@ async function createWebhook(req, res) {
 
     const accessToken = githubAccount.accessToken;
 
-    let webhookUrl = `${process.env.WEBHOOK_URL}/api/v1/github//webhook/notifications`;
+    let webhookUrl = `${process.env.HOST_URL}/api/v1/github//webhook/notifications`;
 
     const existingWebhook = githubAccount.webhooks.find(
       (webhook) => webhook.repoId === repoId
@@ -101,6 +101,7 @@ async function createWebhook(req, res) {
 }
 async function handleWebhookEvent(req, res) {
   try {
+    //how to handle first ping 
     const eventType = req.headers["x-github-event"];
     const hookId = req.headers["x-github-hook-id"];
     const targetType = req.headers["x-github-hook-installation-target-type"];
@@ -155,6 +156,7 @@ async function handleWebhookEvent(req, res) {
     };
 
     const matchingWorkflows = await WorkFlow.find(query).exec();
+    
     if (matchingWorkflows.length > 0) {
       for (const workflow of matchingWorkflows) {
         const flowEngine = new FlowEngine();
