@@ -1,5 +1,9 @@
 export const navList = [
-  { label: "Create Workflow", href: "/dashboard/new", icon: "account_tree" },
+  {
+    label: "Create Workflow",
+    href: "/dashboard/workflow/new",
+    icon: "account_tree",
+  },
   { label: "Home", href: "/dashboard", icon: "home" },
   { label: "Connected Apps", href: "/dashboard/apps", icon: "apps" },
   { label: "Logs", href: "/dashboard/logs", icon: "analytics" },

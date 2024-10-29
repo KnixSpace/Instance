@@ -31,7 +31,7 @@ const page = (props: Props) => {
             {connectedApps.map((app, i) => (
               <div
                 key={i}
-                className="w-full flex items-center gap-4 rounded-md p-4 hover:bg-lightbackground cursor-pointer"
+                className="w-full flex items-center gap-4 rounded-md p-4 hover:bg-lightbackground cursor-pointer transition-all duration-500 ease-in-out"
                 onClick={() => {
                   setInfo(app);
                   setOpen(true);
@@ -60,7 +60,7 @@ const page = (props: Props) => {
         <div className="w-full flex">
           <div className="flex justify-center items-center p-1 mb-4 rounded-md hover:bg-gray-700 cursor-pointer">
             <span
-              className="material-symbols-rounded text-gray-500 hover:text-gray-400"
+              className="material-symbols-rounded text-gray-500 hover:text-gray-400 transition-all duration-500 ease-in-out"
               onClick={() => {
                 setOpen(false);
               }}
