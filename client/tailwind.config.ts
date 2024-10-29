@@ -13,6 +13,7 @@ const config: Config = {
         lightbackground: "#20242b",
         cta: "#7441fe",
         secondary: "#545768",
+        darkSecondary: "#262830",
       },
       animation: {
         "shiny-text": "shiny-text 8s infinite alternate-reverse",

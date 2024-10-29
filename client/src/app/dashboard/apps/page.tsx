@@ -15,55 +15,57 @@ const page = (props: Props) => {
 
   return (
     <>
-      <section className="flex flex-col items-center w-full">
-        <div className="w-full sticky top-0 flex items-center gap-8 py-8 px-16 mb-4 bg-background">
-          {/* <span className="text-xl">Connected Apps</span> */}
-          <div className="flex-1">
-            <input
-              type="text"
-              className="w-full rounded-full bg-lightbackground focus:outline-none py-3 px-8 truncate text-sm"
-              placeholder="Search your connected apps"
-            />
-          </div>
-        </div>
-        <div className="w-full px-16 grid grid-cols-4 gap-6">
-          {connectedApps.map((app, i) => (
-            <div
-              key={i}
-              className="w-full flex items-center gap-4 rounded-md p-4 hover:bg-lightbackground cursor-pointer"
-              onClick={() => {
-                setInfo(app);
-                setOpen(true);
-              }}
-            >
-              <div className="size-12">
-                <img src={app.icon} alt="" className="h-full w-full" />
-              </div>
-              <div>
-                <h4 className="capitalize font-medium">{app.appName}</h4>
-                <h6 className="text-xs text-gray-500">
-                  Connected Accounts : 6
-                </h6>
-              </div>
+      <section className="flex flex-col w-full divide-y divide-darkSecondary">
+        <div className="flex items-center p-4 text-lg px-16">Apps</div>
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="w-full sticky top-0 flex items-center gap-8 py-8 px-16 mb-4 bg-background">
+            <div className="flex-1">
+              <input
+                type="text"
+                className="w-full rounded-full bg-lightbackground focus:outline-none py-3 px-8 truncate text-sm"
+                placeholder="Search your connected apps"
+              />
             </div>
-          ))}
+          </div>
+          <div className="w-full px-16 grid grid-cols-4 gap-6">
+            {connectedApps.map((app, i) => (
+              <div
+                key={i}
+                className="w-full flex items-center gap-4 rounded-md p-4 hover:bg-lightbackground cursor-pointer"
+                onClick={() => {
+                  setInfo(app);
+                  setOpen(true);
+                }}
+              >
+                <div className="size-12">
+                  <img src={app.icon} alt="" className="h-full w-full" />
+                </div>
+                <div>
+                  <h4 className="capitalize font-medium">{app.appName}</h4>
+                  <h6 className="text-xs text-gray-500">
+                    Connected Accounts : 6
+                  </h6>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
       {/* WIP */}
       <aside
-        className={`p-4 h-dvh min-w-64 bg-[#262a2f] transition-all duration-300 ease-in-out ${
+        className={`p-4 h-dvh min-w-64 bg-darkSecondary transition-all duration-300 ease-in-out ${
           open ? " fixed top-0 right-0" : "fixed -right-full"
         }`}
       >
-        <div className="w-full flex justify-end">
-          <div className="flex justify-center items-center p-2 mb-4 rounded-full hover:bg-gray-700 cursor-pointer">
+        <div className="w-full flex">
+          <div className="flex justify-center items-center p-1 mb-4 rounded-md hover:bg-gray-700 cursor-pointer">
             <span
               className="material-symbols-rounded text-gray-500 hover:text-gray-400"
               onClick={() => {
                 setOpen(false);
               }}
             >
-              close
+              dock_to_left
             </span>
           </div>
         </div>

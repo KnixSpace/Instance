@@ -7,7 +7,7 @@ type Props = {};
 
 const Navigation = (props: Props) => {
   return (
-    <div className="w-64 h-dvh sticky top-0 flex flex-col divide-y divide-secondary">
+    <div className="w-64 h-full flex flex-col divide-y divide-darkSecondary">
       <div className="flex items-center p-4 justify-between select-none">
         <div className="flex gap-2 items-center">
           <img src="/logo.jpg" alt="" className="size-6" />
