@@ -15,9 +15,9 @@ const page = (props: Props) => {
 
   return (
     <>
-      <section className="flex flex-col w-full divide-y divide-darkSecondary">
+      <section className="h-full flex flex-col w-full divide-y divide-darkSecondary">
         <div className="flex items-center p-4 text-lg px-16">Apps</div>
-        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 h-full flex flex-col overflow-auto">
           <div className="w-full sticky top-0 flex items-center gap-8 py-8 px-16 mb-4 bg-background">
             <div className="flex-1">
               <input
@@ -49,6 +49,7 @@ const page = (props: Props) => {
               </div>
             ))}
           </div>
+          {/* <div className="overflow-auto flex-1"></div> */}
         </div>
       </section>
       {/* WIP */}

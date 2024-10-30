@@ -6,7 +6,7 @@ const Dashboard = (props: Props) => {
     <>
       <section className="flex flex-col w-full divide-y divide-darkSecondary">
         <div className="flex items-center p-4 text-lg px-16">Workflows</div>
-        <div className="w-full py-4 px-16">
+        <div className="py-4 px-16 flex-1 overflow-y-auto overflow-x-hidden">
           <div className="w-full grid grid-cols-3">
             {/* WIP make it dynamic with apis*/}
             <Link
