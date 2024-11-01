@@ -6,11 +6,11 @@ type Props = {
 const TriggerNode = ({ data }: Props) => {
   return (
     <>
-      <div className="bg-background border border-secondary p-2 flex gap-2 items-center rounded-sm text-gray-200 w-64">
+      <div className="bg-background border border-secondary p-4 flex gap-4 items-center rounded-sm text-gray-200 max-w-64">
         <img src={data.icon} alt="" className="size-6" />
         <div className="flex-1">
-          <h2 className="font-medium">{data.label}</h2>
-          <p className="text-sm text-gray-400 text-wrap">{data.description}</p>
+          <h2 className="font-medium text-sm mb-1">{data.label}</h2>
+          <p className="text-xs text-gray-400 text-wrap">{data.description}</p>
         </div>
         <div className="absolute top-2 right-2 size-1 rounded-full bg-green-500" />
       </div>

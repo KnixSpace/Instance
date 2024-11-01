@@ -17,8 +17,8 @@ const NodeCard = ({ node }: Props) => {
     >
       <img src={node?.data?.icon} alt="" className="size-8" />
       <div className="flex-1">
-        <h2 className="font-medium">{node?.data?.label}</h2>
-        <p className="text-sm text-gray-400 text-wrap">
+        <h2 className="font-medium text-sm">{node?.data?.label}</h2>
+        <p className="text-xs text-gray-400 text-wrap">
           {node?.data?.description}
         </p>
       </div>
