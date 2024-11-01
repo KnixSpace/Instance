@@ -2,8 +2,8 @@
 
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import NodeCard from "./NodeCard";
-import { nodesConfigurationArray } from "@/lib/constants";
 import { setSidePanelMode } from "@/lib/features/workflow/workflowSlice";
+import { nodesConfigurationArray } from "./constant";
 
 type Props = {};
 const SidePanel = (props: Props) => {
@@ -39,10 +39,10 @@ const SidePanel = (props: Props) => {
             {nodes.length > 0
               ? nodesConfigurationArray
                   .filter((node) => node.type !== "trigger")
-                  .map((node) => <NodeCard key={node.id} node={node} />)
+                  .map((node, i) => <NodeCard key={i} node={node} />)
               : nodesConfigurationArray
                   .filter((node) => node.type === "trigger")
-                  .map((node) => <NodeCard key={node.id} node={node} />)}
+                  .map((node, i) => <NodeCard key={i} node={node} />)}
           </div>
         </>
       )}

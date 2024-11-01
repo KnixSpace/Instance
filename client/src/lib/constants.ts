@@ -30,31 +30,3 @@ export const appIcons = {
   github: "/apps/github.webp",
   linkedin: "/apps/linkedin.webp",
 };
-
-export const nodesConfigurationArray = [
-  {
-    id: "node-1",
-    type: "action",
-    data: { label: "Trigger Node", icon: appIcons.docs },
-  },
-  {
-    id: "node-2",
-    type: "action",
-    data: { label: "Action Node", icon: appIcons.calendar },
-  },
-  {
-    id: "node-3",
-    type: "trigger",
-    data: { label: "Condition Node", icon: appIcons.github },
-  },
-  {
-    id: "node-4",
-    type: "trigger",
-    data: { label: "Loop Node", icon: appIcons.sheets },
-  },
-  {
-    id: "node-5",
-    type: "action",
-    data: { label: "Trigger Node 2", icon: appIcons.drive },
-  },
-];
