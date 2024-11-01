@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import NavbarWrapper from "@/components/Layout/NavbarWrapper";
+import StoreProvider from "./StoreProvider";
 
 export const metadata: Metadata = {
   title: "Instance",
@@ -25,10 +26,12 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         />
       </head>
-      <body className={`${dm_sans.className} antialiased`}>
-        <NavbarWrapper />
-        {children}
-      </body>
+      <StoreProvider>
+        <body className={`${dm_sans.className} antialiased`}>
+          <NavbarWrapper />
+          {children}
+        </body>
+      </StoreProvider>
     </html>
   );
 }
