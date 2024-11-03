@@ -7,20 +7,21 @@ import {
   Edge,
   Node,
   ReactFlow,
-  ReactFlowInstance,
   SelectionMode,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 import TriggerNode from "./nodes/TriggerNode";
 import ActionNode from "./nodes/ActionNode";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { v4 } from "uuid";
-import { useAppDispatch } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
+  addNewEdge,
   addNewNode,
   selectNode,
   setSidePanelMode,
@@ -33,15 +34,22 @@ const nodeTypes = {
 
 type Props = {};
 const Workflow = (props: Props) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const [reactFlowInstance, setReactFlowInstance] =
-    useState<ReactFlowInstance>();
+  const workflow = useAppSelector((state) => state.workflow);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(workflow.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(workflow.edges);
+
+  const { screenToFlowPosition } = useReactFlow();
   const dispatch = useAppDispatch();
 
   const onConnect = useCallback(
-    (params: any) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+    (params: any) => {
+      setEdges((edges) => {
+        const newEdges = addEdge(params, edges);
+        dispatch(addNewEdge(newEdges));
+        return newEdges;
+      });
+    },
+    [setEdges, dispatch]
   );
 
   const onDragOver = (event: any) => {
@@ -57,9 +65,7 @@ const Workflow = (props: Props) => {
     const type = node.type;
     if (typeof type === "undefined" || type === null) return;
 
-    if (!reactFlowInstance) return;
-
-    const position = reactFlowInstance.screenToFlowPosition({
+    const position = screenToFlowPosition({
       x: event.clientX,
       y: event.clientY,
     });
@@ -104,7 +110,6 @@ const Workflow = (props: Props) => {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onPaneClick={onPaneClick}
-        onInit={setReactFlowInstance as any}
       >
         <Background />
         <Controls className="text-background" />
