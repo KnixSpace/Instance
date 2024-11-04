@@ -72,11 +72,14 @@ const Workflow = (props: Props) => {
       y: event.clientY,
     });
 
+    setNodes((nodes) => nodes.map((node) => ({ ...node, selected: false })));
+
     const newNode: Node = {
       id: v4(),
       type: type,
       position: position,
       data: node.data,
+      selected: true,
     };
 
     setNodes((nodes) => nodes.concat(newNode));
