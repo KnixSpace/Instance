@@ -1,18 +1,18 @@
 "use client";
 import SidePanel from "@/components/workflow/SidePanel";
 import Workflow from "@/components/workflow/Workflow";
-import {
-  setWarning,
-} from "@/lib/features/workflow/workflowSlice";
+import { setWarning } from "@/lib/features/workflow/workflowSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import EditWorkflow from "./EditWorkflow";
 
 type Props = {};
 const page = (props: Props) => {
   const [open, setOpen] = useState<boolean>(true);
   const [small, setSmall] = useState<boolean>(false);
+  const [edit, setEdit] = useState<boolean>(false);
   const dispatch = useAppDispatch();
   const warnings = useAppSelector((state) => state.workflow.warning);
   const { push } = useRouter();
@@ -60,22 +60,36 @@ const page = (props: Props) => {
 
   return (
     <>
+      {warnings.isWarning && (
+        <div className="absolute top-4 left-0 w-full flex justify-center items-center text-xs">
+          <div className="flex items-center text-red-500 py-2 px-4 rounded-full bg-red-950/50">
+            <span
+              className="material-symbols-rounded"
+              style={{ fontSize: "16px", fontWeight: 300 }}
+            >
+              warning
+            </span>
+            <span className="ml-1">{warnings.message}</span>
+          </div>
+        </div>
+      )}
+      {edit && <EditWorkflow workflowId="" setEdit={setEdit} />}
       <section className="h-full flex divide-x divide-darkSecondary">
         <div className="flex-1 flex flex-col divide-y divide-darkSecondary">
           <div className="flex justify-between items-center p-4 text-lg">
-            <div>Workflow</div>
-            <div className="flex-1 flex justify-center items-center text-xs">
-              {warnings.isWarning && (
-                <div className="flex items-center text-red-500 py-1 px-2 rounded-full bg-red-950">
-                  <span
-                    className="material-symbols-rounded"
-                    style={{ fontSize: "16px", fontWeight: 300 }}
-                  >
-                    warning
-                  </span>
-                  <span className="ml-1">{warnings.message}</span>
-                </div>
-              )}
+            <div className="flex gap-4 items-center">
+              <span>Workflow</span>
+              <div className="p-1 flex justify-center items-center hover:bg-lightbackground rounded-md cursor-pointer">
+                <span
+                  className="material-symbols-rounded"
+                  style={{ fontWeight: 300, fontSize: "20px" }}
+                  onClick={() => {
+                    setEdit(!edit);
+                  }}
+                >
+                  edit
+                </span>
+              </div>
             </div>
             <div
               className="p-1 flex justify-center items-center hover:bg-lightbackground rounded-md cursor-pointer"
