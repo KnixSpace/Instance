@@ -27,6 +27,7 @@ import {
   selectNode,
   setDeletedNodes,
   setSidePanelMode,
+  setWarning,
 } from "@/lib/features/workflow/workflowSlice";
 
 const nodeTypes = {
@@ -82,10 +83,13 @@ const Workflow = (props: Props) => {
     };
 
     setNodes((prevNodes) => {
-      const updatedNodes = prevNodes.map((node) => ({ ...node, selected: false }));
+      const updatedNodes = prevNodes.map((node) => ({
+        ...node,
+        selected: false,
+      }));
       return [...updatedNodes, newNode];
     });
-    
+
     dispatch(addNewNode(newNode));
     dispatch(selectNode(newNode.id));
     dispatch(setSidePanelMode("configuration"));
@@ -131,6 +135,46 @@ const Workflow = (props: Props) => {
     [nodes, dispatch]
   );
 
+  const isValidConnection = (connection: any): boolean => {
+    const { source, target } = connection;
+
+    const sourceNode = nodes.find((node) => node.id === source);
+    const targetNode = nodes.find((node) => node.id === target);
+
+    if (!sourceNode || !targetNode) return false;
+
+    if (source === target) {
+      dispatch(
+        setWarning({
+          isWarning: true,
+          message: "Cannot connect a node to itself.",
+        })
+      );
+      return false;
+    }
+
+    if (sourceNode.type === "trigger") {
+      const triggerConnections = edges.filter((edge) => edge.source === source);
+      if (triggerConnections.length >= 1) {
+        dispatch(
+          setWarning({
+            isWarning: true,
+            message: "Trigger node can only have one connection.",
+          })
+        );
+        return false;
+      }
+    }
+
+    // const allowedTargets = allowedConnections[sourceNode.type as string];
+    // if (!allowedTargets || !allowedTargets.includes(targetNode.type as string)) {
+    //   console.warn(`Cannot connect ${sourceNode.type} node to ${targetNode.type} node.`);
+    //   return false;
+    // }
+
+    return true;
+  };
+
   return (
     <div className="w-full h-full">
       <ReactFlow
@@ -150,6 +194,7 @@ const Workflow = (props: Props) => {
         onPaneClick={handlePaneClick}
         onEdgesDelete={onEdgesDelete}
         onNodesDelete={onNodesDelete}
+        isValidConnection={isValidConnection}
       >
         <Background />
         <Controls className="text-background" />

@@ -7,4 +7,8 @@ export interface workflowState {
   edges: Edge[];
   selectedNode: Node | null;
   sidePanel: SidePanelMode;
+  warning: {
+    isWarning: boolean;
+    message: string | null;
+  };
 }
