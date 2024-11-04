@@ -4,8 +4,8 @@ const TriggerNode = ({ data, selected }: NodeProps) => {
   return (
     <>
       <div
-        className={`bg-background border border-secondary p-4 flex gap-4 items-center rounded-md text-gray-200 max-w-64 transition-all duration-300 ease-in-out ${
-          selected ? "border-cta" : ""
+        className={`bg-background border p-4 flex gap-4 items-center rounded-md text-gray-200 max-w-64 transition-all duration-300 ease-in-out ${
+          selected ? "border-cta" : "border-secondary"
         }`}
       >
         <img src={data.icon as string} alt="" className="size-6" />
