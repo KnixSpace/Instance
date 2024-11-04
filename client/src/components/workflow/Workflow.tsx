@@ -51,7 +51,7 @@ const Workflow = (props: Props) => {
         return newEdges;
       });
     },
-    [setEdges, dispatch]
+    [dispatch, setEdges]
   );
 
   const onDragOver = (event: any) => {
@@ -59,59 +59,77 @@ const Workflow = (props: Props) => {
     event.dataTransfer.dropEffect = "move";
   };
 
-  const onDrop = (event: any) => {
+  const onDrop = (event: React.DragEvent) => {
     event.preventDefault();
-    const node = JSON.parse(
+    const nodeData = JSON.parse(
       event.dataTransfer.getData("application/reactflow")
     );
-    const type = node.type;
-    if (typeof type === "undefined" || type === null) return;
+    const { type, data } = nodeData;
+
+    if (!type) return;
 
     const position = screenToFlowPosition({
       x: event.clientX,
       y: event.clientY,
     });
 
-    setNodes((nodes) => nodes.map((node) => ({ ...node, selected: false })));
-
     const newNode: Node = {
       id: v4(),
-      type: type,
-      position: position,
-      data: node.data,
+      type,
+      position,
+      data,
       selected: true,
     };
 
-    setNodes((nodes) => nodes.concat(newNode));
+    setNodes((prevNodes) => {
+      const updatedNodes = prevNodes.map((node) => ({ ...node, selected: false }));
+      return [...updatedNodes, newNode];
+    });
+    
     dispatch(addNewNode(newNode));
     dispatch(selectNode(newNode.id));
     dispatch(setSidePanelMode("configuration"));
   };
 
-  const onNodeClick = (event: any, node: Node) => {
-    dispatch(selectNode(node.id));
-    dispatch(setSidePanelMode("configuration"));
-  };
+  const handleNodeClick = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      dispatch(selectNode(node.id));
+      dispatch(setSidePanelMode("configuration"));
+    },
+    [dispatch]
+  );
 
-  const onPaneClick = () => {
+  const handlePaneClick = useCallback(() => {
     dispatch(selectNode(null));
     dispatch(setSidePanelMode("action"));
-  };
+  }, [dispatch]);
 
-  const onEdgesDelete = (deletedEdges: Edge[]) => {
-    dispatch(addNewEdge(edges.filter((edge) => !deletedEdges.includes(edge))));
-  };
+  const onEdgesDelete = useCallback(
+    (deletedEdges: Edge[]) => {
+      const updatedEdges = edges.filter((edge) => !deletedEdges.includes(edge));
+      dispatch(addNewEdge(updatedEdges));
+    },
+    [edges, dispatch]
+  );
 
-  const onNodesDelete = (deletedNodes: Node[]) => {
-    if (deletedNodes.find((node) => node.type === "trigger")) {
-      setNodes([]);
-      setEdges([]);
-      dispatch(initializedNewWorkflow());
-      return;
-    }
-    const nodesToSave = nodes.filter((node) => !deletedNodes.includes(node));
-    dispatch(setDeletedNodes(nodesToSave));
-  };
+  const onNodesDelete = useCallback(
+    (deletedNodes: Node[]) => {
+      const triggerNodeDeleted = deletedNodes.some(
+        (node) => node.type === "trigger"
+      );
+
+      if (triggerNodeDeleted) {
+        setNodes([]);
+        setEdges([]);
+        dispatch(initializedNewWorkflow());
+        return;
+      }
+
+      const nodesToSave = nodes.filter((node) => !deletedNodes.includes(node));
+      dispatch(setDeletedNodes(nodesToSave));
+    },
+    [nodes, dispatch]
+  );
 
   return (
     <div className="w-full h-full">
@@ -125,11 +143,11 @@ const Workflow = (props: Props) => {
         nodeTypes={nodeTypes}
         nodes={nodes}
         onNodesChange={onNodesChange}
-        onNodeClick={onNodeClick}
+        onNodeClick={handleNodeClick}
         edges={edges}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onPaneClick={onPaneClick}
+        onPaneClick={handlePaneClick}
         onEdgesDelete={onEdgesDelete}
         onNodesDelete={onNodesDelete}
       >
