@@ -23,7 +23,9 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
   addNewEdge,
   addNewNode,
+  initializedNewWorkflow,
   selectNode,
+  setDeletedNodes,
   setSidePanelMode,
 } from "@/lib/features/workflow/workflowSlice";
 
@@ -34,9 +36,9 @@ const nodeTypes = {
 
 type Props = {};
 const Workflow = (props: Props) => {
-  const workflow = useAppSelector((state) => state.workflow);
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(workflow.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(workflow.edges);
+  const flow = useAppSelector((state) => state.workflow);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(flow.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(flow.edges);
 
   const { screenToFlowPosition } = useReactFlow();
   const dispatch = useAppDispatch();
@@ -93,6 +95,21 @@ const Workflow = (props: Props) => {
     dispatch(setSidePanelMode("action"));
   };
 
+  const onEdgesDelete = (deletedEdges: Edge[]) => {
+    dispatch(addNewEdge(edges.filter((edge) => !deletedEdges.includes(edge))));
+  };
+
+  const onNodesDelete = (deletedNodes: Node[]) => {
+    if (deletedNodes.find((node) => node.type === "trigger")) {
+      setNodes([]);
+      setEdges([]);
+      dispatch(initializedNewWorkflow());
+      return;
+    }
+    const nodesToSave = nodes.filter((node) => !deletedNodes.includes(node));
+    dispatch(setDeletedNodes(nodesToSave));
+  };
+
   return (
     <div className="w-full h-full">
       <ReactFlow
@@ -110,6 +127,8 @@ const Workflow = (props: Props) => {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onPaneClick={onPaneClick}
+        onEdgesDelete={onEdgesDelete}
+        onNodesDelete={onNodesDelete}
       >
         <Background />
         <Controls className="text-background" />

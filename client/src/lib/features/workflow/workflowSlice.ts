@@ -1,6 +1,7 @@
 import { SidePanelMode, workflowState } from "@/types/workflowTypes";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { Edge, Node } from "@xyflow/react";
+import { a } from "framer-motion/client";
 
 const initialState: workflowState = {
   nodes: [],
@@ -14,10 +15,7 @@ const workflowSlice = createSlice({
   initialState,
   reducers: {
     initializedNewWorkflow: (state) => {
-      state.nodes = [];
-      state.edges = [];
-      state.selectedNode = null;
-      state.sidePanel = "trigger";
+      return initialState;
     },
 
     initializedExistingWorkflow: (state, action: PayloadAction<any>) => {
@@ -34,6 +32,10 @@ const workflowSlice = createSlice({
     addNewNode: (state, action: PayloadAction<Node>) => {
       state.nodes.push(action.payload);
       state.sidePanel = "configuration";
+    },
+
+    setDeletedNodes: (state, action: PayloadAction<Node[]>) => {
+      state.nodes = action.payload;
     },
 
     selectNode: (state, action: PayloadAction<string | null>) => {
@@ -57,6 +59,7 @@ export const {
   addNewNode,
   addNewEdge,
   selectNode,
+  setDeletedNodes,
   setSidePanelMode,
 } = workflowSlice.actions;
 
