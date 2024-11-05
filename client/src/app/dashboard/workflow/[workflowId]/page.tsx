@@ -1,8 +1,8 @@
 "use client";
-import EditWorkflow from "@/components/workflow/EditWorkflow";
-import SidePanel from "@/components/workflow/SidePanel";
-import Warning from "@/components/workflow/Warning";
-import Workflow from "@/components/workflow/Workflow";
+import EditWorkflow from "@/components/dashboard/workspace/workflow/EditWorkflow";
+import SidePanel from "@/components/dashboard/workspace/sidepanel/SidePanel";
+import Warning from "@/components/dashboard/workspace/workflow/Warning";
+import Workflow from "@/components/dashboard/workspace/workflow/Workflow";
 import { setWarning } from "@/lib/features/workflow/workflowSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import axios from "axios";
@@ -14,6 +14,7 @@ const page = (props: Props) => {
   const [open, setOpen] = useState<boolean>(true);
   const [small, setSmall] = useState<boolean>(false);
   const [edit, setEdit] = useState<boolean>(false);
+  const [active, setAcive] = useState<boolean>(false);
   const dispatch = useAppDispatch();
   const warnings = useAppSelector((state) => state.workflow.warning);
   const { push } = useRouter();
@@ -80,18 +81,32 @@ const page = (props: Props) => {
                 </span>
               </div>
             </div>
-            <div
-              className="p-1 flex justify-center items-center hover:bg-lightbackground rounded-md cursor-pointer"
-              onClick={() => {
-                setOpen(!open);
-              }}
-            >
-              <span
-                className="material-symbols-rounded"
-                style={{ fontWeight: 300, fontSize: "20px" }}
+            <div className="flex items-center gap-4">
+              <div
+                className={`rounded-full p-1 w-11 flex items-center bg-lightbackground transition-all duration-1000 ease-in-out`}
+                onClick={() => {
+                  setAcive(!active);
+                }}
               >
-                dock_to_left
-              </span>
+                <div
+                  className={`size-4 rounded-full transition-all duration-500 ease-in-out  ${
+                    active ? "translate-x-5 bg-cta" : "bg-background"
+                  }`}
+                />
+              </div>
+              <div
+                className="p-1 flex justify-center items-center hover:bg-lightbackground rounded-md cursor-pointer"
+                onClick={() => {
+                  setOpen(!open);
+                }}
+              >
+                <span
+                  className="material-symbols-rounded"
+                  style={{ fontWeight: 300, fontSize: "20px" }}
+                >
+                  dock_to_left
+                </span>
+              </div>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto overflow-x-hidden">

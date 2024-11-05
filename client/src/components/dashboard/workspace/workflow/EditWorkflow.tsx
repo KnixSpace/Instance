@@ -38,8 +38,13 @@ const EditWorkflow = (props: Props) => {
   };
 
   return (
-    <div className="top-0 left-0 w-full h-dvh fixed z-10 bg-background/50 backdrop-filter backdrop-blur-[1px] flex justify-center items-center">
-      <div className="w-96 bg-black rounded-md p-4">
+    <div
+      className="top-0 left-0 w-full h-dvh fixed z-10 bg-background/5 backdrop-filter backdrop-blur-[1px] flex justify-center items-center"
+      onClick={() => {
+        props.setEdit(false);
+      }}
+    >
+      <div className="w-96 bg-lightbackground rounded-md p-4">
         <h1 className="text-xl font-medium text-center mb-8">Edit Workflow</h1>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-4">
@@ -59,7 +64,7 @@ const EditWorkflow = (props: Props) => {
                     {...field}
                     type="text"
                     id="workflow-name"
-                    className={`w-full bg-darkSecondary focus:outline-none rounded-md px-4 py-2 text-sm`}
+                    className={`w-full bg-background focus:outline-none rounded-md px-4 py-2 text-sm`}
                     placeholder="Enter Workflow Name"
                   />
                 )}
@@ -83,7 +88,7 @@ const EditWorkflow = (props: Props) => {
                   <textarea
                     {...field}
                     id="workflow-description"
-                    className={`w-full bg-darkSecondary focus:outline-none rounded-md px-4 py-2 text-sm h-24 overflow-auto resize-none`}
+                    className={`w-full bg-background focus:outline-none rounded-md px-4 py-2 text-sm h-24 overflow-auto resize-none`}
                     placeholder="Enter Workflow Description"
                   />
                 )}
@@ -95,15 +100,15 @@ const EditWorkflow = (props: Props) => {
               )}
             </div>
             <div className="flex gap-4 justify-end text-xs">
-              <button type="submit" className="bg-cta px-6 py-2 rounded-md">
-                Save
-              </button>
               <button
                 type="button"
-                className="border border-darkSecondary px-6 py-2 rounded-md"
+                className="hover:bg-darkSecondary  px-6 py-2 rounded-md transition-all duration-500 ease-in-out"
                 onClick={() => props.setEdit(false)}
               >
                 Cancel
+              </button>
+              <button type="submit" className="bg-cta px-6 py-2 rounded-md">
+                Save
               </button>
             </div>
           </div>

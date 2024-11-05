@@ -3,8 +3,8 @@
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import NodeCard from "./NodeCard";
 import { setSidePanelMode } from "@/lib/features/workflow/workflowSlice";
-import { nodesConfigurationArray } from "./constant";
 import { useState, useEffect } from "react";
+import { nodesConfigurationArray } from "../constant";
 
 type Props = {};
 const SidePanel = (props: Props) => {
