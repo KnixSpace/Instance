@@ -1,12 +1,13 @@
 "use client";
+import EditWorkflow from "@/components/workflow/EditWorkflow";
 import SidePanel from "@/components/workflow/SidePanel";
+import Warning from "@/components/workflow/Warning";
 import Workflow from "@/components/workflow/Workflow";
 import { setWarning } from "@/lib/features/workflow/workflowSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import EditWorkflow from "./EditWorkflow";
 
 type Props = {};
 const page = (props: Props) => {
@@ -60,19 +61,7 @@ const page = (props: Props) => {
 
   return (
     <>
-      {warnings.isWarning && (
-        <div className="absolute top-4 left-0 w-full flex justify-center items-center text-xs">
-          <div className="flex items-center text-red-500 py-2 px-4 rounded-full bg-red-950/50">
-            <span
-              className="material-symbols-rounded"
-              style={{ fontSize: "16px", fontWeight: 300 }}
-            >
-              warning
-            </span>
-            <span className="ml-1">{warnings.message}</span>
-          </div>
-        </div>
-      )}
+      {warnings.isWarning && <Warning message={warnings.message} />}
       {edit && <EditWorkflow workflowId="" setEdit={setEdit} />}
       <section className="h-full flex divide-x divide-darkSecondary">
         <div className="flex-1 flex flex-col divide-y divide-darkSecondary">

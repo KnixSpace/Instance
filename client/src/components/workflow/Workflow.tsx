@@ -14,8 +14,8 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import TriggerNode from "./nodes/TriggerNode";
-import ActionNode from "./nodes/ActionNode";
+import TriggerNode from "./customNodes/TriggerNode";
+import ActionNode from "./customNodes/ActionNode";
 
 import { useCallback } from "react";
 import { v4 } from "uuid";
