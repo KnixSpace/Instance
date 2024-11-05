@@ -1,22 +1,22 @@
 "use client";
 
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import NodeCard from "./NodeCard";
-import { setSidePanelMode } from "@/lib/features/workflow/workflowSlice";
 import { useState, useEffect } from "react";
-import { nodesConfigurationArray } from "../constant";
+import NodeList from "./NodeList";
+import { setSidePanelMode } from "@/lib/features/workflow/workflowSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import SearchNodes from "./SearchNodes";
 
 type Props = {};
+
 const SidePanel = (props: Props) => {
   const dispatch = useAppDispatch();
   const nodes = useAppSelector((state) => state.workflow.nodes);
   const mode = useAppSelector((state) => state.workflow.sidePanel);
   const selectedNode = useAppSelector((state) => state.workflow.selectedNode);
 
-  const [searchQuery, setSearchQuery] = useState<string>(""); // The search input value
-  const [debouncedQuery, setDebouncedQuery] = useState<string>(""); // The debounced search term
-
-  // Update debounced query after delay
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedQuery, setDebouncedQuery] = useState<string>(""); 
+  
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedQuery(searchQuery);
@@ -26,24 +26,6 @@ const SidePanel = (props: Props) => {
       clearTimeout(handler);
     };
   }, [searchQuery]);
-
-  // Handle input change and set search query
-  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
-  // Filter nodes based on debounced query
-  const filteredNodes = nodesConfigurationArray.filter((node) => {
-    const nodeType = nodes.length > 0 ? "action" : "trigger";
-    return (
-      (node.type === nodeType &&
-        node.data.label.toLowerCase().includes(debouncedQuery.toLowerCase())) ||
-      (node.type === nodeType &&
-        node.data.description
-          .toLowerCase()
-          .includes(debouncedQuery.toLowerCase()))
-    );
-  });
 
   return (
     <div className="h-full flex flex-col p-4">
@@ -67,25 +49,17 @@ const SidePanel = (props: Props) => {
             <div className="text-sm text-gray-500 mb-2">
               {nodes.length > 0 ? "Add an action" : "Add a trigger"}
             </div>
-            <div>
-              <input
-                type="text"
-                placeholder={`Search for a ${
-                  nodes.length > 0 ? "action" : "trigger"
-                }`}
-                onChange={handleOnChange}
-                className="w-full bg-background border border-darkSecondary focus:border-secondary focus:outline-none rounded-full text-sm py-2 px-4"
-              />
-            </div>
+            <SearchNodes
+              nodeType={nodes.length > 0 ? "action" : "trigger"}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+            />
           </div>
-          <div className="flex-1 overflow-auto">
-            {filteredNodes.map((node, i) => (
-              <NodeCard key={i} node={node} />
-            ))}
-          </div>
+          <NodeList debouncedQuery={debouncedQuery} nodes={nodes} />
         </>
       )}
     </div>
   );
 };
+
 export default SidePanel;
