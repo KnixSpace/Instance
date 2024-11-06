@@ -9,7 +9,7 @@ const NodeCard = ({ node }: Props) => {
 
   return (
     <div
-      className="flex gap-4 items-center border border-darkSecondary rounded-md mb-4 p-4 bg-background cursor-grab"
+      className="flex gap-4 items-center border border-darkSecondary rounded-md mb-4 p-4 bg-background cursor-grab hover:border-secondary transition-all duration-300 ease-in-out"
       draggable
       onDragStart={(e) => {
         onDragStart(e, node);

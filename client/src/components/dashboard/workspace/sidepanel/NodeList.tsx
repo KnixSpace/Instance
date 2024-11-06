@@ -1,4 +1,4 @@
-import { nodesConfigurationArray } from "../constant";
+import { workflowNodesConfig } from "../constant";
 import NodeCard from "./NodeCard";
 
 type NodeListProps = {
@@ -8,7 +8,7 @@ type NodeListProps = {
 
 const NodeList = ({ debouncedQuery, nodes }: NodeListProps) => {
   // Filter nodes based on debounced query
-  const filteredNodes = nodesConfigurationArray.filter((node) => {
+  const filteredNodes = workflowNodesConfig.filter((node) => {
     const nodeType = nodes.length > 0 ? "action" : "trigger";
     return (
       (node.type === nodeType &&

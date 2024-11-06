@@ -40,9 +40,6 @@ const EditWorkflow = (props: Props) => {
   return (
     <div
       className="top-0 left-0 w-full h-dvh fixed z-10 bg-background/5 backdrop-filter backdrop-blur-[1px] flex justify-center items-center"
-      onClick={() => {
-        props.setEdit(false);
-      }}
     >
       <div className="w-96 bg-lightbackground rounded-md p-4">
         <h1 className="text-xl font-medium text-center mb-8">Edit Workflow</h1>

@@ -1,6 +1,6 @@
 import { appIcons } from "@/lib/constants";
 
-export const nodesConfigurationArray = [
+export const workflowNodesConfig = [
   {
     type: "trigger",
     data: {

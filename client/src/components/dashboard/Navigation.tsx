@@ -18,7 +18,7 @@ const Navigation = (props: Props) => {
         {navList.map((nav, i) => (
           <Link
             href={nav.href}
-            className={`flex gap-2 items-center p-1 rounded-md mb-1 ${
+            className={`flex gap-2 items-center p-1 rounded-md mb-1 transition-all duration-300 ease-in-out ${
               nav.label === "Create Workflow"
                 ? "hover:bg-[#8f66fe] bg-cta"
                 : "hover:bg-lightbackground"

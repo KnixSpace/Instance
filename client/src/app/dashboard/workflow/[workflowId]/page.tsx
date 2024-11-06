@@ -66,7 +66,7 @@ const page = (props: Props) => {
       {edit && <EditWorkflow workflowId="" setEdit={setEdit} />}
       <section className="h-full flex divide-x divide-darkSecondary">
         <div className="flex-1 flex flex-col divide-y divide-darkSecondary">
-          <div className="flex justify-between items-center p-4 text-lg">
+          <div className="flex justify-between items-center p-4 text-lg select-none">
             <div className="flex gap-4 items-center">
               <span>Workflow</span>
               <div className="p-1 flex justify-center items-center hover:bg-lightbackground rounded-md cursor-pointer">
@@ -82,8 +82,9 @@ const page = (props: Props) => {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              <span className="text-xs">{active ? "Active" : "Deactive"}</span>
               <div
-                className={`rounded-full p-1 w-11 flex items-center bg-lightbackground transition-all duration-1000 ease-in-out`}
+                className={`rounded-full p-1 w-11 flex items-center bg-lightbackground transition-all duration-1000 ease-in-out cursor-pointer`}
                 onClick={() => {
                   setAcive(!active);
                 }}
