@@ -11,7 +11,4 @@ export interface workflowState {
     isWarning: boolean;
     message: string | null;
   };
-  adjacencyList: {
-    [key: string]: string[];
-  };
 }

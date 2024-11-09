@@ -5,7 +5,6 @@ import NodeList from "./NodeList";
 import { setSidePanelMode } from "@/lib/features/workflow/workflowSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import SearchNodes from "./SearchNodes";
-import Configuration from "./Configuration";
 
 type Props = {};
 
@@ -16,12 +15,12 @@ const SidePanel = (props: Props) => {
   const selectedNode = useAppSelector((state) => state.workflow.selectedNode);
 
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [debouncedQuery, setDebouncedQuery] = useState<string>("");
-
+  const [debouncedQuery, setDebouncedQuery] = useState<string>(""); 
+  
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedQuery(searchQuery);
-    }, 300);
+    }, 300); // 300ms debounce delay
 
     return () => {
       clearTimeout(handler);
@@ -32,22 +31,14 @@ const SidePanel = (props: Props) => {
     <div className="h-full flex flex-col p-4">
       {mode === "configuration" ? (
         <>
-          <div>
-            <div className="flex gap-4 items-center mb-8">
-              <img
-                src={selectedNode?.data.icon as string}
-                alt=""
-                className="size-12"
-              />
-              <div>
-                <div className="">{selectedNode?.data.service as string}</div>
-                <div className="text-sm text-secondary">
-                  {selectedNode?.data.description as string}
-                </div>
-              </div>
-            </div>
+          {JSON.stringify(selectedNode)}
+          <div
+            onClick={() => {
+              dispatch(setSidePanelMode("action"));
+            }}
+          >
+            ok
           </div>
-          {selectedNode && <Configuration selectedNode={selectedNode} />}
         </>
       ) : (
         <>
