@@ -1,7 +1,6 @@
 import * as Yup from "yup";
 import { appIcons } from "@/lib/constants";
 import { ActionConfig } from "@/types/configurationTypes";
-import { request } from "http";
 
 export const workflowNodesConfig = [
   {
@@ -10,8 +9,8 @@ export const workflowNodesConfig = [
       label: "Github",
       triggerType: "automatic",
       service: "Github",
-      action: "GIT_TRIGGER",
-      description: "Triggered on your selected events",
+      action: "NEW_COMMIT",
+      description: "Triggered when a new commit is made",
       icon: appIcons.github,
     },
   },
@@ -96,47 +95,36 @@ export const workflowNodesConfig = [
 
 export const actionConfig: ActionConfig[] = [
   {
-    action: "GIT_TRIGGER",
+    action: "NEW_COMMIT",
     service: "Github",
     icon: appIcons.github,
     configFields: [
-      {
-        name: "event",
-        label: "Event",
-        type: "multiselect",
-        placeholder: "Select events",
-        isDynamic: false,
-        options: [ 
-          { label: "New Commit", value: "PUSH" },
-          { label: "New Issue", value: "ISSUE" },
-          { label: "New Pull Request",value: "PULL" }
-        ],
-        allowedCustomInput: false,
-        validation:Yup.array().of(
-          Yup.object().shape({
-            label: Yup.string().required(),
-            value: Yup.string().required(),
-          })
-        )
-      },
-  
       {
         name: "repoName",
         label: "Repository Name",
         type: "select",
         placeholder: "Select a repository",
         isDynamic: true,
-
-        
         dynamicOptions: {
-          // url: "https://api.github.com/user/repos",
-          url:`${process.env.HOST_URL}/api/v1/github/repos`,
-          headers: {
-            //userid
-          },
+          url: "https://api.github.com/user/repos",
+          headers: {}, // Add headers if required
         },
         allowedCustomInput: false,
         validation: Yup.string().required("Repository Name is required"),
+      },
+      {
+        name: "event",
+        label: "Event",
+        type: "select",
+        placeholder: "Select an event",
+        isDynamic: false,
+        options: [
+          { label: "New Commit", value: "NEW_COMMIT" },
+          { label: "New Issue", value: "NEW_ISSUE" },
+          { label: "New Pull Request", value: "NEW_PULL_REQUEST" },
+        ],
+        allowedCustomInput: false,
+        validation: Yup.string().required("Event is required"),
       },
     ],
     outputFields: [

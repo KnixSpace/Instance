@@ -59,7 +59,7 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
               option: response.data,
               icon: nodeConfig.icon,
             },
-          }));  
+          }));
         } catch (error) {
           console.error(
             `Error fetching dynamic options for ${field.name}`,
@@ -90,8 +90,6 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   }, [selectedNode]);
 
   const renderFiled = (field: ConfigField) => {
-    console.log(field);
-
     switch (field.type) {
       case "select":
         return (
@@ -129,26 +127,6 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
             )}
           </>
         );
-
-      case "multiselect":
-        return (
-        <div>
-            <label htmlFor={field.name} className="text-sm">{field.label}</label>
-            <Controller
-              name={field.name}
-              control={control}
-              render={({ field: selectField }) => (
-                <MultiSelectForm
-                field={{name:field.name}}
-                dynamicOptions={dynamicOptions[field.name]?.option || []}
-                selectField={selectField}
-                />
-              )}
-            />
-            {errors[field.name] && <p className="text-red-500 text-xs">{errors[field.name]?.message as string}</p>}
-          </div>
-        );
-
       case "text":
         return (
           <>
@@ -179,8 +157,6 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
         );
     }
   };
-
-
 
   return (
     <div>
