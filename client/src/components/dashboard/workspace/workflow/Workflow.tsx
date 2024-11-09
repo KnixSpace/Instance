@@ -135,7 +135,7 @@ const Workflow = (props: Props) => {
 
       const nodesToSave = nodes.filter((node) => !deletedNodes.includes(node));
       dispatch(setDeletedNodes(nodesToSave));
-      //WIP
+      dispatch(setSidePanelMode("action"));
       dispatch(setAdjacencyList());
     },
     [nodes, dispatch]
