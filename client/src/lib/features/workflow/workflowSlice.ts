@@ -11,7 +11,6 @@ const initialState: workflowState = {
     isWarning: false,
     message: null,
   },
-  adjacencyList: {},
 };
 
 const workflowSlice = createSlice({
@@ -44,9 +43,7 @@ const workflowSlice = createSlice({
 
     selectNode: (state, action: PayloadAction<string | null>) => {
       const isNode = state.nodes.find((node) => node.id === action.payload);
-      if (isNode) {
-        state.selectedNode = isNode;
-      }
+      state.selectedNode = isNode ? isNode : null;
     },
 
     addNewEdge: (state, action: PayloadAction<Edge[]>) => {
@@ -63,20 +60,6 @@ const workflowSlice = createSlice({
     ) => {
       state.warning = action.payload;
     },
-
-    setAdjacencyList: (state) => {
-      const adjacencyList: { [key: string]: string[] } = {};
-
-      for (let node of state.nodes) {
-        adjacencyList[node.id] = [];
-      }
-
-      for (let edge of state.edges) {
-        adjacencyList[edge.target].push(edge.source);
-      }
-
-      state.adjacencyList = adjacencyList;
-    },
   },
 });
 
@@ -89,7 +72,6 @@ export const {
   setDeletedNodes,
   setSidePanelMode,
   setWarning,
-  setAdjacencyList,
 } = workflowSlice.actions;
 
 export default workflowSlice.reducer;
