@@ -46,45 +46,6 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   });
 
   useEffect(() => {
-    const previousNodeSet = new Set<string>();
-    const stack = [selectedNode.id];
-
-    while (stack.length > 0) {
-      const currentNode = stack.pop();
-      for (let parent of adjacencyList[currentNode as string]) {
-        if (!previousNodeSet.has(parent)) {
-          previousNodeSet.add(parent);
-          stack.push(parent);
-        }
-      }
-    }
-
-    const previousNodesAction = Array.from(previousNodeSet).map((nodeId) => {
-      const node = nodes.find((node) => node.id === nodeId);
-      return {
-        id: node?.id,
-        action: node?.data.action,
-      };
-    });
-
-    const options = previousNodesAction.flatMap((node) => {
-      const nodeOutput = actionConfig.find(
-        (config) => config.action === node.action
-      )?.outputFields;
-      return nodeOutput
-        ? nodeOutput.map((field) => ({
-            label: field.name,
-            value: `{{${node.id}.${field.name}}}`,
-          }))
-        : [];
-    });
-
-    setPreviousNodesOptions(options);
-  }, [selectedNode, adjacencyList, nodes]);
-
-  useEffect(() => {
-    if (!previousNodesOptions) return;
-
     nodeConfig.configFields.forEach(async (field) => {
       if (field.isDynamic) {
         try {
@@ -105,7 +66,7 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
             error
           );
         }
-      } else if (field.options) {
+      } else if (!field.isDynamic && field.options) {
         setDynamicOptions((prev) => ({
           ...prev,
           [field.name]: {
@@ -113,19 +74,20 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
             icon: nodeConfig.icon,
           },
         }));
-      } else {
+      } else if (!field.isDynamic && !field.options) {
         setDynamicOptions((prev) => ({
           ...prev,
           [field.name]: {
-            option: previousNodesOptions,
+            option: [
+              { label: "sadalable", value: "asdfaushf" },
+              { label: "kjdfhkae", value: "sdfkaj" },
+            ],
             icon: nodeConfig.icon,
           },
         }));
       }
     });
-  }, [nodeConfig, previousNodesOptions]);
-
-  console.log("dynamicOptions", dynamicOptions);
+  }, [selectedNode]);
 
   const renderFiled = (field: ConfigField) => {
     console.log(field);
