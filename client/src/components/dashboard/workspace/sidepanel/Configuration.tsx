@@ -7,6 +7,7 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
 import { useAppSelector } from "@/lib/hooks";
+import MultiSelectForm from "./MultiSelectForm";
 
 const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   const [dynamicOptions, setDynamicOptions] = useState<{
@@ -174,6 +175,25 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
             )}
           </>
         );
+
+        case "multiselect":
+        return (
+        <div>
+            <label htmlFor={field.name} className="text-sm">{field.label}</label>
+            <Controller
+              name={field.name}
+              control={control}
+              render={({ field: selectField }) => (
+                <MultiSelectForm
+                dynamicOptions={dynamicOptions[field.name]?.option || []}
+                selectField={selectField}
+                />
+              )}
+            />
+            {errors[field.name] && <p className="text-red-500 text-xs">{errors[field.name]?.message as string}</p>}
+          </div>
+        );
+
       case "text":
         return (
           <>
