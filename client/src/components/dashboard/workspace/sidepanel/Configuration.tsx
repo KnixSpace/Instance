@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
+import MultiSelectForm from "./MultiSelectForm";
 
 const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   const [dynamicOptions, setDynamicOptions] = useState<{
@@ -14,7 +15,8 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
       icon: string;
     };
   }>({});
-
+  const [multiSelect, setMultiSelect] = useState([])
+    ;
   const nodeConfig: ActionConfig | undefined = actionConfig.find(
     (config: ActionConfig) => config.action === selectedNode.data.action
   );
@@ -59,7 +61,7 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
               option: response.data,
               icon: nodeConfig.icon,
             },
-          }));
+          }));  
         } catch (error) {
           console.error(
             `Error fetching dynamic options for ${field.name}`,
@@ -90,6 +92,8 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   }, [selectedNode]);
 
   const renderFiled = (field: ConfigField) => {
+    console.log(field);
+
     switch (field.type) {
       case "select":
         return (
@@ -127,6 +131,26 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
             )}
           </>
         );
+
+      case "multiselect":
+        return (
+        <div>
+            <label htmlFor={field.name} className="text-sm">{field.label}</label>
+            <Controller
+              name={field.name}
+              control={control}
+              render={({ field: selectField }) => (
+                <MultiSelectForm
+                field={{name:field.name}}
+                dynamicOptions={dynamicOptions[field.name]?.option || []}
+                selectField={selectField}
+                />
+              )}
+            />
+            {errors[field.name] && <p className="text-red-500 text-xs">{errors[field.name]?.message as string}</p>}
+          </div>
+        );
+
       case "text":
         return (
           <>
@@ -157,6 +181,8 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
         );
     }
   };
+
+
 
   return (
     <div>
