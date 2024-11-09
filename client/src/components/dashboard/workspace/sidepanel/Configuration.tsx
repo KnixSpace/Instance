@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
+import { useAppSelector } from "@/lib/hooks";
 
 const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   const [dynamicOptions, setDynamicOptions] = useState<{
@@ -14,6 +15,14 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
       icon: string;
     };
   }>({});
+  const [previousNodesOptions, setPreviousNodesOptions] = useState<
+    {
+      label: string;
+      value: string;
+    }[]
+  >([]);
+  const adjacencyList = useAppSelector((state) => state.workflow.adjacencyList);
+  const nodes = useAppSelector((state) => state.workflow.nodes);
 
   const nodeConfig: ActionConfig | undefined = actionConfig.find(
     (config: ActionConfig) => config.action === selectedNode.data.action
@@ -46,6 +55,45 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   });
 
   useEffect(() => {
+    const previousNodeSet = new Set<string>();
+    const stack = [selectedNode.id];
+
+    while (stack.length > 0) {
+      const currentNode = stack.pop();
+      for (let parent of adjacencyList[currentNode as string]) {
+        if (!previousNodeSet.has(parent)) {
+          previousNodeSet.add(parent);
+          stack.push(parent);
+        }
+      }
+    }
+
+    const previousNodesAction = Array.from(previousNodeSet).map((nodeId) => {
+      const node = nodes.find((node) => node.id === nodeId);
+      return {
+        id: node?.id,
+        action: node?.data.action,
+      };
+    });
+
+    const options = previousNodesAction.flatMap((node) => {
+      const nodeOutput = actionConfig.find(
+        (config) => config.action === node.action
+      )?.outputFields;
+      return nodeOutput
+        ? nodeOutput.map((field) => ({
+            label: field.name,
+            value: `{{${node.id}.${field.name}}}`,
+          }))
+        : [];
+    });
+
+    setPreviousNodesOptions(options);
+  }, [selectedNode, adjacencyList, nodes]);
+
+  useEffect(() => {
+    if (!previousNodesOptions) return;
+
     nodeConfig.configFields.forEach(async (field) => {
       if (field.isDynamic) {
         try {
@@ -66,7 +114,7 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
             error
           );
         }
-      } else if (!field.isDynamic && field.options) {
+      } else if (field.options) {
         setDynamicOptions((prev) => ({
           ...prev,
           [field.name]: {
@@ -74,20 +122,19 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
             icon: nodeConfig.icon,
           },
         }));
-      } else if (!field.isDynamic && !field.options) {
+      } else {
         setDynamicOptions((prev) => ({
           ...prev,
           [field.name]: {
-            option: [
-              { label: "sadalable", value: "asdfaushf" },
-              { label: "kjdfhkae", value: "sdfkaj" },
-            ],
+            option: previousNodesOptions,
             icon: nodeConfig.icon,
           },
         }));
       }
     });
-  }, [selectedNode]);
+  }, [nodeConfig, previousNodesOptions]);
+
+  console.log("dynamicOptions", dynamicOptions);
 
   const renderFiled = (field: ConfigField) => {
     switch (field.type) {
