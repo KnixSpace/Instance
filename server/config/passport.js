@@ -44,6 +44,7 @@ passport.deserializeUser(async (id, done) => {
       userId: user._id,
       googleId: user.googleId,
       username: user.username,
+      avatar: user.avatar,
     });
   });
 });
