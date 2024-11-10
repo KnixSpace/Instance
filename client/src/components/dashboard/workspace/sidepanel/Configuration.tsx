@@ -7,7 +7,7 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
 import { useAppSelector } from "@/lib/hooks";
-import MultiSelectForm from "./MultiSelectForm";
+import { MultiSelectForm, SingleSelectForm } from "./MultiSelectForm";
 
 const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   const [dynamicOptions, setDynamicOptions] = useState<{
@@ -83,9 +83,9 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
       )?.outputFields;
       return nodeOutput
         ? nodeOutput.map((field) => ({
-            label: field.name,
-            value: `{{${node.id}.${field.name}}}`,
-          }))
+          label: field.name,
+          value: `{{${node.id}.${field.name}}}`,
+        }))
         : [];
     });
 
@@ -148,45 +148,30 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
             <Controller
               control={control}
               name={field.name}
-              render={({ field: selectField }) => {
-                return (
-                  <select
-                    {...selectField}
-                    id={field.name}
-                    className="bg-lightbackground rounded w-full px-3 py-2 focus:outline-none text-sm focus:border focus:border-secondary"
-                  >
-                    {dynamicOptions[field.name]?.option?.map((opt) => (
-                      <option
-                        className="text-xs"
-                        key={opt.value}
-                        value={opt.label}
-                      >
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                );
-              }}
+              render={({ field: selectField }) => (
+                <SingleSelectForm
+                  dynamicOptions={dynamicOptions[field.name]?.option || []}
+                  selectField={selectField}
+                />
+              )}
             />
             {errors[field.name] && (
-              <p className="text-red-500 text-xs">
-                {errors[field.name]?.message as string}
-              </p>
+              <p className="text-red-500 text-xs">{errors[field.name]?.message as string}</p>
             )}
           </>
         );
 
-        case "multiselect":
+      case "multiselect":
         return (
-        <div>
+          <div>
             <label htmlFor={field.name} className="text-sm">{field.label}</label>
             <Controller
               name={field.name}
               control={control}
               render={({ field: selectField }) => (
                 <MultiSelectForm
-                dynamicOptions={dynamicOptions[field.name]?.option || []}
-                selectField={selectField}
+                  dynamicOptions={dynamicOptions[field.name]?.option || []}
+                  selectField={selectField}
                 />
               )}
             />
