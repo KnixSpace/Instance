@@ -3,6 +3,7 @@ import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import NavbarWrapper from "@/components/Layout/NavbarWrapper";
 import StoreProvider from "./StoreProvider";
+import AuthProvider from "./hoc/AuthProvider";
 
 export const metadata: Metadata = {
   title: "Instance",
@@ -27,10 +28,12 @@ export default function RootLayout({
         />
       </head>
       <StoreProvider>
-        <body className={`${dm_sans.className} antialiased`}>
-          <NavbarWrapper />
-          {children}
-        </body>
+        <AuthProvider>
+          <body className={`${dm_sans.className} antialiased`}>
+            <NavbarWrapper />
+            {children}
+          </body>
+        </AuthProvider>
       </StoreProvider>
     </html>
   );
