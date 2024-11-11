@@ -19,7 +19,6 @@ router.get(
 );
 
 router.get("/data", (req, res) => {
-  console.log("data route hit");
   if (req.user) {
     res.status(200).send(req.user);
   } else {
@@ -37,7 +36,6 @@ router.get("/logout", async (req, res) => {
 });
 
 router.get("/check", (req, res) => {
-  console.log("auth route hit");
   if (req.user) {
     res.status(200).json({ isAuthenticated: true });
   } else {
