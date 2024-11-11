@@ -1,7 +1,6 @@
 import * as Yup from "yup";
 import { appIcons } from "@/lib/constants";
 import { ActionConfig } from "@/types/configurationTypes";
-import { request } from "http";
 
 export const workflowNodesConfig = [
   {
@@ -106,53 +105,35 @@ export const actionConfig: ActionConfig[] = [
         type: "multiselect",
         placeholder: "Select events",
         isDynamic: false,
-        options: [ 
+        options: [
           { label: "New Commit", value: "PUSH" },
           { label: "New Issue", value: "ISSUE" },
-          { label: "New Pull Request",value: "PULL" }
+          { label: "New Pull Request", value: "PULL" },
         ],
         allowedCustomInput: false,
-        validation:Yup.array().of(
-          Yup.object().shape({
-            label: Yup.string().required(),
-            value: Yup.string().required(),
-          })
-        )
+        validation: Yup.array()
+          .min(1, "Select at least one event")
+          .required("Event is required"),
       },
-  
-      // {
-      //   name: "repoName",
-      //   label: "Repository Name",
-      //   type: "select",
-      //   placeholder: "Select a repository",
-      //   isDynamic: true,
 
-        
-      //   dynamicOptions: {
-      //     // url: "https://api.github.com/user/repos",
-      //     url:`${process.env.HOST_URL}/api/v1/github/repos`,
-      //     headers: {
-      //       //userid
-      //     },
-      //   },
-      //   allowedCustomInput: false,
-      //   validation: Yup.string().required("Repository Name is required"),
-      // },
-    ],
-    outputFields: [
       {
-        name: "commitId",
-        icon: appIcons.github,
-      },
-      {
-        name: "commitMessage",
-        icon: appIcons.github,
-      },
-      {
-        name: "commitAuthor",
-        icon: appIcons.github,
+        name: "repoName",
+        label: "Repository Name",
+        type: "select",
+        placeholder: "Select a repository",
+        isDynamic: true,
+
+        dynamicOptions: {
+          url: `${process.env.HOST_URL}/api/v1/github/repos`,
+          headers: {
+            //userid
+          },
+        },
+        allowedCustomInput: false,
+        validation: Yup.object().required("Repository Name is required"),
       },
     ],
+    outputFields: ["commitId", "commitMessage", "commitLink", "repoName"],
   },
   {
     action: "SHEET_NEW_ENTRY",
@@ -161,7 +142,7 @@ export const actionConfig: ActionConfig[] = [
     configFields: [
       {
         name: "sheetId",
-        label: "Sheet ID",
+        label: "Sheet",
         type: "select",
         placeholder: "Select a sheet",
         isDynamic: true,
@@ -170,7 +151,7 @@ export const actionConfig: ActionConfig[] = [
           headers: {},
         },
         allowedCustomInput: false,
-        validation: Yup.string().required("Sheet ID is required"),
+        validation: Yup.object().required("Sheet is required"),
       },
       {
         name: "range",
@@ -184,16 +165,7 @@ export const actionConfig: ActionConfig[] = [
           .matches(/^[A-Za-z0-9_!]+$/, "Invalid range"),
       },
     ],
-    outputFields: [
-      {
-        name: "values",
-        icon: appIcons.sheets,
-      },
-      {
-        name: "sheet link",
-        icon: appIcons.sheets,
-      },
-    ],
+    outputFields: ["newEntry", "sheetId", "sheetLink"],
   },
   {
     action: "CREATE_DOC",
@@ -207,14 +179,11 @@ export const actionConfig: ActionConfig[] = [
         placeholder: "Select a filename",
         isDynamic: false,
         allowedCustomInput: true,
-        validation: Yup.string()
-          .trim()
-          .required("Filename is required")
-          .min(3, "Filename must be at least 3 characters"),
+        validation: Yup.object().required("Filename is required"),
       },
       {
         name: "folderId",
-        label: "Folder ID",
+        label: "Folder",
         type: "select",
         placeholder: "Select a folder",
         isDynamic: true,
@@ -223,19 +192,10 @@ export const actionConfig: ActionConfig[] = [
           headers: {},
         },
         allowedCustomInput: false,
-        validation: Yup.string(),
+        validation: Yup.object(),
       },
     ],
-    outputFields: [
-      {
-        name: "docId",
-        icon: appIcons.docs,
-      },
-      {
-        name: "doc link",
-        icon: appIcons.docs,
-      },
-    ],
+    outputFields: ["docId", "docLink", "docTitle"],
   },
   {
     action: "CREATE_SHEET",
@@ -249,14 +209,11 @@ export const actionConfig: ActionConfig[] = [
         placeholder: "Select a filename",
         isDynamic: false,
         allowedCustomInput: true,
-        validation: Yup.string()
-          .trim()
-          .required("Filename is required")
-          .min(3, "Filename must be at least 3 characters"),
+        validation: Yup.object().required("Filename is required"),
       },
       {
         name: "folderId",
-        label: "Folder ID",
+        label: "Folder",
         type: "select",
         placeholder: "Select a folder",
         isDynamic: true,
@@ -265,19 +222,10 @@ export const actionConfig: ActionConfig[] = [
           headers: {},
         },
         allowedCustomInput: false,
-        validation: Yup.string(),
+        validation: Yup.object(),
       },
     ],
-    outputFields: [
-      {
-        name: "sheetId",
-        icon: appIcons.sheets,
-      },
-      {
-        name: "sheet link",
-        icon: appIcons.sheets,
-      },
-    ],
+    outputFields: ["sheetId", "sheetLink", "sheetTitle"],
   },
   {
     action: "APPEND_ROW",
@@ -286,7 +234,7 @@ export const actionConfig: ActionConfig[] = [
     configFields: [
       {
         name: "sheetId",
-        label: "Sheet ID",
+        label: "Sheet",
         type: "select",
         placeholder: "Select a sheet",
         isDynamic: true,
@@ -295,7 +243,7 @@ export const actionConfig: ActionConfig[] = [
           headers: {},
         },
         allowedCustomInput: false,
-        validation: Yup.string().required("Sheet ID is required"),
+        validation: Yup.object().required("Sheet is required"),
       },
       {
         name: "range",
@@ -318,16 +266,7 @@ export const actionConfig: ActionConfig[] = [
         validation: Yup.string().required("Values are required"),
       },
     ],
-    outputFields: [
-      {
-        name: "updatedRange",
-        icon: appIcons.sheets,
-      },
-      {
-        name: "updatedValues",
-        icon: appIcons.sheets,
-      },
-    ],
+    outputFields: ["updatedSheet", "sheetId", "sheetLink"],
   },
   {
     action: "APPEND_TEXT",
@@ -336,7 +275,7 @@ export const actionConfig: ActionConfig[] = [
     configFields: [
       {
         name: "docId",
-        label: "Doc ID",
+        label: "Doc",
         type: "select",
         placeholder: "Select a document",
         isDynamic: true,
@@ -345,7 +284,7 @@ export const actionConfig: ActionConfig[] = [
           headers: {},
         },
         allowedCustomInput: false,
-        validation: Yup.string().required("Doc ID is required"),
+        validation: Yup.object().required("Document is required"),
       },
       {
         name: "text",
@@ -354,14 +293,9 @@ export const actionConfig: ActionConfig[] = [
         placeholder: "Select a text",
         isDynamic: false,
         allowedCustomInput: true,
-        validation: Yup.string().required("Text is required"),
+        validation: Yup.object().required("Text is required"),
       },
     ],
-    outputFields: [
-      {
-        name: "updatedText",
-        icon: appIcons.docs,
-      },
-    ],
+    outputFields: ["updatedDoc", "docId", "docLink"],
   },
 ];

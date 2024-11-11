@@ -15,15 +15,10 @@ export interface ConfigField {
   validation: Yup.AnySchema;
 }
 
-export interface OutputField {
-  name: string;
-  icon: string;
-}
-
 export interface ActionConfig {
   action: string;
   service: string;
   icon: string;
   configFields: ConfigField[];
-  outputFields: OutputField[];
+  outputFields: string[];
 }
