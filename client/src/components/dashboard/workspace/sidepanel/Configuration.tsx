@@ -7,7 +7,7 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
 import { useAppSelector } from "@/lib/hooks";
-import { MultiSelectForm, SingleSelectForm } from "./MultiSelectForm";
+import { MultiSelect, SelectCreatable, SingleSelect } from "./SelectForm";
 
 const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   const [dynamicOptions, setDynamicOptions] = useState<{
@@ -40,20 +40,21 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
     }, {} as Record<string, Yup.AnySchema>)
   );
 
-  // const initialValues = nodeConfig.configFields.reduce((acc, field) => {
-  //   acc[field.name] = field.defaultValue;
-  //   return acc;
-  // }, {} as Record<string, any>);
-
   const {
     control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<Record<string, any>>({
     resolver: yupResolver(schema),
     mode: "onSubmit",
   });
+
+  useEffect(() => {
+    //WIP: reset form with initial values or previously saved values in redux node.data.config
+    reset();
+  }, [selectedNode, reset, nodeConfig]);
 
   useEffect(() => {
     const previousNodeSet = new Set<string>();
@@ -83,9 +84,9 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
       )?.outputFields;
       return nodeOutput
         ? nodeOutput.map((field) => ({
-          label: field.name,
-          value: `{{${node.id}.${field.name}}}`,
-        }))
+            label: field,
+            value: `{{${node.id}.${field}}}`,
+          }))
         : [];
     });
 
@@ -148,15 +149,26 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
             <Controller
               control={control}
               name={field.name}
-              render={({ field: selectField }) => (
-                <SingleSelectForm
-                  dynamicOptions={dynamicOptions[field.name]?.option || []}
-                  selectField={selectField}
-                />
-              )}
+              render={({ field: selectField }) =>
+                field.allowedCustomInput ? (
+                  <SelectCreatable
+                    dynamicOptions={dynamicOptions[field.name]?.option || []}
+                    selectField={selectField}
+                    placeholder={field.placeholder}
+                  />
+                ) : (
+                  <SingleSelect
+                    dynamicOptions={dynamicOptions[field.name]?.option || []}
+                    selectField={selectField}
+                    placeholder={field.placeholder}
+                  />
+                )
+              }
             />
             {errors[field.name] && (
-              <p className="text-red-500 text-xs">{errors[field.name]?.message as string}</p>
+              <p className="text-red-500 text-xs">
+                {errors[field.name]?.message as string}
+              </p>
             )}
           </>
         );
@@ -164,18 +176,25 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
       case "multiselect":
         return (
           <div>
-            <label htmlFor={field.name} className="text-sm">{field.label}</label>
+            <label htmlFor={field.name} className="text-sm">
+              {field.label}
+            </label>
             <Controller
               name={field.name}
               control={control}
               render={({ field: selectField }) => (
-                <MultiSelectForm
+                <MultiSelect
                   dynamicOptions={dynamicOptions[field.name]?.option || []}
                   selectField={selectField}
+                  placeholder={field.placeholder}
                 />
               )}
             />
-            {errors[field.name] && <p className="text-red-500 text-xs">{errors[field.name]?.message as string}</p>}
+            {errors[field.name] && (
+              <p className="text-red-500 text-xs">
+                {errors[field.name]?.message as string}
+              </p>
+            )}
           </div>
         );
 
