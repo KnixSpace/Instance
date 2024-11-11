@@ -18,6 +18,9 @@ export default NavbarWrapper;
 
 function Navbar() {
   const path = usePathname();
+  const handleLogin = () => {
+    window.open(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/google`, "_self");
+  };
   return (
     <header className="w-full fixed top-0 left-0 right-0 py-6 px-4 sm:px-12 flex  items-center justify-between z-30">
       <aside className="flex-1 flex gap-2 items-center">
@@ -46,7 +49,9 @@ function Navbar() {
         </nav>
       </div>
       <aside className="flex-1 flex items-center justify-end gap-4 text-sm">
-        <span className="cursor-pointer">Login</span>
+        <span className="cursor-pointer" onClick={handleLogin}>
+          Login
+        </span>
         <Link href={"/register"}>Register</Link>
       </aside>
     </header>
