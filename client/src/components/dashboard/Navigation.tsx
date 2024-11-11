@@ -2,10 +2,21 @@
 
 import Link from "next/link";
 import { navList } from "@/lib/constants";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { initializeUser } from "@/lib/features/user/userSlice";
 
 type Props = {};
 
 const Navigation = (props: Props) => {
+  const user = useAppSelector((state) => state.user);
+  const dispatch = useAppDispatch();
+
+  const handleLogout = async () => {
+    if (window.confirm("Are you sure you want to logout?")) {
+      window.open(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/logout`, "_self");
+      dispatch(initializeUser(null));
+    }
+  };
   return (
     <div className="w-64 h-full flex flex-col divide-y divide-darkSecondary">
       <div className="flex items-center p-4 justify-between select-none">
@@ -42,19 +53,23 @@ const Navigation = (props: Props) => {
             className="flex gap-2 items-center hover:bg-lightbackground w-full rounded-md"
           >
             <div className="rounded-sm flex justify-center items-center size-8 bg-lightbackground">
-              {/* <img
-              src="/logo.jpg"
-              alt=""
-              className="h-full w-full object-contain"
-            /> */}
-              K
+              {user.data?.avatar ? (
+                <img
+                  src={user.data.avatar}
+                  alt=""
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                user.data?.username?.charAt(0).toLowerCase()
+              )}
             </div>
-            <span className="text-sm">Krupal Patel</span>
+            <span className="text-sm">{user.data?.username}</span>
           </Link>
           <div className="min-h-8 min-w-8 flex justify-center items-center rounded-md hover:bg-lightbackground cursor-pointer">
             <span
               className="material-symbols-rounded"
               style={{ fontSize: "20px" }}
+              onClick={handleLogout}
             >
               logout
             </span>

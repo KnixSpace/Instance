@@ -9,6 +9,13 @@ const cors = require("cors");
 module.exports = (app) => {
   app.set("trust proxy", 1);
 
+  app.use(
+    cors({
+      origin: process.env.CLIENT_BASE_URL,
+      credentials: true,
+    })
+  );
+
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
