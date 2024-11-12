@@ -2,15 +2,13 @@
 
 import { useState, useEffect } from "react";
 import NodeList from "./NodeList";
-import { setSidePanelMode } from "@/lib/features/workflow/workflowSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useAppSelector } from "@/lib/hooks";
 import SearchNodes from "./SearchNodes";
-import Configuration from "./Configuration";
+import Configuration from "./configuration/Configuration";
 
 type Props = {};
 
 const SidePanel = (props: Props) => {
-  const dispatch = useAppDispatch();
   const nodes = useAppSelector((state) => state.workflow.nodes);
   const mode = useAppSelector((state) => state.workflow.sidePanel);
   const selectedNode = useAppSelector((state) => state.workflow.selectedNode);
