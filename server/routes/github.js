@@ -9,7 +9,7 @@ const router = require("express").Router();
 
 router.get("/integration/register", register);
 router.get("/integration/callback", callback);
-router.post("/webhooks", createWebhook);
-router.post("/webhookInfo", handleWebhookEvent);
+router.post("/webhook/create", createWebhook);
+router.post("/webhook/notifications", handleWebhookEvent);
 router.post("/repos", getRepoDetails);
 module.exports = router;

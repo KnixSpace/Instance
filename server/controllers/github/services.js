@@ -8,7 +8,9 @@ async function getRepoDetails(req, res) {
   try {
     const gitAccount = await Github.findOne({ userId ,accountId});
     if (!gitAccount) {
-      res.redirect(`${process.env.HOST_URL}/api/v1/github/integration/register`);
+      res.redirect(
+        `${process.env.HOST_URL}/api/v1/github/integration/register`
+      );
     } else {
       // Function to fetch all repositories (handle pagination)
       const getAllRepos = async (accessToken) => {
@@ -18,19 +20,19 @@ async function getRepoDetails(req, res) {
 
         while (fetchMore) {
           const reposResponse = await axios.get(
-            // `https://api.github.com/users/${username}/repos`, //this will give only the public repos not private ones 
+            // `https://api.github.com/users/${username}/repos`, //this will give only the public repos not private ones
             `https://api.github.com/user/repos`, // this api give all private and public repo of the user
             {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
-                Accept: 'application/vnd.github.v3+json',
+                Accept: "application/vnd.github.v3+json",
               },
               params: {
                 type: 'owner', 
                 sort: 'created', 
                 direction: 'desc',
                 per_page: 100, // Max items per page
-                page, 
+                page,
               },
             }
           );
@@ -48,7 +50,6 @@ async function getRepoDetails(req, res) {
         return allRepos;
       };
 
-
       const repos = await getAllRepos(gitAccount.accessToken);
 
       const options = repos.map((repo) => ({
@@ -63,7 +64,7 @@ async function getRepoDetails(req, res) {
     }
   } catch (error) {
     console.error("Error fetching repositories:", error);
-    res.status(500).json({ message: 'Failed to fetch repositories' });
+    res.status(500).json({ message: "Failed to fetch repositories" });
   }
 }
 

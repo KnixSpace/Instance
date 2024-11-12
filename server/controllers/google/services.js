@@ -144,10 +144,12 @@ async function getNewEntryOfSheet(
       lastProcessedRow = rows.length;
       const payload = {
         newEntries,
-        lastProcessedRow,
+        row: rows.length,
       };
       return payload;
     }
+  } else {
+    return null;
   }
 }
 
