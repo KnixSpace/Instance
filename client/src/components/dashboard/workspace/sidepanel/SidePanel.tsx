@@ -2,25 +2,24 @@
 
 import { useState, useEffect } from "react";
 import NodeList from "./NodeList";
-import { setSidePanelMode } from "@/lib/features/workflow/workflowSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useAppSelector } from "@/lib/hooks";
 import SearchNodes from "./SearchNodes";
+import Configuration from "./configuration/Configuration";
 
 type Props = {};
 
 const SidePanel = (props: Props) => {
-  const dispatch = useAppDispatch();
   const nodes = useAppSelector((state) => state.workflow.nodes);
   const mode = useAppSelector((state) => state.workflow.sidePanel);
   const selectedNode = useAppSelector((state) => state.workflow.selectedNode);
 
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [debouncedQuery, setDebouncedQuery] = useState<string>(""); 
-  
+  const [debouncedQuery, setDebouncedQuery] = useState<string>("");
+
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedQuery(searchQuery);
-    }, 300); // 300ms debounce delay
+    }, 300);
 
     return () => {
       clearTimeout(handler);
@@ -31,14 +30,22 @@ const SidePanel = (props: Props) => {
     <div className="h-full flex flex-col p-4">
       {mode === "configuration" ? (
         <>
-          {JSON.stringify(selectedNode)}
-          <div
-            onClick={() => {
-              dispatch(setSidePanelMode("action"));
-            }}
-          >
-            ok
+          <div>
+            <div className="flex gap-4 items-center mb-8">
+              <img
+                src={selectedNode?.data.icon as string}
+                alt=""
+                className="size-12"
+              />
+              <div>
+                <div className="">{selectedNode?.data.service as string}</div>
+                <div className="text-sm text-secondary">
+                  {selectedNode?.data.description as string}
+                </div>
+              </div>
+            </div>
           </div>
+          {selectedNode && <Configuration selectedNode={selectedNode} />}
         </>
       ) : (
         <>

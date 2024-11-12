@@ -25,6 +25,7 @@ import {
   addNewNode,
   initializedNewWorkflow,
   selectNode,
+  setAdjacencyList,
   setDeletedNodes,
   setSidePanelMode,
   setWarning,
@@ -51,6 +52,7 @@ const Workflow = (props: Props) => {
         dispatch(addNewEdge(newEdges));
         return newEdges;
       });
+      dispatch(setAdjacencyList());
     },
     [dispatch, setEdges]
   );
@@ -92,6 +94,7 @@ const Workflow = (props: Props) => {
 
     dispatch(addNewNode(newNode));
     dispatch(selectNode(newNode.id));
+    dispatch(setAdjacencyList());
     dispatch(setSidePanelMode("configuration"));
   };
 
@@ -112,6 +115,7 @@ const Workflow = (props: Props) => {
     (deletedEdges: Edge[]) => {
       const updatedEdges = edges.filter((edge) => !deletedEdges.includes(edge));
       dispatch(addNewEdge(updatedEdges));
+      dispatch(setAdjacencyList());
     },
     [edges, dispatch]
   );
@@ -131,6 +135,8 @@ const Workflow = (props: Props) => {
 
       const nodesToSave = nodes.filter((node) => !deletedNodes.includes(node));
       dispatch(setDeletedNodes(nodesToSave));
+      dispatch(setSidePanelMode("action"));
+      dispatch(setAdjacencyList());
     },
     [nodes, dispatch]
   );
