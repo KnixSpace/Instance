@@ -3,14 +3,10 @@ const { Github } = require("../../models/Github");
 
 async function getRepoDetails(req, res) {
   const userId = req.body.userId;
-  const events = req.body.events;
-
-  if (!userId || !Array.isArray(events) || events.length === 0) {
-    return res.status(400).json({ message: 'Invalid input. Please provide userId and events array.' });
-  }
+  const accountId= req.body.accountId;
 
   try {
-    const gitAccount = await Github.findOne({ userId });
+    const gitAccount = await Github.findOne({ userId ,accountId});
     if (!gitAccount) {
       res.redirect(`${process.env.HOST_URL}/api/v1/github/integration/register`);
     } else {
@@ -30,7 +26,7 @@ async function getRepoDetails(req, res) {
                 Accept: 'application/vnd.github.v3+json',
               },
               params: {
-                type: 'all', 
+                type: 'owner', 
                 sort: 'created', 
                 direction: 'desc',
                 per_page: 100, // Max items per page
@@ -42,7 +38,6 @@ async function getRepoDetails(req, res) {
           const repos = reposResponse.data;
           allRepos = allRepos.concat(repos);
 
-          // Check if fewer than 100 repos are returned (end of pages)
           if (repos.length < 100) {
             fetchMore = false;
           } else {
@@ -56,14 +51,14 @@ async function getRepoDetails(req, res) {
 
       const repos = await getAllRepos(gitAccount.accessToken);
 
-      const repoDetails = repos.map((repo) => ({
-        repoId: repo.id,
-        repoName: repo.full_name, 
+      const options = repos.map((repo) => ({
+      
+        label: repo.full_name, 
+        value: repo.id,
       }));
       res.status(200).json({
         message: 'Repositories fetched successfully',
-        repoDetails,
-        events 
+        options,
       });
     }
   } catch (error) {
@@ -71,5 +66,6 @@ async function getRepoDetails(req, res) {
     res.status(500).json({ message: 'Failed to fetch repositories' });
   }
 }
+
 
 module.exports = { getRepoDetails };

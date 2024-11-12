@@ -65,14 +65,14 @@ export const useNodeConfiguration = (selectedNode: Node) => {
             const response = await axios.post(
               field.dynamicOptions?.url || "",
               {
-                userId:"671f79f92e1c600ff209857f",
-                events:["push","pull_request","issues"],
+                // userId:"671f79f92e1c600ff209857f",
+                // accountId:"175472097"
               }
             );
             console.log(response.data);
             setDynamicOptions((prev) => ({
               ...prev,
-              [field.name]: response.data,
+              [field.name]: response.data.options,
             }));
           } catch (error) {
             console.error(
