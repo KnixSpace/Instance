@@ -92,13 +92,13 @@ async function updateExistingIntegration(
     account.tokens.refreshToken = tokens.refresh_token;
     account.tokens.expiry = tokens.expiry_date;
 
-    const previousScope = account.scope;
+    const previousScope = account.scopes;
 
     if (previousScope.length > 0) {
       const addScope = newScope.filter((item) => !previousScope.includes(item));
-      account.scope.push(...addScope);
+      account.scopes.push(...addScope);
     } else {
-      account.scope.push(...newScope);
+      account.scopes.push(...newScope);
     }
 
     await account.save();
@@ -110,7 +110,7 @@ async function updateExistingIntegration(
       name,
       email,
       accountId: id,
-      scope: newScope,
+      scopes: newScope,
       tokens: {
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
@@ -132,7 +132,7 @@ async function createNewIntegration(userId, userInfo, tokens) {
       provider: "google",
     }).save();
 
-    const scope = tokens.scope.split(" ");
+    const scopes = tokens.scope.split(" ").filter((item) => item !== "openid");
 
     const newAccount = await new Google({
       userId,
@@ -141,7 +141,7 @@ async function createNewIntegration(userId, userInfo, tokens) {
       name,
       email,
       accountId: id,
-      scope,
+      scopes,
       tokens: {
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,

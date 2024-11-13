@@ -15,7 +15,7 @@ const googleAccountSchema = new mongoose.Schema(
     avatar: { type: String, required: true },
     email: { type: String, required: true },
     accountId: { type: String, required: true },
-    scope: [{ type: String, required: true }],
+    scopes: [{ type: String, required: true }],
     tokens: {
       accessToken: { type: String, required: true },
       refreshToken: { type: String, required: true },
