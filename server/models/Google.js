@@ -13,7 +13,7 @@ const googleAccountSchema = new mongoose.Schema(
     },
     name: { type: String, required: true },
     avatar: { type: String, required: true },
-    email: { type: String, unique: true, required: true },
+    email: { type: String, required: true },
     accountId: { type: String, required: true },
     tokens: {
       accessToken: { type: String, required: true },

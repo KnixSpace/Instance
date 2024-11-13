@@ -30,9 +30,9 @@ async function createWorkflow(req, res) {
 }
 
 async function fetchServiceAccount(req, res) {
-  const { userId, service } = req.body;
+  const { service } = req.body;
   const integration = await Integration.findOne({
-    userId,
+    userId: req.user.userId,
     provider: service,
   }).populate({ path: "accounts", select: "email name avatar" });
 
