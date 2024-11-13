@@ -42,11 +42,8 @@ const workflowSlice = createSlice({
       state.nodes = action.payload;
     },
 
-    selectNode: (state, action: PayloadAction<string | null>) => {
-      const isNode = state.nodes.find((node) => node.id === action.payload);
-      if (isNode) {
-        state.selectedNode = isNode;
-      }
+    selectNode: (state, action: PayloadAction<Node | null>) => {
+      state.selectedNode = action.payload;
     },
 
     addNewEdge: (state, action: PayloadAction<Edge[]>) => {
