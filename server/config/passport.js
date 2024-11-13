@@ -39,12 +39,17 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser(async (id, done) => {
-  User.findById(id).then((user) => {
-    done(null, {
-      userId: user._id,
-      googleId: user.googleId,
-      username: user.username,
-      avatar: user.avatar,
+  User.findById(id)
+    .then((user) => {
+      done(null, {
+        userId: user._id,
+        googleId: user.googleId,
+        username: user.username,
+        avatar: user.avatar,
+      });
+    })
+    .catch((error) => {
+      console.log("Error deserializing user:", error);
+      done(error, false);
     });
-  });
 });
