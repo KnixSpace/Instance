@@ -30,14 +30,28 @@ async function createWorkflow(req, res) {
 }
 
 async function fetchServiceAccount(req, res) {
-  const { service } = req.body;
+  const { service, scopes } = req.body;
+
+  console.log(service, scopes);
+
   const integration = await Integration.findOne({
     userId: req.user.userId,
     provider: service,
-  }).populate({ path: "accounts", select: "email name avatar" });
+  }).populate({
+    path: "accounts",
+    match:
+      service === "google" && scopes?.length > 0
+        ? {
+            scopes: { $all: scopes },
+          }
+        : {},
+    select: "email name avatar",
+  });
 
-  if (!integration)
+  if (!integration || !integration.accounts.length) {
     return res.status(404).json({ message: "No account found" });
+  }
+
   res.json({ accounts: integration.accounts });
 }
 
