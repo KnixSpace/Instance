@@ -54,8 +54,8 @@ async function callback(req, res) {
     });
 
     const userInfo = await oauth2.userinfo.get();
-    const { id, email, picture } = userInfo.data;
-    await handleIntegration(req.user.userId, id, email, picture, tokens);
+
+    await handleIntegration(req.user.userId, userInfo.data, tokens);
     res.redirect(process.env.CLIENT_BASE_URL);
   } catch (error) {
     console.error("Error handling Google callback:", error);
@@ -63,13 +63,7 @@ async function callback(req, res) {
   }
 }
 
-async function handleIntegration(
-  userId,
-  accountId,
-  accountEmail,
-  avatar,
-  tokens
-) {
+async function handleIntegration(userId, userInfo, tokens) {
   const existingIntegration = await Integration.findOne({
     userId,
     provider: "google",
@@ -79,30 +73,27 @@ async function handleIntegration(
     await updateExistingIntegration(
       userId,
       existingIntegration,
-      accountId,
-      accountEmail,
-      avatar,
+      userInfo,
       tokens
     );
   } else {
-    await createNewIntegration(userId, accountId, accountEmail, avatar, tokens);
+    await createNewIntegration(userId, userInfo, tokens);
   }
 }
 
 async function updateExistingIntegration(
   userId,
   integration,
-  accountId,
-  accountEmail,
-  avatar,
+  userInfo,
   tokens
 ) {
+  const { id, email, picture, name } = userInfo;
   const accountExist = integration.accounts.some(
-    (account) => account.accountId === accountId
+    (account) => account.accountId === id
   );
 
   if (accountExist) {
-    const account = await Google.findOne({ accountId });
+    const account = await Google.findOne({ accountId: id });
     account.tokens.accessToken = tokens.access_token;
     account.tokens.refreshToken = tokens.refresh_token;
     account.tokens.expiry = tokens.expiry_date;
@@ -111,9 +102,10 @@ async function updateExistingIntegration(
     let newAccount = new Google({
       userId,
       integrationId: integration._id,
-      avatar,
-      email: accountEmail,
-      accountId,
+      avatar: picture,
+      name,
+      email,
+      accountId: id,
       tokens: {
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
@@ -127,13 +119,8 @@ async function updateExistingIntegration(
   }
 }
 
-async function createNewIntegration(
-  userId,
-  accountId,
-  accountEmail,
-  avatar,
-  tokens
-) {
+async function createNewIntegration(userId, userInfo, tokens) {
+  const { id, email, picture, name } = userInfo;
   try {
     const newIntegration = await new Integration({
       userId,
@@ -143,9 +130,10 @@ async function createNewIntegration(
     const newAccount = await new Google({
       userId,
       integrationId: newIntegration._id,
-      avatar,
-      email: accountEmail,
-      accountId,
+      avatar: picture,
+      name,
+      email,
+      accountId: id,
       tokens: {
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,

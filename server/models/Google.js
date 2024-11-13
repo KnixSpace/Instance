@@ -11,7 +11,8 @@ const googleAccountSchema = new mongoose.Schema(
       ref: "Integration",
       required: true,
     },
-    avatar: { type: String },
+    name: { type: String, required: true },
+    avatar: { type: String, required: true },
     email: { type: String, unique: true, required: true },
     accountId: { type: String, required: true },
     tokens: {
