@@ -11,23 +11,8 @@ async function register(req, res) {
     "https://www.googleapis.com/auth/userinfo.email",
   ];
 
-  const scopes = req.body.scope;
-
-  for (let scope in scopes) {
-    switch (scope) {
-      case "drive":
-        SCOPES.push("https://www.googleapis.com/auth/drive");
-        break;
-      case "sheets":
-        SCOPES.push("https://www.googleapis.com/auth/spreadsheets");
-        break;
-      case "docs":
-        SCOPES.push("https://www.googleapis.com/auth/documents");
-        break;
-      default:
-        break;
-    }
-  }
+  const scopes = req.body.scopes;
+  SCOPES.push(...scopes);
 
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: "offline",
@@ -99,11 +84,23 @@ async function updateExistingIntegration(
     (account) => account.accountId === id
   );
 
+  const newScope = tokens.scope.split(" ").filter((item) => item !== "openid");
+
   if (accountExist) {
     const account = await Google.findOne({ accountId: id });
     account.tokens.accessToken = tokens.access_token;
     account.tokens.refreshToken = tokens.refresh_token;
     account.tokens.expiry = tokens.expiry_date;
+
+    const previousScope = account.scope;
+
+    if (previousScope.length > 0) {
+      const addScope = newScope.filter((item) => !previousScope.includes(item));
+      account.scope.push(...addScope);
+    } else {
+      account.scope.push(...newScope);
+    }
+
     await account.save();
   } else {
     let newAccount = new Google({
@@ -113,6 +110,7 @@ async function updateExistingIntegration(
       name,
       email,
       accountId: id,
+      scope: newScope,
       tokens: {
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
@@ -134,6 +132,8 @@ async function createNewIntegration(userId, userInfo, tokens) {
       provider: "google",
     }).save();
 
+    const scope = tokens.scope.split(" ");
+
     const newAccount = await new Google({
       userId,
       integrationId: newIntegration._id,
@@ -141,6 +141,7 @@ async function createNewIntegration(userId, userInfo, tokens) {
       name,
       email,
       accountId: id,
+      scope,
       tokens: {
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
