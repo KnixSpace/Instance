@@ -9,23 +9,24 @@ async function register(req, res) {
   const SCOPES = [
     "https://www.googleapis.com/auth/userinfo.profile",
     "https://www.googleapis.com/auth/userinfo.email",
-    "https://www.googleapis.com/auth/drive",
   ];
 
-  let scope = req.body.scope;
+  const scopes = req.body.scope;
 
-  switch (scope) {
-    case "drive":
-      SCOPES.push("https://www.googleapis.com/auth/drive");
-      break;
-    case "sheets":
-      SCOPES.push("https://www.googleapis.com/auth/spreadsheets");
-      break;
-    case "docs":
-      SCOPES.push("https://www.googleapis.com/auth/documents");
-      break;
-    default:
-      break;
+  for (let scope in scopes) {
+    switch (scope) {
+      case "drive":
+        SCOPES.push("https://www.googleapis.com/auth/drive");
+        break;
+      case "sheets":
+        SCOPES.push("https://www.googleapis.com/auth/spreadsheets");
+        break;
+      case "docs":
+        SCOPES.push("https://www.googleapis.com/auth/documents");
+        break;
+      default:
+        break;
+    }
   }
 
   const authUrl = oauth2Client.generateAuthUrl({
@@ -34,7 +35,7 @@ async function register(req, res) {
     prompt: "consent",
   });
 
-  res.redirect(authUrl);
+  res.status(200).json({ authUrl });
 }
 
 async function callback(req, res) {
@@ -56,7 +57,13 @@ async function callback(req, res) {
     const userInfo = await oauth2.userinfo.get();
 
     await handleIntegration(req.user.userId, userInfo.data, tokens);
-    res.redirect(process.env.CLIENT_BASE_URL);
+    res.send(`
+      <html>
+        <body style="color:#fbfeff;background:#0f1318">
+          <p>Closing the window and refersh accounts...</p>
+        </body>
+      </html>
+    `);
   } catch (error) {
     console.error("Error handling Google callback:", error);
     res.status(500).json({ message: "Internal Server Error", error: error });
