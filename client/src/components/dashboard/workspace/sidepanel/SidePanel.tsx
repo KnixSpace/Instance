@@ -5,6 +5,7 @@ import NodeList from "./NodeList";
 import { useAppSelector } from "@/lib/hooks";
 import SearchNodes from "./SearchNodes";
 import Configuration from "./configuration/Configuration";
+import Account from "./account/Account";
 
 type Props = {};
 
@@ -28,7 +29,24 @@ const SidePanel = (props: Props) => {
 
   return (
     <div className="h-full flex flex-col p-4">
-      {mode === "configuration" ? (
+      {mode === "action" || mode === "trigger" ? (
+        <>
+          <div className="mb-4">
+            <div className="mb-1 text-lg">
+              {nodes.length > 0 ? "Actions" : "Trigger"}
+            </div>
+            <div className="text-sm text-gray-500 mb-2">
+              {nodes.length > 0 ? "Add an action" : "Add a trigger"}
+            </div>
+            <SearchNodes
+              nodeType={nodes.length > 0 ? "action" : "trigger"}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+            />
+          </div>
+          <NodeList debouncedQuery={debouncedQuery} nodes={nodes} />
+        </>
+      ) : (
         <>
           <div>
             <div className="flex gap-4 items-center mb-8">
@@ -45,24 +63,12 @@ const SidePanel = (props: Props) => {
               </div>
             </div>
           </div>
-          {selectedNode && <Configuration selectedNode={selectedNode} />}
-        </>
-      ) : (
-        <>
-          <div className="mb-4">
-            <div className="mb-1 text-lg">
-              {nodes.length > 0 ? "Actions" : "Trigger"}
-            </div>
-            <div className="text-sm text-gray-500 mb-2">
-              {nodes.length > 0 ? "Add an action" : "Add a trigger"}
-            </div>
-            <SearchNodes
-              nodeType={nodes.length > 0 ? "action" : "trigger"}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-            />
-          </div>
-          <NodeList debouncedQuery={debouncedQuery} nodes={nodes} />
+          {mode === "configuration" && selectedNode && (
+            <Configuration selectedNode={selectedNode} />
+          )}
+          {mode === "account" && selectedNode && (
+            <Account selectedNode={selectedNode} />
+          )}
         </>
       )}
     </div>
