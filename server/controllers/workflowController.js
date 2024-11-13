@@ -1,3 +1,4 @@
+const { Integration } = require("../models/Integration");
 const { WorkFlow } = require("../models/Workflow");
 
 //WIP
@@ -28,4 +29,16 @@ async function createWorkflow(req, res) {
   res.json(await workflow.save());
 }
 
-module.exports = { createWorkflow };
+async function fetchServiceAccount(req, res) {
+  const { userId, service } = req.body;
+  const integration = await Integration.findOne({
+    userId,
+    provider: service,
+  }).populate({ path: "accounts", select: "email name avatar" });
+
+  if (!integration)
+    return res.status(404).json({ message: "No account found" });
+  res.json({ accounts: integration.accounts });
+}
+
+module.exports = { createWorkflow, fetchServiceAccount };
