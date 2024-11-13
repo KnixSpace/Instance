@@ -55,7 +55,13 @@ async function callback(req, res) {
       tokenResponse,
       login
     );
-    res.redirect(process.env.CLIENT_BASE_URL);
+    res.send(`
+      <html>
+        <body style="color:#fbfeff;background:#0f1318">
+          <p>Closing the window and refersh accounts...</p>
+        </body>
+      </html>
+    `);
   } catch (error) {
     console.log(error);
     res.status(500).send("error duing authorization");

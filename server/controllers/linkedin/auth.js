@@ -52,7 +52,13 @@ async function callback(req, res) {
 
     await handleIntegration(req.user.userId, id, email, picture, tokens);
 
-    res.redirect(process.env.CLIENT_BASE_URL);
+    res.send(`
+      <html>
+        <body style="color:#fbfeff;background:#0f1318">
+          <p>Closing the window and refersh accounts...</p>
+        </body>
+      </html>
+    `);
   } catch (error) {
     console.error("Error handling LinkedIn callback:", error);
     res.status(500).json({ error: "Internal Server Error" });
