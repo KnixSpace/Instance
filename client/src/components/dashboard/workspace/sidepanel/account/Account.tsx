@@ -50,7 +50,7 @@ const Account = ({ selectedNode }: { selectedNode: Node }) => {
   };
 
   return (
-    <div className="flex flex-col h-full gap-4">
+    <div className="flex flex-1 flex-col gap-4 overflow-auto">
       <div className="flex gap-4 items-center justify-between">
         <div className="flex items-center gap-2">
           <h1>Accounts</h1>

@@ -52,12 +52,12 @@ const Navigation = (props: Props) => {
             href={"dashboard/profile"}
             className="flex gap-2 items-center hover:bg-lightbackground w-full rounded-md"
           >
-            <div className="rounded-sm flex justify-center items-center size-8 bg-lightbackground">
+            <div className="rounded flex justify-center items-center size-8 bg-lightbackground overflow-hidden">
               {user.data?.avatar ? (
                 <img
-                  src={user.data.avatar}
-                  alt=""
-                  className="h-full w-full object-contain"
+                  src={user.data?.avatar}
+                  alt={user.data?.username}
+                  className="object-contain"
                 />
               ) : (
                 user.data?.username?.charAt(0).toLowerCase()

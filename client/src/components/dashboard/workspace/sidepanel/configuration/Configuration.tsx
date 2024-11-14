@@ -37,29 +37,31 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   }, [selectedNode, reset, nodeConfig]);
 
   return (
-    <div>
-      <form
-        className="flex flex-col gap-4"
-        onSubmit={handleSubmit((data) => {
-          console.log(data);
-        })}
-      >
-        {nodeConfig.configFields.map((field) => (
-          <ConfigurationField
-            key={field.name}
-            field={field}
-            control={control}
-            errors={errors}
-            dynamicOptions={dynamicOptions[field.name]}
-          />
-        ))}
-        <button
-          type="submit"
-          className="bg-cta text-sm w-full text-white px-4 py-2 rounded focus:outline-none"
+    <div className="flex-1 flex flex-col gap-4 overflow-auto">
+      <div className="flex-1 overflow-auto">
+        <form
+          className="flex flex-col h-full gap-4"
+          onSubmit={handleSubmit((data) => {
+            console.log(data);
+          })}
         >
-          Save
-        </button>
-      </form>
+          {nodeConfig.configFields.map((field) => (
+            <ConfigurationField
+              key={field.name}
+              field={field}
+              control={control}
+              errors={errors}
+              dynamicOptions={dynamicOptions[field.name]}
+            />
+          ))}
+          <button
+            type="submit"
+            className="bg-cta text-sm w-full text-white px-4 py-2 rounded focus:outline-none"
+          >
+            Save
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

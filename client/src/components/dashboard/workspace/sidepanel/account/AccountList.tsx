@@ -79,7 +79,7 @@ const AccountList = ({
   };
 
   return (
-    <div className="flex flex-col h-full gap-4 flex-1 overflow-y-auto">
+    <div className="flex flex-col gap-4 flex-1 overflow-y-auto">
       {loading ? (
         <div className="h-full flex justify-center items-center text-sm text-gray-400">
           Loading...
@@ -95,7 +95,13 @@ const AccountList = ({
             key={account._id}
             onClick={() => handleAccountSelect(account)}
           >
-            <img src={account.avatar} alt={account.name} className="size-8" />
+            <div className="size-8 rounded bg-lightbackground overflow-hidden">
+              <img
+                src={account.avatar}
+                alt={account.name}
+                className="object-contain"
+              />
+            </div>
             <div className="flex-1">
               <h2 className="font-medium text-sm">{account.name}</h2>
               <p className="text-xs text-gray-400 text-wrap">{account.email}</p>
