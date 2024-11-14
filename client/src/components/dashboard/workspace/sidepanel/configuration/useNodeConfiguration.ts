@@ -2,8 +2,8 @@ import { useAppSelector } from "@/lib/hooks";
 import { ActionConfig } from "@/types/configurationTypes";
 import { useEffect, useState } from "react";
 import { actionConfig } from "../../constant";
-import { Node } from "@xyflow/react";
 import axios from "axios";
+import { Node } from "@/types/workflowTypes";
 
 export const useNodeConfiguration = (selectedNode: Node) => {
   const [dynamicOptions, setDynamicOptions] = useState<{
@@ -62,13 +62,10 @@ export const useNodeConfiguration = (selectedNode: Node) => {
       nodeConfig.configFields.forEach(async (field) => {
         if (field.isDynamic) {
           try {
-            const response = await axios.post(
-              field.dynamicOptions?.url || "",
-              {
-                // userId:"671f79f92e1c600ff209857f",
-                // accountId:"175472097"
-              }
-            );
+            const response = await axios.post(field.dynamicOptions?.url || "", {
+              // userId:"671f79f92e1c600ff209857f",
+              // accountId:"175472097"
+            });
             console.log(response.data);
             setDynamicOptions((prev) => ({
               ...prev,

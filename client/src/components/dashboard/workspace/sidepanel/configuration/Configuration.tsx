@@ -1,11 +1,11 @@
 import * as Yup from "yup";
-import { Node } from "@xyflow/react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 
 import { useNodeConfiguration } from "./useNodeConfiguration";
 import ConfigurationField from "./ConfigurationField";
+import { Node } from "@/types/workflowTypes";
 
 const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   const { nodeConfig, dynamicOptions } = useNodeConfiguration(selectedNode);

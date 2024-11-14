@@ -5,7 +5,6 @@ import {
   Background,
   Controls,
   Edge,
-  Node,
   ReactFlow,
   SelectionMode,
   useEdgesState,
@@ -30,6 +29,7 @@ import {
   setSidePanelMode,
   setWarning,
 } from "@/lib/features/workflow/workflowSlice";
+import { Node } from "@/types/workflowTypes";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -95,7 +95,7 @@ const Workflow = (props: Props) => {
     dispatch(addNewNode(newNode));
     dispatch(selectNode(newNode.id));
     dispatch(setAdjacencyList());
-    dispatch(setSidePanelMode("configuration"));
+    dispatch(setSidePanelMode("account"));
   };
 
   const handleNodeClick = useCallback(
