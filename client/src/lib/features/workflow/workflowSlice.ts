@@ -1,6 +1,11 @@
-import { SidePanelMode, workflowState } from "@/types/workflowTypes";
+import {
+  Account,
+  Node,
+  SidePanelMode,
+  workflowState,
+} from "@/types/workflowTypes";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { Edge, Node } from "@xyflow/react";
+import { Edge } from "@xyflow/react";
 
 const initialState: workflowState = {
   nodes: [],
@@ -42,8 +47,16 @@ const workflowSlice = createSlice({
       state.nodes = action.payload;
     },
 
-    selectNode: (state, action: PayloadAction<Node | null>) => {
-      state.selectedNode = action.payload;
+    selectNode: (state, action: PayloadAction<string | null>) => {
+      const isNode = state.nodes.find((node) => node.id === action.payload);
+      if (isNode) {
+        state.selectedNode = isNode;
+        if (isNode.data.authAccountInfo._id) {
+          state.sidePanel = "configuration";
+        } else {
+          state.sidePanel = "account";
+        }
+      }
     },
 
     addNewEdge: (state, action: PayloadAction<Edge[]>) => {
@@ -74,6 +87,28 @@ const workflowSlice = createSlice({
 
       state.adjacencyList = adjacencyList;
     },
+
+    setNodeAccount: (
+      state,
+      action: PayloadAction<{
+        nodeId: string;
+        account: Account;
+        userId: string;
+      }>
+    ) => {
+      const node = state.nodes.find(
+        (node) => node.id === action.payload.nodeId
+      );
+      if (node) {
+        node.data.authAccountInfo = {
+          ...node.data.authAccountInfo,
+          ...action.payload.account,
+          userId: action.payload.userId,
+        };
+        state.sidePanel = "configuration";
+        state.selectedNode = node;
+      }
+    },
   },
 });
 
@@ -87,6 +122,7 @@ export const {
   setSidePanelMode,
   setWarning,
   setAdjacencyList,
+  setNodeAccount,
 } = workflowSlice.actions;
 
 export default workflowSlice.reducer;

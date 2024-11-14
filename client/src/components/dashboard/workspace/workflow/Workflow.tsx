@@ -93,15 +93,13 @@ const Workflow = (props: Props) => {
     });
 
     dispatch(addNewNode(newNode));
-    dispatch(selectNode(newNode.id));
     dispatch(setAdjacencyList());
-    dispatch(setSidePanelMode("account"));
+    dispatch(selectNode(newNode.id));
   };
 
   const handleNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       dispatch(selectNode(node.id));
-      dispatch(setSidePanelMode("configuration"));
     },
     [dispatch]
   );
