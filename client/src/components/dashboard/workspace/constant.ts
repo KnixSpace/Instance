@@ -12,7 +12,7 @@ export const workflowNodesConfig = [
       action: "GIT_TRIGGER",
       description: "Triggered on your selected events",
       icon: appIcons.github,
-      account: {
+      authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/github/integration/register`,
       },
     },
@@ -26,7 +26,7 @@ export const workflowNodesConfig = [
       action: "SHEET_NEW_ENTRY",
       description: "Triggered when new entry in a sheet",
       icon: appIcons.sheets,
-      account: {
+      authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/integration/register`,
         scope: ["https://www.googleapis.com/auth/spreadsheets"],
       },
@@ -40,7 +40,7 @@ export const workflowNodesConfig = [
       action: "CREATE_FOLDER",
       description: "Create a new folder",
       icon: appIcons.drive,
-      account: {
+      authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/integration/register`,
         scope: ["https://www.googleapis.com/auth/drive"],
       },
@@ -54,7 +54,7 @@ export const workflowNodesConfig = [
       action: "CREATE_DOC",
       description: "Create a new document",
       icon: appIcons.docs,
-      account: {
+      authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/integration/register`,
         scope: [
           "https://www.googleapis.com/auth/documents",
@@ -74,7 +74,7 @@ export const workflowNodesConfig = [
       action: "CREATE_SHEET",
       description: "Create a new sheet",
       icon: appIcons.sheets,
-      account: {
+      authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/integration/register`,
         scope: [
           "https://www.googleapis.com/auth/spreadsheets",
@@ -94,7 +94,7 @@ export const workflowNodesConfig = [
       action: "APPEND_ROW",
       description: "Append a row to a sheet",
       icon: appIcons.sheets,
-      account: {
+      authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/integration/register`,
         scope: ["https://www.googleapis.com/auth/spreadsheets"],
       },
@@ -108,7 +108,7 @@ export const workflowNodesConfig = [
       action: "APPEND_TEXT",
       description: "Append text to a document",
       icon: appIcons.docs,
-      account: {
+      authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/integration/register`,
         scope: ["https://www.googleapis.com/auth/documents"],
       },
@@ -122,7 +122,7 @@ export const workflowNodesConfig = [
       action: "SHARE_POST",
       description: "Share a post on LinkedIn",
       icon: appIcons.linkedin,
-      account: {
+      authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/linkedin/integration/register`,
       },
     },

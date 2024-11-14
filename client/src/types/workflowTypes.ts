@@ -14,6 +14,7 @@ export interface Account {
   name: string;
   avatar: string;
   email: string;
+  userId: string;
 }
 
 export interface Node {
