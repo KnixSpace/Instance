@@ -1,13 +1,8 @@
-import { Node } from "@xyflow/react";
+import { setNodeAccount } from "@/lib/features/workflow/workflowSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { Account, Node } from "@/types/workflowTypes";
 import axios from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
-type Account = {
-  _id: string;
-  name: string;
-  avatar: string;
-  email: string;
-};
 
 type AccountListProps = {
   debouncedQuery: string;
@@ -26,10 +21,13 @@ const AccountList = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.user);
+
   const fetchAccounts = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const service = selectedNode.data.service as string;
+    const service = selectedNode.data.service;
 
     try {
       const response = await axios.post(
@@ -68,6 +66,18 @@ const AccountList = ({
     [debouncedQuery, accounts]
   );
 
+  const handleAccountSelect = (account: Account) => {
+    if (window.confirm("Are you sure you want to select this account?")) {
+      dispatch(
+        setNodeAccount({
+          nodeId: selectedNode.id,
+          account: account,
+          userId: user.data?.userId as string,
+        })
+      );
+    }
+  };
+
   return (
     <div className="flex flex-col h-full gap-4 flex-1 overflow-y-auto">
       {loading ? (
@@ -83,6 +93,7 @@ const AccountList = ({
           <div
             className="flex gap-4 items-center border border-darkSecondary rounded-md p-4 bg-background cursor-pointer hover:border-secondary transition-all duration-300 ease-in-out"
             key={account._id}
+            onClick={() => handleAccountSelect(account)}
           >
             <img src={account.avatar} alt={account.name} className="size-8" />
             <div className="flex-1">

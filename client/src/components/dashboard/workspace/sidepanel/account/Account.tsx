@@ -1,24 +1,21 @@
 "use client";
-import { Node } from "@xyflow/react";
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 import SearchAccounts from "./SearchAccounts";
 import AccountList from "./AccountList";
+import { Node } from "@/types/workflowTypes";
 
 const Account = ({ selectedNode }: { selectedNode: Node }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedQuery, setDebouncedQuery] = useState<string>("");
 
-  const { url, scope } = selectedNode.data.account as {
-    url: string;
-    scope?: string[];
-  };
+  const { url, scope } = selectedNode.data.authAccountInfo;
 
   const handleAddNew = useCallback(async () => {
     try {
       const response = await axios.post(
-        url,
+        url as string,
         {
           scopes: scope || null,
         },
