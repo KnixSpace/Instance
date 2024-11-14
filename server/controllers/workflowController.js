@@ -30,29 +30,35 @@ async function createWorkflow(req, res) {
 }
 
 async function fetchServiceAccount(req, res) {
-  const { service, scopes } = req.body;
+  try {
+    if (!req.body.service) {
+      return res.status(400).json({ message: "Service is required" });
+    }
+    const { service, scopes } = req.body;
 
-  console.log(service, scopes);
+    const integration = await Integration.findOne({
+      userId: req.user.userId,
+      provider: service,
+    }).populate({
+      path: "accounts",
+      match:
+        service === "google" && scopes?.length > 0
+          ? {
+              scopes: { $all: scopes },
+            }
+          : {},
+      select: "email name avatar",
+    });
 
-  const integration = await Integration.findOne({
-    userId: req.user.userId,
-    provider: service,
-  }).populate({
-    path: "accounts",
-    match:
-      service === "google" && scopes?.length > 0
-        ? {
-            scopes: { $all: scopes },
-          }
-        : {},
-    select: "email name avatar",
-  });
+    if (!integration || !integration.accounts.length) {
+      return res.status(404).json({ message: "No account found" });
+    }
 
-  if (!integration || !integration.accounts.length) {
-    return res.status(404).json({ message: "No account found" });
+    res.json({ accounts: integration.accounts });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Error fetching service account" });
   }
-
-  res.json({ accounts: integration.accounts });
 }
 
 module.exports = { createWorkflow, fetchServiceAccount };
