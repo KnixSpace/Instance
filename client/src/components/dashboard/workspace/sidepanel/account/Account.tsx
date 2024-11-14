@@ -1,81 +1,70 @@
 "use client";
 import { Node } from "@xyflow/react";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import SearchAccounts from "./SearchAccounts";
+import AccountList from "./AccountList";
 
-type Props = {
-  selectedNode: Node;
-};
 const Account = ({ selectedNode }: { selectedNode: Node }) => {
-  const [accounts, setAccounts] = useState<
-    { _id: string; name: string; avatar: string; email: string }[]
-  >([]);
-  const [refresh, setRefresh] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedQuery, setDebouncedQuery] = useState<string>("");
 
   const { url, scope } = selectedNode.data.account as {
     url: string;
     scope?: string[];
   };
 
-  const fetchAccounts = async () => {
-    const service = selectedNode.data.service as string;
+  const handleAddNew = useCallback(async () => {
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/workflow/fetchServiceAccount`,
+        url,
         {
-          service: service.toLowerCase(),
-          scopes: scope ? scope : null,
+          scopes: scope || null,
         },
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
-      console.log(response.data);
-      setAccounts(response.data.accounts);
+
+      window.open(
+        response.data.authUrl,
+        "_blank",
+        `width=600,height=600,popup=true,noopener=true,noreferrer=true,top=${
+          window.screen.availHeight / 2 - 300
+        },left=${window.screen.availWidth / 2 - 300}`
+      );
     } catch (error) {
-      console.log(error);
+      console.error("Failed to initiate Add New:", error);
     }
-  };
-
-  const handleAddNew = async () => {
-    const response = await axios.post(
-      url,
-      {
-        scopes: scope ? scope : null,
-      },
-      { withCredentials: true }
-    );
-
-    window.open(
-      response.data.authUrl,
-      "_blank",
-      `width=600,height=600,popup=true,noopener=true,noreferrer=true,top=${
-        window.screen.availHeight / 2 - 300
-      },left=${window.screen.availWidth / 2 - 300}`
-    );
-  };
+  }, [url, scope]);
 
   useEffect(() => {
-    fetchAccounts();
-  }, [refresh]);
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 1000);
+  };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex gap-4 items-center justify-between mb-6">
+    <div className="flex flex-col h-full gap-4">
+      <div className="flex gap-4 items-center justify-between">
         <div className="flex items-center gap-2">
           <h1>Accounts</h1>
           <div
-            className="flex"
-            onClick={() => {
-              setRefresh(true);
-              setTimeout(() => {
-                setRefresh(false);
-              }, 1000);
-            }}
+            className="flex cursor-pointer"
+            onClick={handleRefresh}
+            aria-label="Refresh accounts"
           >
             <span
               className={`material-symbols-rounded text-gray-400 ${
-                refresh ? "animate-spin" : ""
+                refreshing ? "animate-spin" : ""
               }`}
               style={{ fontSize: "20px" }}
             >
@@ -90,20 +79,16 @@ const Account = ({ selectedNode }: { selectedNode: Node }) => {
           Add New
         </div>
       </div>
-      <div className="flex flex-col h-full gap-4 flex-1 overflow-y-auto">
-        {accounts.map((account) => (
-          <div
-            className="flex gap-4 items-center border border-darkSecondary rounded-md p-4 bg-background cursor-pointer hover:border-secondary transition-all duration-300 ease-in-out"
-            key={account._id}
-          >
-            <img src={account.avatar} alt="" className="size-8" />
-            <div className="flex-1">
-              <h2 className="font-medium text-sm">{account.name}</h2>
-              <p className="text-xs text-gray-400 text-wrap">{account.email}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <SearchAccounts
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
+      <AccountList
+        selectedNode={selectedNode}
+        isAccountListUpdated={refreshing}
+        debouncedQuery={debouncedQuery}
+        scope={scope}
+      />
     </div>
   );
 };
