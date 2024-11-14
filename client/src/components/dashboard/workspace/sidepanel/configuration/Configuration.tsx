@@ -6,10 +6,14 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useNodeConfiguration } from "./useNodeConfiguration";
 import ConfigurationField from "./ConfigurationField";
 import { Node } from "@/types/workflowTypes";
+import { setSidePanelMode } from "@/lib/features/workflow/workflowSlice";
+import { useAppDispatch } from "@/lib/hooks";
 
 const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
-  const { nodeConfig, dynamicOptions } = useNodeConfiguration(selectedNode);
+  const dispatch = useAppDispatch();
 
+  const { nodeConfig, dynamicOptions } = useNodeConfiguration(selectedNode);
+  const account = selectedNode.data.authAccountInfo;
   if (!nodeConfig) {
     return null;
   }
@@ -38,6 +42,29 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
 
   return (
     <div className="flex-1 flex flex-col gap-4 overflow-auto">
+      <div className="mb-2">
+        <div
+          className="text-sm mb-2 text-gray-400 cursor-pointer"
+          onClick={() => {
+            dispatch(setSidePanelMode("account"));
+          }}
+        >
+          Change Account
+        </div>
+        <div className="flex gap-4">
+          <div className="size-8 rounded bg-lightbackground overflow-hidden">
+            <img
+              src={account.avatar}
+              alt={account.name}
+              className="object-contain"
+            />
+          </div>
+          <div className="flex-1">
+            <h2 className="font-medium text-sm">{account.name}</h2>
+            <p className="text-xs text-gray-400 text-wrap">{account.email}</p>
+          </div>
+        </div>
+      </div>
       <div className="flex-1 overflow-auto">
         <form
           className="flex flex-col h-full gap-4"
