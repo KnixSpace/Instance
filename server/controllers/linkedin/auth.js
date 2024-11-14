@@ -16,7 +16,7 @@ async function register(req, res) {
   }&redirect_uri=${
     process.env.LINKEDIN_CALLBACK_URI
   }&state=123456&scope=${LINKEDIN_SCOPES.join(" ")}`;
-  res.redirect(authUrl);
+  res.status(200).json({ authUrl });
 }
 
 async function callback(req, res) {

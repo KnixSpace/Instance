@@ -7,7 +7,7 @@ const {
 
 const router = require("express").Router();
 
-router.get("/integration/register", register);
+router.post("/integration/register", register);
 router.get("/integration/callback", callback);
 router.post("/webhook/create", createWebhook);
 router.post("/webhook/notifications", handleWebhookEvent);

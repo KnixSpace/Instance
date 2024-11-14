@@ -6,9 +6,9 @@ const { User } = require("../../models/User");
 const SCOPE = "user,repo,admin:repo_hook";
 
 async function register(req, res) {
-  const authorizeUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&scope=${SCOPE}`;
+  const authUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&scope=${SCOPE}`;
 
-  res.redirect(authorizeUrl);
+  res.status(200).json({ authUrl });
 }
 
 async function callback(req, res) {
