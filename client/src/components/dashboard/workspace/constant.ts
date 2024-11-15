@@ -185,10 +185,23 @@ export const actionConfig: ActionConfig[] = [
         validation: Yup.object().required("Sheet is required"),
       },
       {
+        name: "sheetName",
+        label: "Sheet Name",
+        type: "select",
+        placeholder: "Select a sheet name",
+        isDynamic: true,
+        dynamicOptions: {
+          url: "https://sheets.googleapis.com/v4/spreadsheets",
+        },
+        dependentOn: ["sheetId"],
+        allowedCustomInput: false,
+        validation: Yup.object().required("Sheet Name is required"),
+      },
+      {
         name: "range",
         label: "Range",
         type: "text",
-        placeholder: "Enter range SHEET_NAME!A1:Z100",
+        placeholder: "Enter range A1:Z100",
         isDynamic: false,
         allowedCustomInput: true,
         validation: Yup.string()
@@ -274,10 +287,23 @@ export const actionConfig: ActionConfig[] = [
         validation: Yup.object().required("Sheet is required"),
       },
       {
+        name: "sheetName",
+        label: "Sheet Name",
+        type: "select",
+        placeholder: "Select a sheet name",
+        isDynamic: true,
+        dynamicOptions: {
+          url: "https://sheets.googleapis.com/v4/spreadsheets",
+        },
+        dependentOn: ["sheetId"],
+        allowedCustomInput: false,
+        validation: Yup.object().required("Sheet Name is required"),
+      },
+      {
         name: "range",
         label: "Range",
         type: "text",
-        placeholder: "Enter range SHEET_NAME!A1:Z100",
+        placeholder: "Enter range !A1:Z100",
         isDynamic: false,
         allowedCustomInput: true,
         validation: Yup.string()
