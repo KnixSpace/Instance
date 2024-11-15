@@ -158,12 +158,8 @@ export const actionConfig: ActionConfig[] = [
         type: "select",
         placeholder: "Select a repository",
         isDynamic: true,
-
         dynamicOptions: {
           url: `${process.env.NEXT_PUBLIC_BASE_URL}/github/repos`,
-          headers: {
-            // "671f79f92e1c600ff209857f"
-          },
         },
         allowedCustomInput: false,
         validation: Yup.object().required("Repository Name is required"),
@@ -184,7 +180,6 @@ export const actionConfig: ActionConfig[] = [
         isDynamic: true,
         dynamicOptions: {
           url: "https://sheets.googleapis.com/v4/spreadsheets",
-          headers: {},
         },
         allowedCustomInput: false,
         validation: Yup.object().required("Sheet is required"),
@@ -225,7 +220,6 @@ export const actionConfig: ActionConfig[] = [
         isDynamic: true,
         dynamicOptions: {
           url: "https://drive.googleapis.com/v3/files",
-          headers: {},
         },
         allowedCustomInput: false,
         validation: Yup.object(),
@@ -255,7 +249,6 @@ export const actionConfig: ActionConfig[] = [
         isDynamic: true,
         dynamicOptions: {
           url: "https://drive.googleapis.com/v3/files",
-          headers: {},
         },
         allowedCustomInput: false,
         validation: Yup.object(),
@@ -276,7 +269,6 @@ export const actionConfig: ActionConfig[] = [
         isDynamic: true,
         dynamicOptions: {
           url: "https://sheets.googleapis.com/v4/spreadsheets",
-          headers: {},
         },
         allowedCustomInput: false,
         validation: Yup.object().required("Sheet is required"),
@@ -317,7 +309,6 @@ export const actionConfig: ActionConfig[] = [
         isDynamic: true,
         dynamicOptions: {
           url: "https://drive.googleapis.com/v3/files",
-          headers: {},
         },
         allowedCustomInput: false,
         validation: Yup.object().required("Document is required"),
