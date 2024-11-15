@@ -10,7 +10,7 @@ export interface ConfigField {
   options?: { value: string; label: string }[];
   dynamicOptions?: {
     url: string;
-    headers: Record<string, string>;
+    body?: Record<string, string>;
   };
   allowedCustomInput: boolean;
   validation: Yup.AnySchema;
