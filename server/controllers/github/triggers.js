@@ -149,8 +149,8 @@ async function handleWebhookEvent(req, res) {
       nodes: {
         $elemMatch: {
           type: "trigger",
-          "config.webhookId": eventData.hookId,
-          "config.events": { $in: [eventData.eventType] },
+          "data.webhookId": eventData.hookId,
+          "data.events": { $in: [eventData.eventType] },
         },
       },
     };
