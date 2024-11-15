@@ -12,6 +12,7 @@ export interface ConfigField {
     url: string;
     body?: Record<string, string>;
   };
+  dependentOn?: string[];
   allowedCustomInput: boolean;
   validation: Yup.AnySchema;
 }
