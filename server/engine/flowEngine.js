@@ -26,6 +26,7 @@ class FlowEngine extends EventEmitter {
         nodeId: currentNode.id,
         status: "running",
       });
+      // console.log("in node");
 
       let result;
       if (currentNode.type === "trigger") {
@@ -39,11 +40,12 @@ class FlowEngine extends EventEmitter {
       }
       // context.data[currentNode.config.service] = result;
        //this code will append the data to the same service , the last code was replacing the data
-      if (!context.data[currentNode.config.service]) {
-        context.data[currentNode.config.service] = {}; // Initialize it as an empty object if undefined
+      if (!context.data[currentNode.data.service]) {
+        context.data[currentNode.data.service] = {}; // Initialize it as an empty object if undefined
       }
+      // console.log(context);
 
-      Object.assign(context.data[currentNode.config.service], result);
+      Object.assign(context.data[currentNode.data.service], result);
      
       context.nodeStatus.set(currentNode.id, "success");
       this.emit("nodeStatusUpdate", {
@@ -51,7 +53,7 @@ class FlowEngine extends EventEmitter {
         nodeId: currentNode.id,
         status: "success",
       });
-console.log(context);
+      // console.log(context);
 
       const nextEdges = workflow.edges.filter(
         (edge) => edge.source.nodeId === currentNode.id
@@ -78,30 +80,28 @@ console.log(context);
   }
 
   async executeTriggerNode(node, context,initialData) {
-    switch (node.config.triggerType) {
+    switch (node.data.triggerType) {
       case "automatic":
-        context.data[node.config.service]=initialData;
+        context.data[node.data.service]=initialData;
         return {};
-      case "scheduled":
-        if (this.isScheduledTriggerDue(node.config)) {
-          return await this.executeScheduledTrigger(node.config);
-        }
-        break;
+      case "scheduler":
+         return {};
       case "user-initiated":
-        return await this.waitForUserInput(node.config);
+        return await this.waitForUserInput(node.data);
       default:
-        throw new Error(`Unknown trigger type: ${node.config.triggerType}`);
+        throw new Error(`Unknown trigger type: ${node.data.triggerType}`);
     }
   }
 
   async executeActionNode(node, context, previousNode) {
-    const { service, action } = node.config;
+    const { service, action } = node.data;
+console.log(service);
 
     return await executeHandler(
       service,
       action,
-      node.config,
-      context.data[previousNode.config.service]
+      node.data,
+      context.data[previousNode.data.service]
     );    
   }
 
@@ -118,8 +118,10 @@ console.log(context);
   isScheduledTriggerDue(triggerConfig) {}
 
   //WIP
-  async executeScheduledTrigger(triggerConfig) {}
-
+  async executeScheduledTrigger(triggerConfig) {
+    console.log("heyyyy");
+  return triggerConfig;
+}
   //WIP
   async waitForUserInput(triggerConfig) {}
 }

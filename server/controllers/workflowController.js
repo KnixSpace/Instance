@@ -12,7 +12,7 @@ async function createWorkflow(req, res) {
       id: node.id,
       type: node.type,
       name: node.name,
-      config: node.data || {},
+      data: node.data || {},
       position: node.position,
     })),
     edges: req.body.edges.map((edge) => ({
