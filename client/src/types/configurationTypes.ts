@@ -31,3 +31,12 @@ export interface ConfigurationFieldProps {
   errors: UseFormReturn<any>["formState"]["errors"];
   dynamicOptions: { label: string; value: string }[] | undefined;
 }
+
+export interface Options {
+  label: string;
+  value: string;
+}
+
+export interface DynamicOptionsState {
+  [key: string]: Options[] | undefined;
+}
