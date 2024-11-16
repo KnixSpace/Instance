@@ -5,7 +5,7 @@ import {
   DynamicOptionsState,
 } from "@/types/configurationTypes";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { actionConfig } from "../../constant";
+import { actionConfig } from "../components/dashboard/workspace/constant";
 import { Node } from "@/types/workflowTypes";
 import { getPreviousNodes } from "@/utils/workflowUtils";
 import { usePreviousValue } from "@/hooks/usePreviousValue";
