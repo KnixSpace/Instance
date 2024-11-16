@@ -8,15 +8,17 @@ import ConfigurationField from "./ConfigurationField";
 import { Node } from "@/types/workflowTypes";
 import { setSidePanelMode } from "@/lib/features/workflow/workflowSlice";
 import { useAppDispatch } from "@/lib/hooks";
+import { ActionConfig } from "@/types/configurationTypes";
+import { actionConfig } from "../../constant";
 
 const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   const dispatch = useAppDispatch();
 
-  const { nodeConfig, dynamicOptions } = useNodeConfiguration(selectedNode);
-  const account = selectedNode.data.authAccountInfo;
-  if (!nodeConfig) {
-    return null;
-  }
+  const nodeConfig: ActionConfig | undefined = actionConfig.find(
+    (config: ActionConfig) => config.action === selectedNode.data.action
+  );
+
+  if (!nodeConfig) return { nodeConfig: null, dynamicOptions: {} };
 
   const schema = Yup.object().shape(
     nodeConfig.configFields.reduce((acc, field) => {
@@ -29,11 +31,23 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
     control,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<Record<string, any>>({
     resolver: yupResolver(schema),
     mode: "onSubmit",
   });
+
+  const { dynamicOptions } = useNodeConfiguration(
+    selectedNode,
+    nodeConfig,
+    watch
+  );
+
+  const account = selectedNode.data.authAccountInfo;
+  if (!nodeConfig) {
+    return null;
+  }
 
   useEffect(() => {
     //WIP: reset form with initial values or previously saved values in redux node.data.config
