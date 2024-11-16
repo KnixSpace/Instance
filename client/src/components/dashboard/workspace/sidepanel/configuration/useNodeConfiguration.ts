@@ -1,9 +1,15 @@
 import { useAppSelector } from "@/lib/hooks";
-import { ActionConfig, ConfigField } from "@/types/configurationTypes";
-import { useEffect, useRef, useState } from "react";
+import {
+  ActionConfig,
+  ConfigField,
+  DynamicOptionsState,
+} from "@/types/configurationTypes";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { actionConfig } from "../../constant";
-import axios from "axios";
 import { Node } from "@/types/workflowTypes";
+import { getPreviousNodes } from "@/utils/workflowUtils";
+import { usePreviousValue } from "@/hooks/usePreviousValue";
+import { fetchDynamicFieldOptions } from "@/services/dynamicOptions";
 
 interface Options {
   label: string;
@@ -15,121 +21,32 @@ export const useNodeConfiguration = (
   nodeConfig: ActionConfig,
   watch: any
 ) => {
-  const [dynamicOptions, setDynamicOptions] = useState<{
-    [key: string]: Options[] | undefined;
-  }>({});
-
+  const [dynamicOptions, setDynamicOptions] = useState<DynamicOptionsState>({});
   const [previousNodesOptions, setPreviousNodesOptions] = useState<Options[]>(
     []
   );
-
-  const previousDependencyValues = useRef<{ [key: string]: any }>({});
+  console.log("dynamicOptions", dynamicOptions);
 
   const adjacencyList = useAppSelector((state) => state.workflow.adjacencyList);
   const nodes = useAppSelector((state) => state.workflow.nodes);
 
-  const haveDependenciesChanged = (field: ConfigField, currentValues: any) => {
-    if (!field.dependentOn?.length) return false;
+  const previousNodes = useMemo(() => {
+    return getPreviousNodes(adjacencyList, selectedNode.id);
+  }, [adjacencyList, selectedNode.id]);
 
-    return field.dependentOn.some((dependency) => {
-      if (
-        previousDependencyValues.current[dependency] !==
-        currentValues[dependency]
-      ) {
-        return true;
-      }
-      return false;
-    });
-  };
-
-  useEffect(() => {
-    const getPreviousNodes = () => {
-      const previousNodeSet = new Set<string>();
-      const stack = [selectedNode.id];
-      while (stack.length) {
-        const currentNodeId = stack.pop();
-        for (const node of adjacencyList[currentNodeId as string]) {
-          if (!previousNodeSet.has(node)) {
-            previousNodeSet.add(node);
-            stack.push(node);
-          }
-        }
-      }
-      return Array.from(previousNodeSet);
-    };
-
-    const previousNodes = getPreviousNodes();
-    const options = previousNodes.map((nodeId) => {
-      const node = nodes.find((node) => node.id === nodeId);
-      const nodeOutput = actionConfig.find(
-        (config) => config.action === node?.data.action
-      )?.outputFields;
-
-      return nodeOutput
-        ? nodeOutput.map((field) => ({
-            label: field,
-            value: `{{${nodeId}.${field}}}`,
-          }))
-        : [];
-    });
-
-    setPreviousNodesOptions(options.flat());
-  }, [selectedNode, adjacencyList, nodes]);
-
-  useEffect(() => {
-    if (!nodeConfig) return;
-
-    const fetchDynamicOptions = async () => {
-      const nonDependentFields = nodeConfig.configFields.filter(
-        (filed) => !filed.dependentOn?.length
-      );
-
-      for (const field of nonDependentFields) {
-        if (field.isDynamic) {
-          try {
-            const response = await axios.post(
-              field.dynamicOptions?.url || "",
-              {
-                accountId: selectedNode.data.authAccountInfo._id,
-                ...field.dynamicOptions?.body,
-              },
-              { withCredentials: true }
-            );
-            if (response.status === 200) {
-              setDynamicOptions((prev) => ({
-                ...prev,
-                [field.name]: response.data.options,
-              }));
-            }
-          } catch (error) {
-            console.error(
-              `Error fetching dynamic options for ${field.name}`,
-              error
-            );
-          }
-        } else if (field.options) {
-          setDynamicOptions((prev) => ({
-            ...prev,
-            [field.name]: field.options,
-          }));
-        } else {
-          setDynamicOptions((prev) => ({
-            ...prev,
-            [field.name]: previousNodesOptions,
-          }));
-        }
-      }
-    };
-
-    fetchDynamicOptions();
-  }, [previousNodesOptions]);
-
-  const dependentFields = nodeConfig.configFields
-    .filter(
-      (field) =>
-        field.isDynamic && field.dependentOn && field.dependentOn?.length > 0
-    )
-    .flatMap((field) => field.dependentOn || []);
+  const dependentFields: string[] = useMemo(() => {
+    return (
+      nodeConfig.configFields
+        .filter(
+          (field) =>
+            field.isDynamic &&
+            field.dependentOn &&
+            field.dependentOn?.length > 0
+        )
+        .flatMap((field) => field.dependentOn || []) || []
+    );
+  }, [nodeConfig]);
+  console.log("dependentFields", dependentFields);
 
   const watchedValues = watch(dependentFields).reduce(
     (acc: { [key: string]: any }, option: any, index: any) => {
@@ -140,58 +57,110 @@ export const useNodeConfiguration = (
     },
     {} as Record<string, any>
   );
+  console.log("watchedValues", watchedValues);
+
+  const previousWatchedValues = usePreviousValue(watchedValues);
+  console.log("previousWatchedValues", previousWatchedValues);
+
+  const updateDynamicOptions = useCallback(
+    async (field: ConfigField, params?: Record<string, any>) => {
+      try {
+        const options = await fetchDynamicFieldOptions(
+          field,
+          selectedNode.data.authAccountInfo._id,
+          params
+        );
+
+        setDynamicOptions((prev) => ({
+          ...prev,
+          [field.name]: options,
+        }));
+      } catch (error) {
+        console.error(
+          `Error fetching dynamic options for ${field.name}`,
+          error
+        );
+      }
+    },
+    [selectedNode.data.authAccountInfo._id]
+  );
+
+  const haveDependenciesChanged = (field: ConfigField, currentValues: any) => {
+    if (!field.dependentOn?.length) return false;
+
+    return field.dependentOn.some((dependency) => {
+      if (previousWatchedValues === undefined) return true;
+      if (previousWatchedValues[dependency] !== currentValues[dependency]) {
+        return true;
+      }
+      return false;
+    });
+  };
+
+  useEffect(() => {
+    const options = previousNodes.map((nodeId) => {
+      const node = nodes.find((n) => n.id === nodeId);
+      const nodeOutput = actionConfig.find(
+        (config) => config.action === node?.data.action
+      )?.outputFields;
+
+      return (
+        nodeOutput?.map((field) => ({
+          label: field,
+          value: `{{${nodeId}.${field}}}`,
+        })) || []
+      );
+    });
+
+    setPreviousNodesOptions(options.flat());
+  }, [previousNodes, nodes, actionConfig]);
+
+  useEffect(() => {
+    if (!nodeConfig) return;
+
+    const nonDependentFields = nodeConfig.configFields.filter(
+      (field) => !field.dependentOn?.length
+    );
+
+    for (const field of nonDependentFields) {
+      if (field.isDynamic) {
+        updateDynamicOptions(field);
+      } else if (field.options) {
+        setDynamicOptions((prev) => ({
+          ...prev,
+          [field.name]: field.options,
+        }));
+      } else {
+        setDynamicOptions((prev) => ({
+          ...prev,
+          [field.name]: previousNodesOptions,
+        }));
+      }
+    }
+  }, [nodeConfig, previousNodesOptions, updateDynamicOptions]);
 
   useEffect(() => {
     if (!nodeConfig || !watchedValues) return;
 
-    const fetchDependentOptions = async () => {
-      const dependentFields = nodeConfig.configFields.filter(
-        (field) =>
-          field.isDynamic && field.dependentOn && field.dependentOn?.length > 0
+    const dependentFields = nodeConfig.configFields.filter(
+      (field) =>
+        field.isDynamic && field.dependentOn && field.dependentOn?.length > 0
+    );
+
+    dependentFields.forEach((field) => {
+      const hasDependencieSet = field.dependentOn?.every(
+        (dependency) => watchedValues[dependency]
       );
 
-      for (const field of dependentFields) {
-        const hasDependencieSet = field.dependentOn?.every(
-          (dependency) => watchedValues[dependency]
-        );
+      if (hasDependencieSet && haveDependenciesChanged(field, watchedValues)) {
+        const params = field.dependentOn?.reduce((acc, dependency) => {
+          acc[dependency] = watchedValues[dependency];
+          return acc;
+        }, {} as Record<string, any>);
 
-        if (
-          hasDependencieSet &&
-          haveDependenciesChanged(field, watchedValues)
-        ) {
-          try {
-            const response = await axios.post(
-              field.dynamicOptions?.url || "",
-              {
-                accountId: selectedNode.data.authAccountInfo._id,
-                ...field.dynamicOptions?.body,
-                ...field.dependentOn?.reduce((acc, dependency) => {
-                  acc[dependency] = watchedValues[dependency];
-                  return acc;
-                }, {} as Record<string, any>),
-              },
-              { withCredentials: true }
-            );
-
-            if (response.status === 200) {
-              console.log("response", response.data.options);
-              setDynamicOptions((prev) => ({
-                ...prev,
-                [field.name]: response.data.options,
-              }));
-            }
-          } catch (error) {
-            console.error(
-              `Error fetching dynamic options for ${field.name}`,
-              error
-            );
-          }
-        }
+        updateDynamicOptions(field, params);
       }
-      previousDependencyValues.current = { ...watchedValues };
-    };
-
-    fetchDependentOptions();
+    });
   }, [watchedValues]);
 
   return { dynamicOptions };
