@@ -5,11 +5,11 @@ import {
   DynamicOptionsState,
 } from "@/types/configurationTypes";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { actionConfig } from "../components/dashboard/workspace/constant";
 import { Node } from "@/types/workflowTypes";
 import { getPreviousNodes } from "@/utils/workflowUtils";
 import { usePreviousValue } from "@/hooks/usePreviousValue";
 import { fetchDynamicFieldOptions } from "@/services/dynamicOptions";
+import { actionConfig } from "@/components/dashboard/workspace/constant";
 
 interface Options {
   label: string;
@@ -46,7 +46,7 @@ export const useNodeConfiguration = (
         .flatMap((field) => field.dependentOn || []) || []
     );
   }, [nodeConfig]);
-  console.log("dependentFields", dependentFields);
+  // console.log("dependentFields", dependentFields);
 
   const watchedValues = watch(dependentFields).reduce(
     (acc: { [key: string]: any }, option: any, index: any) => {
@@ -57,10 +57,10 @@ export const useNodeConfiguration = (
     },
     {} as Record<string, any>
   );
-  console.log("watchedValues", watchedValues);
+  // console.log("watchedValues", watchedValues);
 
   const previousWatchedValues = usePreviousValue(watchedValues);
-  console.log("previousWatchedValues", previousWatchedValues);
+  // console.log("previousWatchedValues", previousWatchedValues);
 
   const updateDynamicOptions = useCallback(
     async (field: ConfigField, params?: Record<string, any>) => {
