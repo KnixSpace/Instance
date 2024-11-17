@@ -16,7 +16,7 @@ import "@xyflow/react/dist/style.css";
 import TriggerNode from "./customNodes/TriggerNode";
 import ActionNode from "./customNodes/ActionNode";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { v4 } from "uuid";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
@@ -46,16 +46,14 @@ const Workflow = (props: Props) => {
   const dispatch = useAppDispatch();
 
   const onConnect = useCallback(
-    (params: any) => {
-      setEdges((edges) => {
-        const newEdges = addEdge(params, edges);
-        dispatch(addNewEdge(newEdges));
-        return newEdges;
-      });
-      dispatch(setAdjacencyList());
-    },
-    [dispatch, setEdges]
+    (params: any) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
   );
+
+  useEffect(() => {
+    dispatch(addNewEdge(edges));
+    dispatch(setAdjacencyList());
+  }, [edges, dispatch]);
 
   const onDragOver = (event: any) => {
     event.preventDefault();
