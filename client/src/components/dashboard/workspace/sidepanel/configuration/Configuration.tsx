@@ -4,12 +4,16 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 
 import { Node } from "@/types/workflowTypes";
-import { setSidePanelMode } from "@/lib/features/workflow/workflowSlice";
+import {
+  setSidePanelMode,
+  updateNodeConfig,
+} from "@/lib/features/workflow/workflowSlice";
 import { useAppDispatch } from "@/lib/hooks";
 import { actionConfig } from "../../constant";
 import { useNodeConfiguration } from "@/hooks/useNodeConfiguration";
 import AccountInfo from "../account/AccountInfo";
 import ConfigurationForm from "./ConfigurationForm";
+import { useDefalutValues } from "@/hooks/useDefaultValues";
 
 const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   const dispatch = useAppDispatch();
@@ -21,6 +25,8 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   );
 
   if (!nodeConfig) return null;
+
+  const defaultValues = useDefalutValues(nodeConfig.configFields);
 
   const schema = useMemo(
     () =>
@@ -42,6 +48,7 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   } = useForm<Record<string, any>>({
     resolver: yupResolver(schema),
     mode: "onSubmit",
+    defaultValues,
   });
 
   const { dynamicOptions } = useNodeConfiguration(
@@ -54,10 +61,15 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
     dispatch(setSidePanelMode("account"));
   }, [dispatch]);
 
-  const handleFormSubmit = useCallback((data: any) => {
-    console.log(data);
-    // Add your submit logic here
-  }, []);
+  //WIP: handle form submit
+  const handleFormSubmit = useCallback(
+    (data: Record<string, any>) => {
+      console.log(data);
+      // Add your submit logic here
+      dispatch(updateNodeConfig({ nodeId: selectedNode.id, config: data }));
+    },
+    [dispatch, selectedNode.id]
+  );
 
   useEffect(() => {
     //WIP: reset form with initial values or previously saved values in redux node.data.config
