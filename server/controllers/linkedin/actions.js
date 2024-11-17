@@ -14,7 +14,7 @@ async function postShare(text, userId, email) {
       success: false,
       message: "User not found",
     };
-  }
+  } 
   const access_token = user.accessToken;
   const userId = user.accountId;
   // console.log(access_token);
@@ -29,7 +29,7 @@ async function postShare(text, userId, email) {
 
   const postData = {
     author: `urn:li:person:${userId}`, // Your LinkedIn Person URN
-    lifecycleState: "PUBLISHED",
+    lifecycleState: "PUBLISHED", 
     specificContent: {
       "com.linkedin.ugc.ShareContent": {
         shareCommentary: {

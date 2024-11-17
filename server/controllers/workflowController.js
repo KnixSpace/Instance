@@ -33,13 +33,13 @@ async function fetchServiceAccount(req, res) {
   try {
     if (!req.body.service) {
       return res.status(400).json({ message: "Service is required" });
-    }
+    } 
     const { service, scopes } = req.body;
 
     const integration = await Integration.findOne({
       userId: req.user.userId,
       provider: service,
-    }).populate({
+    }).populate({ 
       path: "accounts",
       match:
         service === "google" && scopes?.length > 0

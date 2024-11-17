@@ -135,7 +135,7 @@ export const actionConfig: ActionConfig[] = [
     service: "Github",
     icon: appIcons.github,
     configFields: [
-      {
+      { 
         name: "event",
         label: "Event",
         type: "multiselect",

@@ -135,7 +135,7 @@ async function getNewEntryOfSheet(
     spreadsheetId,
     range,
   });
-
+ 
   const rows = response.data.values;
 
   if (rows.length) {
