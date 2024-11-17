@@ -109,6 +109,18 @@ const workflowSlice = createSlice({
         state.selectedNode = node;
       }
     },
+
+    updateNodeConfig: (
+      state,
+      action: PayloadAction<{ nodeId: string; config: Record<string, any> }>
+    ) => {
+      const node = state.nodes.find(
+        (node) => node.id === action.payload.nodeId
+      );
+      if (node) {
+        node.data.config = action.payload.config;
+      }
+    },
   },
 });
 
@@ -123,6 +135,7 @@ export const {
   setWarning,
   setAdjacencyList,
   setNodeAccount,
+  updateNodeConfig,
 } = workflowSlice.actions;
 
 export default workflowSlice.reducer;

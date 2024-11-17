@@ -32,6 +32,7 @@ export interface Node {
     description: string;
     icon: string;
     authAccountInfo: Account;
+    config?: Record<string, any>;
   };
   selected: boolean;
 }
