@@ -164,13 +164,13 @@ async function startChangeStream() {
         });
 
 
-        changeStream.on('error', (err) => {
-            console.error("Change Stream Error:", err);
-            setTimeout(startChangeStream, 5000);
-        });
+//         changeStream.on('error', (err) => {
+//             console.error("Change Stream Error:", err);
+//             setTimeout(startChangeStream, 5000);
+//         });
 
-    } catch (error) {
-        console.error("Error setting up change streams:", error);
-    }
+//     } catch (error) {
+//         console.error("Error setting up change streams:", error);
+//     }
 }
 module.exports = { startChangeStream };

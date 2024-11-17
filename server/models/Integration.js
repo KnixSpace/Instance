@@ -9,7 +9,7 @@ const integrationSchema = new mongoose.Schema(
     },
     provider: {
       type: String,
-      enum: ["google", "slack", "linkedin", "github"],
+      enum: ["google", "slack", "linkedin", "github", "notion"],
       required: true,
     },
     accounts: [
