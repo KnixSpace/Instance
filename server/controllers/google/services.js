@@ -6,8 +6,10 @@ const sheets = google.sheets("v4");
 const drive = google.drive("v3");
 
 //drive services
-async function getAllFiles(userId, email, pageToken, mimeType) {
-  const account = await Google.findOne({ userId, email });
+async function getDriveFiles(req, res) {
+  console.log("getDriveFiles");
+  const { accountId, mimeType, pageToken } = req.body;
+  const account = await Google.findById(accountId);
 
   if (!account) {
     throw new Error("No Google account found");
@@ -36,8 +38,6 @@ async function getAllFiles(userId, email, pageToken, mimeType) {
       break;
   }
 
-  console.log(query);
-
   const response = await drive.files.list({
     auth: oauth2Client,
     pageSize: 10,
@@ -45,7 +45,12 @@ async function getAllFiles(userId, email, pageToken, mimeType) {
     q: query,
   });
 
-  return response.data;
+  const options = response.data.files.map((file) => ({
+    value: file.id,
+    label: file.name,
+  }));
+
+  res.status(200).json({ options, nextPageToken: response.data.nextPageToken });
 }
 
 async function getFileMetadata(fileId, userId, email) {
@@ -74,8 +79,10 @@ async function getFileMetadata(fileId, userId, email) {
   return response.data;
 }
 
-async function getAllSpreadsheetSheets(spreadsheetId, userId, email) {
-  const account = await Google.findOne({ userId, email });
+async function getSheetNames(req, res) {
+  console.log("getSheetNames");
+  const { spreadsheetId, accountId } = req.body;
+  const account = await Google.findById(accountId);
 
   if (!account) {
     return res.status(404).send("No account found!!");
@@ -95,8 +102,14 @@ async function getAllSpreadsheetSheets(spreadsheetId, userId, email) {
     auth: oauth2Client,
   });
 
-  const payload = { sheets: response.data.sheets };
-  return payload;
+  const options = response.data.sheets.map((sheet) => ({
+    value: sheet.properties.sheetId,
+    label: sheet.properties.title,
+  }));
+  console.log(options);
+
+  res.json({ options });
+  // return payload;
 }
 
 async function getSheetData(spreadsheetId, range, userId, email) {
@@ -154,9 +167,9 @@ async function getNewEntryOfSheet(
 }
 
 module.exports = {
-  getAllFiles,
+  getDriveFiles,
   getFileMetadata,
-  getAllSpreadsheetSheets,
+  getSheetNames,
   getSheetData,
   getNewEntryOfSheet,
 };
