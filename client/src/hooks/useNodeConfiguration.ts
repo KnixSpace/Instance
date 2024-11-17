@@ -146,7 +146,12 @@ export const useNodeConfiguration = (
   }, [nodeConfig, previousNodesOptions, updateDynamicOptions, selectedNode.id]);
 
   useEffect(() => {
-    if (!nodeConfig || Object.keys(watchedValues).length === 0) return;
+    if (!nodeConfig || !watchedValues) return;
+    if (watchedValues) {
+      if (Object.keys(watchedValues).length === 0) {
+        return;
+      }
+    }
 
     const dependentFields = nodeConfig.configFields.filter(
       (field) =>
