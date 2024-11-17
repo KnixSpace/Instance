@@ -65,6 +65,7 @@ const workflowSchema = new mongoose.Schema(
     },
     nodes: [nodeSchema],
     edges: [edgeSchema],
+    executionOrder: [{ type: String }],
     metadata: {
       createdBy: String,
       lastModified: {

@@ -1,8 +1,58 @@
 const { Integration } = require("../models/Integration");
 const { WorkFlow } = require("../models/Workflow");
 
-//WIP
+// Kahn's algorithm for topological sorting
+function topologicalSort(graph) {
+  const inDegree = {};
+  for (const node in graph) {
+    inDegree[node] = 0;
+  }
+  for (const node in graph) {
+    if (graph[node]) { //Handle cases where a node might not have outgoing edges.
+      for (const neighbor of graph[node]) {
+        inDegree[neighbor]++;
+      }
+    }
+  }
+
+  const queue = [];
+  for (const node in inDegree) {
+    if (inDegree[node] === 0) {
+      queue.push(node);
+    }
+  }
+
+  const sorted = [];
+  while (queue.length > 0) {
+    const node = queue.shift();
+    sorted.push(node);
+    if (graph[node]) {
+      for (const neighbor of graph[node]) {
+        inDegree[neighbor]--;
+        if (inDegree[neighbor] === 0) {
+          queue.push(neighbor);
+        }
+      }
+    }
+  }
+
+  if (sorted.length !== Object.keys(graph).length) {
+    throw new Error("Cycle detected in the graph. Topological sort is not possible.");
+  }
+
+  return sorted;
+}
+
 async function createWorkflow(req, res) {
+
+  const { adjacencyList } = req.body;
+
+  if (!adjacencyList) {
+    return res.status(400).json({ message: "Adjacency list is required." });
+  }
+
+  const executionOrder = topologicalSort(adjacencyList);
+
   const workflow = new WorkFlow({
     name: req.body.name,
     description: req.body.description,
@@ -21,11 +71,14 @@ async function createWorkflow(req, res) {
       target: { nodeId: edge.target },
       type: edge.type,
     })),
+    executionOrder: executionOrder,
     metadata: {
       createdBy: req.body.metadata.createdBy,
     },
   });
-
+  // console.log(adjacencyList);
+  // console.log(executionOrder);
+  // res.status(200).json({ message: "Workflow created successfully" });
   res.json(await workflow.save());
 }
 
@@ -44,8 +97,8 @@ async function fetchServiceAccount(req, res) {
       match:
         service === "google" && scopes?.length > 0
           ? {
-              scopes: { $all: scopes },
-            }
+            scopes: { $all: scopes },
+          }
           : {},
       select: "email name avatar",
     });
