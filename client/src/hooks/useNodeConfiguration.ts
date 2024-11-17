@@ -4,7 +4,7 @@ import {
   ConfigField,
   DynamicOptionsState,
 } from "@/types/configurationTypes";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState } from "react";
 import { Node } from "@/types/workflowTypes";
 import { getPreviousNodes } from "@/utils/workflowUtils";
 import { usePreviousValue } from "@/hooks/usePreviousValue";
@@ -25,7 +25,11 @@ export const useNodeConfiguration = (
   const [previousNodesOptions, setPreviousNodesOptions] = useState<Options[]>(
     []
   );
-  console.log("dynamicOptions", dynamicOptions);
+
+  useEffect(() => {
+    setDynamicOptions({});
+    console.log("reset dynamic options");
+  }, [selectedNode.id]);
 
   const adjacencyList = useAppSelector((state) => state.workflow.adjacencyList);
   const nodes = useAppSelector((state) => state.workflow.nodes);
@@ -123,24 +127,26 @@ export const useNodeConfiguration = (
     );
 
     for (const field of nonDependentFields) {
-      if (field.isDynamic) {
-        updateDynamicOptions(field);
-      } else if (field.options) {
-        setDynamicOptions((prev) => ({
-          ...prev,
-          [field.name]: field.options,
-        }));
-      } else {
-        setDynamicOptions((prev) => ({
-          ...prev,
-          [field.name]: previousNodesOptions,
-        }));
+      if (field.type === "select") {
+        if (field.isDynamic) {
+          updateDynamicOptions(field);
+        } else if (field.options) {
+          setDynamicOptions((prev) => ({
+            ...prev,
+            [field.name]: field.options,
+          }));
+        } else {
+          setDynamicOptions((prev) => ({
+            ...prev,
+            [field.name]: previousNodesOptions,
+          }));
+        }
       }
     }
-  }, [nodeConfig, previousNodesOptions, updateDynamicOptions]);
+  }, [nodeConfig, previousNodesOptions, updateDynamicOptions, selectedNode.id]);
 
   useEffect(() => {
-    if (!nodeConfig || !watchedValues) return;
+    if (!nodeConfig || Object.keys(watchedValues).length === 0) return;
 
     const dependentFields = nodeConfig.configFields.filter(
       (field) =>
