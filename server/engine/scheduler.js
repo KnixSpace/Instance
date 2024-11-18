@@ -1,11 +1,9 @@
 const cron = require('node-cron');
-const { FlowEngine } = require('./flowEngine');
 const { WorkFlow } = require("../models/Workflow");
 const moment = require('moment-timezone');
-const {queue} = require("../config/queue");
+const { queue } = require("../config/queue");
 
 const workflowQueue = queue;
-const engine = new FlowEngine();
 
 workflowQueue.process(5, async (job) => {
     console.log(`Processing workflow ${job.data.workflowId} from queue`);
@@ -15,11 +13,13 @@ workflowQueue.process(5, async (job) => {
             console.error(`Workflow with ID ${job.data.workflowId} not found`);
             return;
         }
-        // await engine.executeEngine(workflow, job.data.initialData); // Execute the workflow
-        console.log("Processing complete for workflow:", job.data.workflowId);
-        //After successful execution update nextRun
         const triggerNode = workflow.nodes.find(node => node.type === 'trigger' && node.data.triggerType === 'scheduler');
+
         if (triggerNode) {
+            processSheetEntryTrigger(workflow, triggerNode);
+
+            console.log("Processing complete for workflow:", job.data.workflowId);
+            //After successful execution update nextRun
             await updateNextRun(workflow, triggerNode);
         }
 
@@ -63,30 +63,23 @@ async function updateNextRun(workflow, triggerNode) {
 // Function to schedule workflow (add job to queue)
 async function scheduleWorkflow(workflowId, triggerConfig) {
     try {
+        const existingJobInQueue = await workflowQueue.getJob(workflowId.toString());
+        if (existingJobInQueue) {
+            await existingJobInQueue.remove();
+        }
         const { nextRun, initialData } = triggerConfig;
-        if(!nextRun) return;
-       
+        if (!nextRun) return;
+
         const delay = Math.max(0, nextRun - Date.now());
-        console.log("delay", delay );
+        console.log("delay", delay);
         await workflowQueue.add({ workflowId, initialData }, { delay });
-        
+
         console.log(`Workflow ${workflowId} scheduled for ${moment(nextRun).format()}`);
     } catch (error) {
         console.error("Error scheduling workflow:", error);
     }
 }
 
-async function updateWorkflowSchedule(workflowId, triggerConfig) {
-    try {
-        const existingJobInQueue = await workflowQueue.getJob(workflowId.toString());
-        if (existingJobInQueue) {
-            await existingJobInQueue.remove();
-        }
-        await scheduleWorkflow(workflowId, triggerConfig);
-    } catch (error) {
-        console.error("Error updating Workflow schedule:", error);
-    }
-}
 
 // Function to start change stream (modified)
 async function startChangeStream() {
@@ -103,77 +96,77 @@ async function startChangeStream() {
             const triggerNode = workflow.nodes.find(node => node.type === 'trigger' && node.data.triggerType === 'scheduler');
             if (triggerNode) {
                 console.log(`Scheduling existing workflow: ${workflow._id}`);
-                await updateWorkflowSchedule(workflow._id, triggerNode.data);
+                await scheduleWorkflow(workflow._id, triggerNode.data);
             }
         }
 
         const changeStream = WorkFlow.watch([
-        // {
-        // $match: { operationType: { $exists: true } } }
-        // {
-        //     $match: {
-        //         $or: [
-        //             {
-        //                 operationType: 'insert',
-        //                 'fullDocument.nodes': {
-        //                     $elemMatch: {
-        //                         type: 'trigger',
-        //                         'data.triggerType': 'scheduler'
-        //                     }
-        //                 }
-        //             },
-        //             {
-        //                 operationType: 'update',
-        //                 'updateDescription.updatedFields': {
-                        
-        //                         $in: [
-        //                             "nodes.$.data.nextRun",
-        //                             "nodes.$.data.schedule" // Include schedule field
-        //                         ]
-        //                 },
-        //                 'fullDocument.nodes': {
-        //                     $elemMatch: {
-        //                         type: 'trigger',
-        //                         'data.triggerType': 'scheduler'
-        //                     }
-        //                 }
-        //             }
-        //         ]
-        //     }
-        // }
+            // {
+            // $match: { operationType: { $exists: true } } }
+            // {
+            //     $match: {
+            //         $or: [
+            //             {
+            //                 operationType: 'insert',
+            //                 'fullDocument.nodes': {
+            //                     $elemMatch: {
+            //                         type: 'trigger',
+            //                         'data.triggerType': 'scheduler'
+            //                     }
+            //                 }
+            //             },
+            //             {
+            //                 operationType: 'update',
+            //                 'updateDescription.updatedFields': {
 
-        // { $match: { operationType: { $exists: true } } }
+            //                         $in: [
+            //                             "nodes.$.data.nextRun",
+            //                             "nodes.$.data.schedule" // Include schedule field
+            //                         ]
+            //                 },
+            //                 'fullDocument.nodes': {
+            //                     $elemMatch: {
+            //                         type: 'trigger',
+            //                         'data.triggerType': 'scheduler'
+            //                     }
+            //                 }
+            //             }
+            //         ]
+            //     }
+            // }
 
-    {
-                        $match: {
-                            'operationType': { $in: ['insert', 'update']},
-                            'fullDocument.nodes': {  
-                                $elemMatch: { 
-                                    'type' : 'trigger',
-                                    'data.triggerType': 'scheduler',
-                                },
-                            },
+            // { $match: { operationType: { $exists: true } } }
+
+            {
+                $match: {
+                    'operationType': { $in: ['insert', 'update'] },
+                    'fullDocument.nodes': {
+                        $elemMatch: {
+                            'type': 'trigger',
+                            'data.triggerType': 'scheduler',
                         },
                     },
+                },
+            },
         ], { fullDocument: 'updateLookup' });
 
         changeStream.on('change', async (change) => {
-            
+
             const workflowId = change.fullDocument._id;
-    const triggerNode = change.fullDocument.nodes.find(node => node.type === 'trigger' && node.data.triggerType === 'scheduler');
-    try {
-        if (triggerNode) {
-            await updateWorkflowSchedule(workflowId, triggerNode.data);
-        }
-    } catch (error) {
-        console.error('Error handling change stream event:', error);
-    }
-});
-      
+            const triggerNode = change.fullDocument.nodes.find(node => node.type === 'trigger' && node.data.triggerType === 'scheduler');
+            try {
+                if (triggerNode) {
+                    await scheduleWorkflow(workflowId, triggerNode.data);
+                }
+            } catch (error) {
+                console.error('Error handling change stream event:', error);
+            }
+        });
+
 
         changeStream.on('error', (err) => {
             console.error("Change Stream Error:", err);
-            setTimeout(startChangeStream, 5000); 
+            setTimeout(startChangeStream, 5000);
         });
 
     } catch (error) {

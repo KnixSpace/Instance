@@ -23,6 +23,7 @@
     "helmet": "^8.0.0",
     "moment-timezone": "^0.5.46",
     "mongoose": "^8.5.2",
+    "mustache": "^4.2.0",
     "node-cron": "^3.0.3",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",

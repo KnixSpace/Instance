@@ -1,3 +1,5 @@
+const mustache = require("mustache");
+const { createPost } = require("../controllers/linkedin/actions");
 const {
   createFile,
   createFolder,
@@ -6,44 +8,64 @@ const {
 } = require("../controllers/google/actions");
 
 const executeHandler = async (data, executionContext) => {
+  const accountId = data.config.accountId;
+
+  const renderWithFallback = (template, context) => {
+    const renderedValue = mustache.render(template, context);
+    return renderedValue !== "" ? renderedValue : template;
+  };
+  
   switch (data.service) {
     case "Google":
       switch (data.action) {
         case "createFile":
-          //const MFilename = render(executionContext, data.config.filename);
-          //const filename = MFilename !== "" ? MFliname: data.config.filename;
+          const filename = renderWithFallback(data.config.filename, executionContext);
           return await createFile(
-            // filename: data.config.filename
-            // fileType : data.config.fileType
-            // accountiD : data.config.accountId
+            filename,
+            data.config.fileType,
+            data.config.folderId,
+            accountId
           );
         case "createFolder":
+          const folderName = renderWithFallback(data.config.folderName, executionContext);
           return await createFolder(
-            previousData.folderName,
-            currentData.userId,
-            currentData.accountEmail
+            folderName,
+            data.config.folderId,
+            accountId
           );
         case "appendRowToSheet":
+          const values = data.config.values.map((value) => {
+            return renderWithFallback(value, executionContext);});
           return await appendRowToSheet(
-            currentData.spreadsheetId,
-            currentData.range,
-            previousData.values || currentData.values,
-            currentData.userId,
-            currentData.accountEmail
+            data.config.sheetId,
+            data.config.range,
+            values,
+            accountId
           );
         case "appendTextToDocument":
+          const text = renderWithFallback(data.config.text, executionContext);
           return await appendTextToDocument(
-            currentData.documentId,
-            previousData.text || currentData.text,
-            currentData.userId,
-            currentData.accountEmail
+            data.config.documentId,
+            text,
+            accountId
           );
-
+        
         default:
           break;
       }
       break;
-    default:
+      case "LinkedIn":
+      switch (data.action) {
+        case "createPost":
+          const text = renderWithFallback(data.config.text, executionContext);
+          return await createPost(
+            text,
+            accountId
+          ); 
+        default:
+          break;
+      }
+      default:
       break;
   }
 };

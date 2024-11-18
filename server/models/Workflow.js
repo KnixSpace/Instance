@@ -14,14 +14,15 @@ const nodeSchema = new mongoose.Schema({
   },
   data: {
     type: mongoose.Schema.Types.Mixed,
-    default: {},
+    config: {},
   },
   position: {
     x: Number,
     y: Number,
   },
+  selected: Boolean,
 });
-
+//pending edges
 const edgeSchema = new mongoose.Schema({
   id: {
     type: String,
@@ -40,11 +41,7 @@ const edgeSchema = new mongoose.Schema({
       required: true,
     },
   },
-  condition: {
-    type: String,
-    enum: ["success", "failure", "default", null],
-    default: null,
-  },
+
 });
 
 const workflowSchema = new mongoose.Schema(

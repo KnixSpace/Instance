@@ -57,20 +57,9 @@ async function createWorkflow(req, res) {
     name: req.body.name,
     description: req.body.description,
     version: 1,
-    status: "active",
-    nodes: req.body.nodes.map((node) => ({
-      id: node.id,
-      type: node.type,
-      name: node.name,
-      data: node.data || {},
-      position: node.position,
-    })),
-    edges: req.body.edges.map((edge) => ({
-      id: edge.id,
-      source: { nodeId: edge.source },
-      target: { nodeId: edge.target },
-      type: edge.type,
-    })),
+    status: "draft",
+    nodes: req.body.nodes,
+    edges: req.body.edges,
     executionOrder: executionOrder,
     metadata: {
       createdBy: req.body.metadata.createdBy,
