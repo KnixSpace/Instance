@@ -5,16 +5,17 @@ const {
   appendRowToSheet,
 } = require("../controllers/google/actions");
 
-const executeHandler = async (service, action, currentData, previousData) => {
-  switch (service) {
+const executeHandler = async (data, executionContext) => {
+  switch (data.service) {
     case "Google":
-      switch (action) {
+      switch (data.action) {
         case "createFile":
+          //const MFilename = render(executionContext, data.config.filename);
+          //const filename = MFilename !== "" ? MFliname: data.config.filename;
           return await createFile(
-            previousData[currentData.fileName] || currentData.fileName,
-            previousData[currentData.fileType] || currentData.fileType,
-            currentData.userId,
-            currentData.accountEmail
+            // filename: data.config.filename
+            // fileType : data.config.fileType
+            // accountiD : data.config.accountId
           );
         case "createFolder":
           return await createFolder(

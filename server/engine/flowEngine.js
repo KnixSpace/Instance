@@ -195,7 +195,7 @@
                 // Access the trigger node using the first index in the executionOrder array
                 const triggerNode = workflow.nodes.find((node) => node.id === workflow.executionOrder[0]);
                 console.log(`Processing trigger node: ${triggerNode.id}`);
-                executionContext.data[triggerNode.data.service] = initialData;
+                executionContext.data[triggerNode.id] = initialData;
                 executionContext.nodeStatus.set(triggerNode.id, "success");
                 console.log(`Trigger node ${triggerNode.id} processed. Initial data set:`, initialData);
     
@@ -232,7 +232,7 @@
                 });
     
                 // Execute the step using the service handler
-                const handlerResult = await executeHandler(step.type, step.action, step.data, executionContext);
+                const handlerResult = await executeHandler(step.data, executionContext);
                 executionContext.nodeStatus.set(step.id, handlerResult.status);
     
                 if (handlerResult.status === "failed") {
@@ -242,11 +242,8 @@
                     return; // Stop further execution
                 }
     
-                // Aggregate data from previous steps for this service
-                if (!executionContext.data[step.data.service]) {
-                    executionContext.data[step.data.service] = {};
-                }
-                Object.assign(executionContext.data[step.data.service], handlerResult.result);
+                
+                Object.assign(executionContext.data[step.id], handlerResult);
     
                 // Log execution history in the console
                 console.log("Execution Context for Step:", JSON.stringify(executionContext, null, 2));
