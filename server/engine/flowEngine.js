@@ -1,129 +1,86 @@
 const { EventEmitter } = require("events");
+const { queue } = require("../config/queue");
 const { executeHandler } = require("./serviceHandlers");
 
 class FlowEngine extends EventEmitter {
-  constructor() {
-    super();
-  }
+    constructor() {
+        super();
+        this.workflowQueue = queue;
+        this.workflowQueue.process(this.processWorkflowNode.bind(this));
+    }
 
-  async executeEngine(workflow, initialData) {
-    const executionContext = {
-      workflowId: workflow._id,
-      data: {},
-      nodeStatus: new Map(),
-      logs: [],
-    };
-// initial data have to be added
-    const startNode = workflow.nodes.find((node) => node.type === "trigger");
-    await this.executeNode(workflow, startNode, executionContext, null,initialData);
-  }
+    async executeEngine(workflow, response) {
+        const executionContext = {
+            workflowId: workflow._id,
+            data: {},
+            nodeStatus: new Map(),
+            logs: [],
+        };
+        console.log(`Initializing workflow execution for ${workflow._id}`);
 
-  async executeNode(workflow, currentNode, context, previousNode,initialData) {
-    try {
-      context.nodeStatus.set(currentNode.id, "running");
-      this.emit("nodeStatusUpdate", {
-        workflowId: context.workflowId,
-        nodeId: currentNode.id,
-        status: "running",
-      });
-      // console.log("in node");
+        try {
+            // Access the trigger node using the first index in the executionOrder array
+            const triggerNode = workflow.nodes.find((node) => node.id === workflow.executionOrder[0]);
+            console.log(`Processing trigger node: ${triggerNode.id}`);
+            executionContext.data[triggerNode.id] = response.data;
+            executionContext.nodeStatus.set(triggerNode.id, "success");
+            console.log(`Trigger node ${triggerNode.id} processed. Initial data set:`, response.data);
 
-      let result;
-      if (currentNode.type === "trigger") {
-        result = await this.executeTriggerNode(currentNode, context,initialData);
-      } else {
-        result = await this.executeActionNode(
-          currentNode,
-          context,
-          previousNode
-        );
-      }
-      // context.data[currentNode.config.service] = result;
-       //this code will append the data to the same service , the last code was replacing the data
-      if (!context.data[currentNode.data.service]) {
-        context.data[currentNode.data.service] = {}; // Initialize it as an empty object if undefined
-      }
-      // console.log(context);
+            // Emit a status update for the trigger node
+            this.emit("nodeStatusUpdate", {
+                workflowId: workflow._id,
+                nodeId: triggerNode.id,
+                status: "success",
+            });
 
-      Object.assign(context.data[currentNode.data.service], result);
-     
-      context.nodeStatus.set(currentNode.id, "success");
-      this.emit("nodeStatusUpdate", {
-        workflowId: context.workflowId,
-        nodeId: currentNode.id,
-        status: "success",
-      });
-      // console.log(context);
+            // Add all subsequent nodes (starting from index 1) to the queue
+            for (let i = 1; i < workflow.executionOrder.length; i++) {
+                const node = workflow.nodes.find((n) => n.id === workflow.executionOrder[i]);
 
-      const nextEdges = workflow.edges.filter(
-        (edge) => edge.source.nodeId === currentNode.id
-      );
-
-      for (const edge of nextEdges) {
-        const nextNode = workflow.nodes.find(
-          (n) => n.id === edge.target.nodeId
-        );
-        if (nextNode) {
-          await this.executeNode(workflow, nextNode, context, currentNode);
+                if (node) {
+                    await this.workflowQueue.add({ node, workflowId: workflow._id, executionContext });
+                }
+            }
+        } catch (error) {
+            console.error("Error initializing workflow execution:", error);
+            throw error;
         }
-      }
-    } catch (error) {
-      context.nodeStatus.set(currentNode.id, "failed");
-      this.emit("nodeStatusUpdate", {
-        workflowId: context.workflowId,
-        nodeId: currentNode.id,
-        status: "failed",
-        error: error.message,
-      });
-      this.handleExecutionError(context, currentNode, error);
     }
-  }
 
-  async executeTriggerNode(node, context,initialData) {
-    switch (node.data.triggerType) {
-      case "automatic":
-        context.data[node.data.service]=initialData;
-        return {};
-      case "scheduler":
-         return {};
-      case "user-initiated":
-        return await this.waitForUserInput(node.data);
-      default:
-        throw new Error(`Unknown trigger type: ${node.data.triggerType}`);
+    async processWorkflowNode(job) {
+        const { node, workflowId, executionContext } = job.data;
+
+        try {
+            executionContext.nodeStatus.set(node.id, "running");
+            this.emit("nodeStatusUpdate", {
+                workflowId,
+                nodeId: node.id,
+                status: "running",
+            });
+
+            // Execute the step using the service handler
+            const handlerResult = await executeHandler(node.data, executionContext);
+            executionContext.nodeStatus.set(node.id, handlerResult.status);
+
+            if (!handlerResult.status) {
+                console.error(`Step ${node.id} failed for workflow ${workflowId}. Stopping execution.`);
+                await this.workflowQueue.empty(); // Clear the queue
+                console.error(`Workflow execution failed: ${handlerResult.error}`);
+                return; // Stop further execution
+            }
+
+
+            Object.assign(executionContext.data[node.id], handlerResult.data);
+
+            // Log execution history in the console
+            console.log("Execution Context for Step:", JSON.stringify(executionContext, null, 2));
+
+            console.log(`Step ${node.id} completed successfully for workflow ${workflowId}`);
+        } catch (error) {
+            console.error(`Error processing step ${node.id}:`, error);
+        }
     }
-  }
-
-  async executeActionNode(node, context, previousNode) {
-    const { service, action } = node.data;
-console.log(service);
-
-    return await executeHandler(
-      service,
-      action,
-      node.data,
-      context.data[previousNode.data.service]
-    );    
-  }
-
-  handleExecutionError(context, node, error) {
-    context.logs.push({
-      timestamp: new Date(),
-      level: "error",
-      nodeId: node.id,
-      message: `Error executing node: ${error.message}`,
-    });
-  }
-
-  //WIP
-  isScheduledTriggerDue(triggerConfig) {}
-
-  //WIP
-  async executeScheduledTrigger(triggerConfig) {
-    console.log("heyyyy");
-  return triggerConfig;
-}
-  //WIP
-  async waitForUserInput(triggerConfig) {}
 }
 
 module.exports = { FlowEngine };
+

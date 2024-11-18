@@ -2,11 +2,11 @@ const { default: axios } = require("axios");
 const { Github } = require("../../models/Github");
 
 async function getRepoDetails(req, res) {
-  const userId = req.body.userId;
+  const userId = req.user.userId;
   const accountId= req.body.accountId;
 
   try {
-    const gitAccount = await Github.findOne({ userId ,accountId});
+    const gitAccount = await Github.findById(accountId);
     if (!gitAccount) {
       res.redirect(
         `${process.env.HOST_URL}/api/v1/github/integration/register`

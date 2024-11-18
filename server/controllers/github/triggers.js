@@ -3,171 +3,200 @@ const { Github } = require("../../models/Github");
 const { WorkFlow } = require("../../models/Workflow");
 const { FlowEngine } = require("../../engine/flowEngine");
 
-async function createWebhook(req, res) {
-  const { repoId, repoName, events, userId } = req.body; // Get repoId, repoName, and events from the request body
-  // const userId = "67138acaf879ca81f8fc428a"; // Example user ID, adjust as needed
+async function createWebhook(repoId, repoName, events, accountId) {
   try {
-    const githubAccount = await Github.findOne({ userId });
 
+    const sanitizedRepoId = repoId.value;
+    const sanitizedRepoName = repoName.value;
+    const sanitizedEvents = events.value.map((event) => event.value);
+
+    const githubAccount = await Github.findById(accountId);
     if (!githubAccount) {
       return res.status(404).json({ message: "GitHub account not linked" });
     }
 
-    const accessToken = githubAccount.accessToken;
+    const { accessToken, webhooks } = githubAccount;
+    const webhookUrl = `${process.env.HOST_URL}/api/v1/github/webhook/notifications`;
 
-    let webhookUrl = `${process.env.HOST_URL}/api/v1/github//webhook/notifications`;
-
-    const existingWebhook = githubAccount.webhooks.find(
-      (webhook) => webhook.repoId === repoId
-    );
+    const existingWebhook = webhooks.find((webhook) => webhook.repoId === sanitizedRepoId);
 
     if (existingWebhook) {
+
       const existingEvents = existingWebhook.events;
       const areEventsSame =
-        JSON.stringify(events.sort()) === JSON.stringify(existingEvents.sort());
+        JSON.stringify(sanitizedEvents.sort()) === JSON.stringify(existingEvents.sort());
 
       if (areEventsSame) {
-        return res.json({
+        return res.status(200).json({
           message: "Webhook already exists with the same events",
           webhookId: existingWebhook.webhookId,
         });
-      } else {
-        const updateResponse = await axios.patch(
-          `https://api.github.com/repos/${repoName}/hooks/${existingWebhook.webhookId}`,
-          {
-            config: {
-              url: webhookUrl,
-              content_type: "json",
-            },
-            events: events, // Update with the new events
-            active: true,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        existingWebhook.events = events;
-        await githubAccount.save();
-
-        return res.json({
-          message: "Webhook updated successfully",
-          webhook: updateResponse.data,
-        });
       }
-    } else {
-      const webhookResponse = await axios.post(
-        `https://api.github.com/repos/${repoName}/hooks`,
-        {
-          name: "web",
-          config: {
-            url: webhookUrl,
-            content_type: "json",
-          },
-          events: events,
-          active: true,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/vnd.github+json",
-          },
-        }
+
+
+      const updateResponse = await updateWebhook(
+        sanitizedRepoName,
+        existingWebhook.webhookId,
+        webhookUrl,
+        sanitizedEvents,
+        accessToken
       );
 
-      githubAccount.webhooks.push({
-        repoId,
-        repoName,
-        webhookId: webhookResponse.data.id,
-        events: webhookResponse.data.events,
-      });
+      existingWebhook.events = sanitizedEvents;
       await githubAccount.save();
 
-      res.json({
-        message: "Webhook created successfully",
-        webhook: webhookResponse.data,
+      return res.status(200).json({
+        message: "Webhook updated successfully",
+        webhook: updateResponse.data,
       });
     }
-  } catch (error) {
-    console.error(
-      "Error creating/updating webhook:",
-      error.response?.data || error
+
+    const webhookResponse = await createNewWebhook(
+      sanitizedRepoName,
+      webhookUrl,
+      sanitizedEvents,
+      accessToken
     );
+
+
+    githubAccount.webhooks.push({
+      repoId: sanitizedRepoId,
+      repoName: sanitizedRepoName,
+      webhookId: webhookResponse.data.id,
+      events: webhookResponse.data.events,
+    });
+    await githubAccount.save();
+
+    res.status(201).json({
+      message: "Webhook created successfully",
+      webhook: webhookResponse.data,
+    });
+  } catch (error) {
+    console.error("Error creating/updating webhook:", error.response?.data || error);
     res.status(500).json({ message: "Failed to create or update webhook" });
   }
 }
-async function handleWebhookEvent(req, res) {
+
+
+async function updateWebhook(repoName, webhookId, webhookUrl, events, accessToken) {
+  const url = `https://api.github.com/repos/${repoName}/hooks/${webhookId}`;
+  const config = {
+    config: {
+      url: webhookUrl,
+      content_type: "json",
+    },
+    events,
+    active: true,
+  };
+
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    "Content-Type": "application/json",
+  };
+
+  return axios.patch(url, config, { headers });
+}
+
+
+async function createNewWebhook(repoName, webhookUrl, events, accessToken) {
+  const url = `https://api.github.com/repos/${repoName}/hooks`;
+  const config = {
+    name: "web",
+    config: {
+      url: webhookUrl,
+      content_type: "json",
+    },
+    events,
+    active: true,
+  };
+
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    "Content-Type": "application/vnd.github+json",
+  };
+
+  return axios.post(url, config, { headers });
+}
+
+const handleWebhookEvent = async (req, res) => {
   try {
-    //how to handle first ping 
     const eventType = req.headers["x-github-event"];
     const hookId = req.headers["x-github-hook-id"];
     const targetType = req.headers["x-github-hook-installation-target-type"];
     const userAgent = req.headers["user-agent"];
 
+    if (eventType === "ping") {
+      console.log("Received ping event from GitHub");
+      return res.status(200).json({ message: "Ping event received" });
+    }
+
+
     const { repository, pusher, head_commit } = req.body;
 
-    const repoId = repository.id;
-    const repoName = repository.full_name;
-    const repoUrl = repository.html_url;
+    if (!repository || !head_commit) {
+      return res.status(400).json({ message: "Invalid webhook payload" });
+    }
 
-    const pusherEmail = pusher?.email;
-    const pusherName = pusher?.name;
-
-    const commitId = head_commit.id;
-    const commitMessage = head_commit.message;
-    const commitUrl = head_commit.url;
-
-    const modifiedFiles = head_commit.modified;
-
-    const eventData = {
-      eventType,
-      hookId,
-      targetType,
-      userAgent,
-      repository: {
-        id: repoId,
-        name: repoName,
-        url: repoUrl,
-      },
-      pusher: {
-        email: pusherEmail,
-        name: pusherName,
-      },
-      commit: {
-        id: commitId,
-        message: commitMessage,
-        url: commitUrl,
-        modifiedFiles,
-      },
-    };
+    const eventData = mapEventData(eventType, hookId, targetType, userAgent, repository, pusher, head_commit);
 
     const query = {
       status: "active",
       nodes: {
         $elemMatch: {
           type: "trigger",
-          "data.webhookId": eventData.hookId,
-          "data.events": { $in: [eventData.eventType] },
+          "data.config.webhookId": eventData.hookId,
+          "data.config.events": { $in: [eventData.eventType] },
         },
       },
     };
 
     const matchingWorkflows = await WorkFlow.find(query).exec();
-    
-    if (matchingWorkflows.length > 0) {
-      for (const workflow of matchingWorkflows) {
-        const flowEngine = new FlowEngine();
-        flowEngine.executeEngine(workflow, eventData);
-      }
-      res.status(200).json({ message: "Webhook event processed successfully" });
+
+    if (matchingWorkflows.length === 0) {
+      console.log("No matching workflows found for the webhook event");
+      return res.status(200).json({ message: "No workflows matched" });
     }
-    res.status(200);
+
+    response = {
+      status : true,
+      data : {
+        eventData
+      }
+    }
+    
+    for (const workflow of matchingWorkflows) {
+      const flowEngine = new FlowEngine();
+      await flowEngine.executeEngine(workflow, response);
+    }
+
+    res.status(200).json({ message: "Webhook event processed successfully" });
   } catch (error) {
     console.error("Error handling webhook event:", error);
     res.status(500).json({ message: "Error processing webhook event" });
   }
-}
+};
+
+
+const mapEventData = (eventType, hookId, targetType, userAgent, repository, pusher, head_commit) => ({
+  eventType,
+  hookId,
+  targetType,
+  userAgent,
+  repository: {
+    id: repository.id,
+    name: repository.full_name,
+    url: repository.html_url,
+  },
+  pusher: {
+    email: pusher?.email || null,
+    name: pusher?.name || null,
+  },
+  commit: {
+    id: head_commit.id,
+    message: head_commit.message,
+    url: head_commit.url,
+    modifiedFiles: head_commit.modified || [],
+  },
+});
+
 module.exports = { createWebhook, handleWebhookEvent };
