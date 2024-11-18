@@ -31,12 +31,12 @@ export const useNodeConfiguration = (
     console.log("reset dynamic options");
   }, [selectedNode.id]);
 
-  const adjacencyList = useAppSelector((state) => state.workflow.adjacencyList);
+  const backwardList = useAppSelector((state) => state.workflow.backwardList);
   const nodes = useAppSelector((state) => state.workflow.nodes);
 
   const previousNodes = useMemo(() => {
-    return getPreviousNodes(adjacencyList, selectedNode.id);
-  }, [adjacencyList, selectedNode.id]);
+    return getPreviousNodes(backwardList, selectedNode.id);
+  }, [backwardList, selectedNode.id]);
 
   const dependentFields: string[] = useMemo(() => {
     return (
@@ -127,7 +127,7 @@ export const useNodeConfiguration = (
     );
 
     for (const field of nonDependentFields) {
-      if (field.type === "select") {
+      if (field.type === "select" || field.type === "multi-select") {
         if (field.isDynamic) {
           updateDynamicOptions(field);
         } else if (field.options) {

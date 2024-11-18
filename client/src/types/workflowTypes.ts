@@ -46,7 +46,8 @@ export interface workflowState {
     isWarning: boolean;
     message: string | null;
   };
-  adjacencyList: {
+  forwardList: {
     [key: string]: string[];
   };
+  backwardList: { [key: string]: string[] };
 }

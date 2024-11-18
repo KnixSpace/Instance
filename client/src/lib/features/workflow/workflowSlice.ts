@@ -4,6 +4,7 @@ import {
   SidePanelMode,
   workflowState,
 } from "@/types/workflowTypes";
+import { createAdjacencyList } from "@/utils/workflowUtils";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { Edge } from "@xyflow/react";
 
@@ -16,7 +17,8 @@ const initialState: workflowState = {
     isWarning: false,
     message: null,
   },
-  adjacencyList: {},
+  forwardList: {},
+  backwardList: {},
 };
 
 const workflowSlice = createSlice({
@@ -75,17 +77,16 @@ const workflowSlice = createSlice({
     },
 
     setAdjacencyList: (state) => {
-      const adjacencyList: { [key: string]: string[] } = {};
-
-      for (let node of state.nodes) {
-        adjacencyList[node.id] = [];
-      }
-
-      for (let edge of state.edges) {
-        adjacencyList[edge.target].push(edge.source);
-      }
-
-      state.adjacencyList = adjacencyList;
+      state.backwardList = createAdjacencyList(
+        state.nodes,
+        state.edges,
+        "backward"
+      );
+      state.forwardList = createAdjacencyList(
+        state.nodes,
+        state.edges,
+        "forward"
+      );
     },
 
     setNodeAccount: (
