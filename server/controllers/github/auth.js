@@ -74,7 +74,7 @@ async function handleIntegration(
   accountEmail,
   avatar,
   tokens,
-  gituserName
+  name
 ) {
   const existingIntegration = await Integration.findOne({
     userId,
@@ -89,7 +89,7 @@ async function handleIntegration(
       accountEmail,
       avatar,
       tokens,
-      gituserName
+      name
     );
   } else {
     await createNewIntegration(
@@ -98,7 +98,7 @@ async function handleIntegration(
       accountEmail,
       avatar,
       tokens,
-      gituserName
+      name
     );
   }
 }
@@ -124,7 +124,7 @@ async function updateExistingIntegration(
       email: accountEmail,
       accountId,
       accessToken: tokens.access_token,
-      gituserName,
+      name
     }).save();
 
     integration.accounts.push(newAccount._id);
@@ -141,7 +141,7 @@ async function createNewIntegration(
   accountEmail,
   avatar,
   tokens,
-  gituserName
+  name
 ) {
   const newIntegration = await new Integration({
     userId,
@@ -155,7 +155,7 @@ async function createNewIntegration(
     email: accountEmail,
     accountId,
     accessToken: tokens.access_token,
-    gituserName,
+    name,
   }).save();
 
   newIntegration.accounts.push(newAccount._id);

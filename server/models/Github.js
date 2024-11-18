@@ -11,7 +11,7 @@ const githubAccountSchema = new mongoose.Schema({
     ref: "Integration",
     required: true,
   },
-  gituserName:{type:String},
+  name:{type:String},
   avatar: { type: String },
   email: { type: String, unique: true},
   accountId: { type: String, required: true },
