@@ -6,6 +6,7 @@ import * as yup from "yup";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/lib/hooks";
 import { initializedNewWorkflow } from "@/lib/features/workflow/workflowSlice";
+import axios from "axios";
 
 interface FormData {
   name: string;
@@ -29,12 +30,27 @@ const Page: React.FC<Props> = (props) => {
   const { push } = useRouter();
   const dispatch = useAppDispatch();
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     console.log(data);
-    // Handle form submission (e.g., send data to API)
-    // Redirect to the workflow page
-    dispatch(initializedNewWorkflow());
-    push("/dashboard/workflow/kkkkgjgjh");
+    try {
+      const body: {
+        name: string;
+        description: string;
+      } = {
+        ...data,
+      };
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/workflow/create`,
+        body,
+        { withCredentials: true }
+      );
+      
+      const workflowId = response.data._id;
+      dispatch(initializedNewWorkflow());
+      push(`/dashboard/workflow/${workflowId}`);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (

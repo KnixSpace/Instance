@@ -8,7 +8,8 @@ function topologicalSort(graph) {
     inDegree[node] = 0;
   }
   for (const node in graph) {
-    if (graph[node]) { //Handle cases where a node might not have outgoing edges.
+    if (graph[node]) {
+      //Handle cases where a node might not have outgoing edges.
       for (const neighbor of graph[node]) {
         inDegree[neighbor]++;
       }
@@ -37,14 +38,16 @@ function topologicalSort(graph) {
   }
 
   if (sorted.length !== Object.keys(graph).length) {
-    throw new Error("Cycle detected in the graph. Topological sort is not possible.");
+    throw new Error(
+      "Cycle detected in the graph. Topological sort is not possible."
+    );
   }
 
   return sorted;
 }
 
-async function createWorkflow(req, res) {
-
+//WIP: Implement the updateWorkflow function
+async function updateWorkflow(req, res) {
   const { adjacencyList } = req.body;
 
   if (!adjacencyList) {
@@ -86,8 +89,8 @@ async function fetchServiceAccount(req, res) {
       match:
         service === "google" && scopes?.length > 0
           ? {
-            scopes: { $all: scopes },
-          }
+              scopes: { $all: scopes },
+            }
           : {},
       select: "email name avatar",
     });
@@ -103,4 +106,24 @@ async function fetchServiceAccount(req, res) {
   }
 }
 
-module.exports = { createWorkflow, fetchServiceAccount };
+async function createWorkflow(req, res) {
+  const { name, description } = req.body;
+  const { username } = req.user;
+
+  const workflow = new WorkFlow({
+    name,
+    description,
+    metadata: {
+      createdBy: username,
+    },
+  });
+
+  try {
+    const newWorkflow = await workflow.save();
+    res.status(200).json(newWorkflow);
+  } catch (error) {
+    res.status(500).json({ message: "Error creating workflow" });
+  }
+}
+
+module.exports = { createWorkflow, fetchServiceAccount, updateWorkflow };
