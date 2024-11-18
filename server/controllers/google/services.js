@@ -6,7 +6,7 @@ const sheets = google.sheets("v4");
 const drive = google.drive("v3");
 
 //drive services
-async function getAllFiles(req, res) {
+async function getDriveFiles(req, res) {
   try {
     const { accountId, pageToken, mimeType } = req.body;
 
@@ -96,7 +96,7 @@ async function getFileMetadata(fileId, userId, email) {
   return response.data;
 }
 
-async function getAllSpreadsheetSheets(req, res) {
+async function getSheetNames(req, res) {
   try {
     const { spreadsheetId, accountId } = req.body;
 
@@ -197,9 +197,7 @@ async function getNewEntryOfSheet(auth, spreadsheetId, range, lastProcessedRow) 
 
 module.exports = {
   getDriveFiles,
-  getDriveFiles,
   getFileMetadata,
-  getSheetNames,
   getSheetNames,
   getSheetData,
   getNewEntryOfSheet,

@@ -1,5 +1,8 @@
 const { register, callback } = require("../controllers/google/auth");
-const { getDriveFiles,getAllSpreadsheetSheets} = require("../controllers/google/service");
+const {
+  getDriveFiles,
+  getSheetNames,
+} = require("../controllers/google/services");
 
 const router = require("express").Router();
 
@@ -9,6 +12,6 @@ router.get("/integration/callback", callback);
 
 //service
 router.post("/integration/service/getDriveFiles", getDriveFiles);
-router.post("/integration/service/getSheetNames", getAllSpreadsheetSheets);
+router.post("/integration/service/getSheetNames", getSheetNames);
 
 module.exports = router;
