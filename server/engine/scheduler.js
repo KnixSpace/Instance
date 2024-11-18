@@ -2,15 +2,9 @@ const cron = require('node-cron');
 const { FlowEngine } = require('./flowEngine');
 const { WorkFlow } = require("../models/Workflow");
 const moment = require('moment-timezone');
-const Queue = require('bull');
+const {queue} = require("../config/queue");
 
-const workflowQueue = new Queue('workflow-queue', {
-    redis: {
-        host: 'localhost',
-        port: 6379,
-    },
-});
-
+const workflowQueue = queue;
 const engine = new FlowEngine();
 
 workflowQueue.process(5, async (job) => {
