@@ -11,7 +11,7 @@ router.post("/integration/register", register);
 router.get("/integration/callback", callback);
 
 //service
-router.post("/integration/service/getDriveFiles", getDriveFiles);
-router.post("/integration/service/getSheetNames", getSheetNames);
+router.post("/service/getDriveFiles", getDriveFiles);
+router.post("/service/getSheetNames", getSheetNames);
 
 module.exports = router;

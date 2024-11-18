@@ -8,6 +8,7 @@ const drive = google.drive("v3");
 //drive services
 async function getDriveFiles(req, res) {
   try {
+
     const { accountId, pageToken, mimeType } = req.body;
 
     // Find the associated Google account
@@ -101,7 +102,9 @@ async function getSheetNames(req, res) {
     const { spreadsheetId, accountId } = req.body;
 
     if (!spreadsheetId || !accountId) {
-      return res.status(400).json({ message: "Spreadsheet ID and Account ID are required" });
+      return res
+        .status(400)
+        .json({ message: "Spreadsheet ID and Account ID are required" });
     }
 
     const account = await Google.findById(accountId);
@@ -133,7 +136,9 @@ async function getSheetNames(req, res) {
     if (error.response?.status === 404) {
       return res.status(404).json({ message: "Spreadsheet not found" });
     } else if (error.response?.status === 403) {
-      return res.status(403).json({ message: "Access denied to the spreadsheet" });
+      return res
+        .status(403)
+        .json({ message: "Access denied to the spreadsheet" });
     }
 
     // Generic error response
@@ -169,7 +174,12 @@ async function getSheetData(spreadsheetId, range, userId, email) {
   return response.data.values;
 }
 
-async function getNewEntryOfSheet(auth, spreadsheetId, range, lastProcessedRow) {
+async function getNewEntryOfSheet(
+  auth,
+  spreadsheetId,
+  range,
+  lastProcessedRow
+) {
   try {
     const sheets = google.sheets({ version: "v4", auth });
 
