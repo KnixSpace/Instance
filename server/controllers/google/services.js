@@ -197,7 +197,9 @@ async function getNewEntryOfSheet(auth, spreadsheetId, range, lastProcessedRow) 
 
 module.exports = {
   getDriveFiles,
+  getDriveFiles,
   getFileMetadata,
+  getSheetNames,
   getSheetNames,
   getSheetData,
   getNewEntryOfSheet,
