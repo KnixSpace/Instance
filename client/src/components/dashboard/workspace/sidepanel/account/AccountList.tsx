@@ -60,8 +60,8 @@ const AccountList = ({
     () =>
       accounts.filter(
         (account) =>
-          account?.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-          account?.email.toLowerCase().includes(debouncedQuery.toLowerCase())
+          account?.name?.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+          account?.email?.toLowerCase().includes(debouncedQuery.toLowerCase())
       ),
     [debouncedQuery, accounts]
   );

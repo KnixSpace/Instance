@@ -32,7 +32,7 @@ const ConfigurationField = ({
             }
           />
         );
-      case "multiselect":
+      case "multi-select":
         return (
           <Controller
             name={field.name}

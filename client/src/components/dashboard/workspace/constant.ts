@@ -28,7 +28,10 @@ export const workflowNodesConfig = [
       icon: appIcons.sheets,
       authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/integration/register`,
-        scope: ["https://www.googleapis.com/auth/spreadsheets"],
+        scope: [
+          "https://www.googleapis.com/auth/spreadsheets",
+          "https://www.googleapis.com/auth/drive",
+        ],
       },
     },
   },
@@ -138,7 +141,7 @@ export const actionConfig: ActionConfig[] = [
       {
         name: "event",
         label: "Event",
-        type: "multiselect",
+        type: "multi-select",
         placeholder: "Select events",
         isDynamic: false,
         options: [
@@ -159,7 +162,7 @@ export const actionConfig: ActionConfig[] = [
         placeholder: "Select a repository",
         isDynamic: true,
         dynamicOptions: {
-          url: `${process.env.NEXT_PUBLIC_BASE_URL}/github/repos`,
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/github/service/getRepos`,
         },
         allowedCustomInput: false,
         validation: Yup.object().required("Repository Name is required"),
