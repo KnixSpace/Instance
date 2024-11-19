@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
-const {startChangeStream} = require("../engine/scheduler");
+// const {startChangeStream} = require("../engine/scheduler");
 
 const connectDB = async () => {
   try {
     
-    mongoose.connection.once('open', async() => {
-      // console.error("MongoDB error:");
-      startChangeStream();
-    });
+    // mongoose.connection.once('open', async() => {
+    //   // console.error("MongoDB error:");
+    //   startChangeStream();
+    // });
 
     await mongoose.connect(process.env.MONGO_URI);
     console.log(`MongoDb connected on ${mongoose.connection.host}`);
