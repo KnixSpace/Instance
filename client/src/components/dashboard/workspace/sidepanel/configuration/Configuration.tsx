@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 import { Node } from "@/types/workflowTypes";
 import {
+  resetNodeConfig,
   setSidePanelMode,
   updateNodeConfig,
 } from "@/lib/features/workflow/workflowSlice";
@@ -59,6 +60,7 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
 
   const handleChangeAccount = useCallback(() => {
     dispatch(setSidePanelMode("account"));
+    dispatch(resetNodeConfig(selectedNode));
   }, [dispatch]);
 
   //WIP: handle form submit
@@ -66,14 +68,18 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
     (data: Record<string, any>) => {
       console.log(data);
       // Add your submit logic here
-      dispatch(updateNodeConfig({ nodeId: selectedNode.id, config: data }));
+      if (window.confirm("Sure to submit?")) {
+        dispatch(updateNodeConfig({ nodeId: selectedNode.id, config: data }));
+      }
     },
     [dispatch, selectedNode.id]
   );
 
   useEffect(() => {
-    //WIP: reset form with initial values or previously saved values in redux node.data.config
-    reset();
+    reset(defaultValues);
+    if (selectedNode.data.config) {
+      reset(selectedNode.data.config);
+    }
   }, [selectedNode.id, reset]);
 
   return (

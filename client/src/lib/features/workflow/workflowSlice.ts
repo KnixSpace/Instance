@@ -1,3 +1,4 @@
+import { workflowNodesConfig } from "@/components/dashboard/workspace/constant";
 import {
   Account,
   Node,
@@ -139,6 +140,17 @@ const workflowSlice = createSlice({
       );
       if (node) {
         node.data.config = action.payload.config;
+        state.sidePanel = "action";
+      }
+    },
+
+    resetNodeConfig: (state, action: PayloadAction<Node>) => {
+      const defaultConfig = workflowNodesConfig.find(
+        (config) => config.data.action === action.payload.data.action
+      )?.data.config;
+      const node = state.nodes.find((node) => node.id === action.payload.id);
+      if (node) {
+        node.data.config = defaultConfig;
       }
     },
   },
@@ -156,6 +168,7 @@ export const {
   setAdjacencyList,
   setNodeAccount,
   updateNodeConfig,
+  resetNodeConfig,
 } = workflowSlice.actions;
 
 export default workflowSlice.reducer;
