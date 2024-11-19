@@ -10,27 +10,20 @@ const SLACK_USER_INFO_URL = "https://slack.com/api/users.identity";
 
 async function register(req,res){
   const BOT_SCOPES = [
-    "channels:manage",
+    
     "channels:read",
     "channels:write.invites",
     "channels:write.topic",
     "chat:write",
     "users:read",
     "users:read.email",
-    "team:read",
-    "groups:write", 
-    "im:write",
-    "mpim:write"  
+    "team:read" 
     
 ];
     // User token scopes
     const USER_SCOPES = [
         "identity.basic",
-        "identity.email",
-        "channels:write",
-        "groups:write", 
-        "im:write",
-         "mpim:write"
+        "identity.email"
     ];
     const state = Math.random().toString(36).substring(7);
     
