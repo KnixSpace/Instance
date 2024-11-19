@@ -68,7 +68,7 @@ async function callback(req, res) {
       req.user.userId,
       id,
       avatar,
-      tokens
+      tokens 
     );
 
     res.send(`

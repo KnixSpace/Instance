@@ -15,13 +15,12 @@ async function getPages (req, res){
                 message: 'User not found'
             });
         }
-
         const response = await axios.post('https://api.notion.com/v1/search', 
             {
                 filter: { property: 'object', value: 'page' }
             },
             {
-                headers: {
+                headers: {  
                     Authorization: `Bearer ${user.accessToken}`,
                     'Notion-Version': '2021-08-16',
                     'Content-Type': 'application/json'
