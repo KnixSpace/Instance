@@ -4,7 +4,7 @@ import {
   SidePanelMode,
   workflowState,
 } from "@/types/workflowTypes";
-import { createAdjacencyList } from "@/utils/workflowUtils";
+import { createAdjacencyList, getNextNodes } from "@/utils/workflowUtils";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { Edge } from "@xyflow/react";
 
@@ -45,11 +45,30 @@ const workflowSlice = createSlice({
       state.sidePanel = "configuration";
     },
 
-    setDeletedNodes: (state, action: PayloadAction<Node[]>) => {
-      state.nodes = action.payload;
+    setDeletedNodes: (state, action: PayloadAction<string[]>) => {
+      state.nodes = state.nodes.filter(
+        (node) => !action.payload.includes(node.id)
+      );
+      state.selectedNode = null;
+      state.sidePanel = "action";
+      // state.edges = state.edges.filter(
+      //   (edge) =>
+      //     !action.payload.includes(edge.source) &&
+      //     !action.payload.includes(edge.target)
+      // );
     },
 
     selectNode: (state, action: PayloadAction<string | null>) => {
+      // console.log(action.payload);
+      if (action.payload === null) {
+        if (state.nodes.length > 0) {
+          state.sidePanel = "action";
+          state.selectedNode = null;
+        } else {
+          state.sidePanel = "trigger";
+        }
+      }
+
       const isNode = state.nodes.find((node) => node.id === action.payload);
       if (isNode) {
         state.selectedNode = isNode;

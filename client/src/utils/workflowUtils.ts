@@ -1,12 +1,13 @@
 import { Node } from "@/types/workflowTypes";
 import { Edge } from "@xyflow/react";
 
-export const getPreviousNodes = (
+export const getNodes = (
   adjacencyList: { [key: string]: string[] },
-  selectedNode: string
+  selectedNodeId: string,
+  isRoot: boolean = false
 ): string[] => {
   const previousNodeSet = new Set<string>();
-  const stack: [string] = [selectedNode];
+  const stack: [string] = [selectedNodeId];
 
   while (stack.length) {
     const currentNodeId = stack.pop();
@@ -20,7 +21,27 @@ export const getPreviousNodes = (
     }
   }
 
+  if (isRoot) {
+    previousNodeSet.add(selectedNodeId);
+  }
+
   return Array.from(previousNodeSet);
+};
+
+export const getPreviousNodes = (
+  adjacencyList: { [key: string]: string[] },
+  selectedNodeId: string,
+  isRoot: boolean = false
+): string[] => {
+  return getNodes(adjacencyList, selectedNodeId, isRoot);
+};
+
+export const getNextNodes = (
+  adjacencyList: { [key: string]: string[] },
+  selectedNodeId: string,
+  isRoot: boolean = false
+): string[] => {
+  return getNodes(adjacencyList, selectedNodeId, isRoot);
 };
 
 export const createAdjacencyList = (
@@ -35,8 +56,8 @@ export const createAdjacencyList = (
   }
 
   for (let edge of edges) {
-    if (type === "forward") adjacencyList[edge.source].push(edge.target);
-    if (type === "backward") adjacencyList[edge.target].push(edge.source);
+    if (type === "forward") adjacencyList[edge.source]?.push(edge.target);
+    if (type === "backward") adjacencyList[edge.target]?.push(edge.source);
   }
 
   return adjacencyList;
