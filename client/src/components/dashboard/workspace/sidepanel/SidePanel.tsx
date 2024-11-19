@@ -10,7 +10,6 @@ import Account from "./account/Account";
 type Props = {};
 
 const SidePanel = (props: Props) => {
-  const nodes = useAppSelector((state) => state.workflow.nodes);
   const mode = useAppSelector((state) => state.workflow.sidePanel);
   const selectedNode = useAppSelector((state) => state.workflow.selectedNode);
 
@@ -33,18 +32,18 @@ const SidePanel = (props: Props) => {
         <>
           <div className="mb-4">
             <div className="mb-1 text-lg">
-              {nodes.length > 0 ? "Actions" : "Trigger"}
+              {mode === "action" ? "Actions" : "Trigger"}
             </div>
             <div className="text-sm text-gray-500 mb-2">
-              {nodes.length > 0 ? "Add an action" : "Add a trigger"}
+              {mode === "action" ? "Add an action" : "Add a trigger"}
             </div>
             <SearchNodes
-              nodeType={nodes.length > 0 ? "action" : "trigger"}
+              nodeType={mode === "action" ? "action" : "trigger"}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
             />
           </div>
-          <NodeList debouncedQuery={debouncedQuery} nodes={nodes} />
+          <NodeList debouncedQuery={debouncedQuery} mode={mode} />
         </>
       ) : (
         <>
