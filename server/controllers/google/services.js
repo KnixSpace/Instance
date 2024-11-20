@@ -8,7 +8,6 @@ const drive = google.drive("v3");
 //drive services
 async function getDriveFiles(req, res) {
   try {
-
     const { accountId, pageToken, mimeType } = req.body;
 
     // Find the associated Google account
@@ -177,7 +176,7 @@ async function getSheetData(spreadsheetId, range, userId, email) {
 async function getNewEntryOfSheet(
   auth,
   spreadsheetId,
-  range,
+  sheetName,
   lastProcessedRow
 ) {
   try {
@@ -185,16 +184,14 @@ async function getNewEntryOfSheet(
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range,
+      range: `${sheetName}!A${lastProcessedRow + 1}:Z`,
     });
 
-    const rows = response.data.values;
+    const newEntries = response.data.values;
 
-    if (rows && rows.length > lastProcessedRow) {
-      const newEntries = rows.slice(lastProcessedRow);
+    if (newEntries && newEntries.length > 0) {
       return {
         newEntries,
-        row: rows.length,
       };
     }
 

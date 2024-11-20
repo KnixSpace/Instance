@@ -307,7 +307,7 @@ export const actionConfig: ActionConfig[] = [
         validation: Yup.object().required("Sheet Name is required"),
       },
       {
-        name: "lastProcessedRow",
+        name: "startRow",
         label: "Starting row to append",
         type: "number",
         placeholder: "Select a start row to append values",
