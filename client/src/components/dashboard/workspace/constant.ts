@@ -204,18 +204,19 @@ export const actionConfig: ActionConfig[] = [
         validation: Yup.object().required("Sheet Name is required"),
       },
       {
-        name: "range",
-        label: "Range",
-        type: "text",
-        placeholder: "Enter range A1:Z100",
+        name: "lastProcessedRow",
+        label: "Start Row",
+        type: "number",
+        placeholder: "Select a start row to track new entries",
         isDynamic: false,
-        allowedCustomInput: true,
-        validation: Yup.string()
-          .required("Range is required")
-          .matches(/^[A-Za-z0-9_!]+$/, "Invalid range"),
+        allowedCustomInput: false,
+        validation: Yup.number()
+          .required("Start Row is required")
+          .min(1, "Start Row should be greater than 0")
+          .max(1000, "Start Row should be less than 1000"),
       },
     ],
-    outputFields: ["newEntry", "sheetId", "sheetLink"],
+    outputFields: ["newEntry", "spreadsheetId", "sheetLink"],
   },
   {
     action: "CREATE_DOC",
@@ -231,18 +232,18 @@ export const actionConfig: ActionConfig[] = [
         allowedCustomInput: true,
         validation: Yup.object().required("Filename is required"),
       },
-      {
-        name: "folderId",
-        label: "Folder",
-        type: "select",
-        placeholder: "Select a folder",
-        isDynamic: true,
-        dynamicOptions: {
-          url: "https://drive.googleapis.com/v3/files",
-        },
-        allowedCustomInput: false,
-        validation: Yup.object(),
-      },
+      // {
+      //   name: "folderId",
+      //   label: "Folder",
+      //   type: "select",
+      //   placeholder: "Select a folder",
+      //   isDynamic: true,
+      //   dynamicOptions: {
+      //     url: "https://drive.googleapis.com/v3/files",
+      //   },
+      //   allowedCustomInput: false,
+      //   validation: Yup.object(),
+      // },
     ],
     outputFields: ["docId", "docLink", "docTitle"],
   },
@@ -281,7 +282,7 @@ export const actionConfig: ActionConfig[] = [
     icon: appIcons.sheets,
     configFields: [
       {
-        name: "sheetId",
+        name: "spreadsheetId",
         label: "Sheet",
         type: "select",
         placeholder: "Select a sheet",
@@ -306,24 +307,27 @@ export const actionConfig: ActionConfig[] = [
         validation: Yup.object().required("Sheet Name is required"),
       },
       {
-        name: "range",
-        label: "Range",
-        type: "text",
-        placeholder: "Enter range !A1:Z100",
+        name: "lastProcessedRow",
+        label: "Starting row to append",
+        type: "number",
+        placeholder: "Select a start row to append values",
         isDynamic: false,
-        allowedCustomInput: true,
-        validation: Yup.string()
-          .required("Range is required")
-          .matches(/^[A-Za-z0-9_!]+$/, "Invalid range"),
+        allowedCustomInput: false,
+        validation: Yup.number()
+          .required("Start Row is required")
+          .min(1, "Start Row should be greater than 0")
+          .max(1000, "Start Row should be less than 1000"),
       },
       {
         name: "values",
         label: "Values",
-        type: "text",
-        placeholder: "Enter values",
+        type: "multi-select",
+        placeholder: "Select values to append",
         isDynamic: false,
-        allowedCustomInput: true,
-        validation: Yup.string().required("Values are required"),
+        allowedCustomInput: false,
+        validation: Yup.array()
+          .min(1, "Select at least one event")
+          .required("Values are required"),
       },
     ],
     outputFields: ["updatedSheet", "sheetId", "sheetLink"],

@@ -15,7 +15,7 @@ export const useDefalutValues = (configFields: ConfigField[]) => {
           acc[field.name] = "";
           break;
         case "number":
-          acc[field.name] = 0;
+          acc[field.name] = "";
           break;
         default:
           acc[field.name] = "";
