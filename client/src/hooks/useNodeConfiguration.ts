@@ -110,8 +110,8 @@ export const useNodeConfiguration = (
 
       return (
         nodeOutput?.map((field) => ({
-          label: field,
-          value: `{{${nodeId}.${field}}}`,
+          label: field.label,
+          value: `{{${nodeId}.${field.value}}}`,
         })) || []
       );
     });

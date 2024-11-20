@@ -22,12 +22,17 @@ export interface ConfigField {
   validation: Yup.AnySchema;
 }
 
+export interface OutputFiled {
+  label: string;
+  value: string;
+}
+
 export interface ActionConfig {
   action: string;
   service: string;
   icon: string;
   configFields: ConfigField[];
-  outputFields: string[];
+  outputFields: OutputFiled[];
 }
 
 export interface ConfigurationFieldProps {
