@@ -18,7 +18,7 @@ const executeHandler = async (data, executionContext) => {
   switch (data.service) {
     case "Google":
       switch (data.action) {
-        case "createFile":
+        case "CREATE_DOC" || "CREATE_SHEET":
           const filename = renderWithFallback(
             data.config.filename,
             executionContext
@@ -29,7 +29,7 @@ const executeHandler = async (data, executionContext) => {
             data.config.folderId,
             accountId
           );
-        case "createFolder":
+        case "CREATE_FOLDER":
           const folderName = renderWithFallback(
             data.config.folderName,
             executionContext
@@ -39,7 +39,7 @@ const executeHandler = async (data, executionContext) => {
             data.config.folderId,
             accountId
           );
-        case "appendRowToSheet":
+        case "APPEND_ROW":
           const values = data.config.values.map((value) => {
             return renderWithFallback(value, executionContext);
           });
@@ -50,7 +50,7 @@ const executeHandler = async (data, executionContext) => {
             values,
             accountId
           );
-        case "appendTextToDocument":
+        case "APPEND_TEXT":
           const text = renderWithFallback(data.config.text, executionContext);
           return await appendTextToDocument(
             data.config.documentId,
@@ -64,7 +64,7 @@ const executeHandler = async (data, executionContext) => {
       break;
     case "LinkedIn":
       switch (data.action) {
-        case "createPost":
+        case "CREATE_POST":
           const text = renderWithFallback(data.config.text, executionContext);
           return await createPost(text, accountId);
         default:
