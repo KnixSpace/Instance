@@ -1,19 +1,30 @@
 import { UseFormReturn } from "react-hook-form";
 import * as Yup from "yup";
 
+export interface Options {
+  label: string;
+  value: any;
+}
+
 export interface ConfigField {
   name: string;
   label: string;
   type: string;
   placeholder: string;
   isDynamic: boolean;
-  options?: { value: string; label: string }[];
+  options?: Options[];
   dynamicOptions?: {
     url: string;
-    headers: Record<string, string>;
+    body?: Record<string, string>;
   };
+  dependentOn?: string[];
   allowedCustomInput: boolean;
   validation: Yup.AnySchema;
+}
+
+export interface OutputFiled {
+  label: string;
+  value: string;
 }
 
 export interface ActionConfig {
@@ -21,7 +32,7 @@ export interface ActionConfig {
   service: string;
   icon: string;
   configFields: ConfigField[];
-  outputFields: string[];
+  outputFields: OutputFiled[];
 }
 
 export interface ConfigurationFieldProps {
@@ -29,4 +40,8 @@ export interface ConfigurationFieldProps {
   control: UseFormReturn<any>["control"];
   errors: UseFormReturn<any>["formState"]["errors"];
   dynamicOptions: { label: string; value: string }[] | undefined;
+}
+
+export interface DynamicOptionsState {
+  [key: string]: Options[] | undefined;
 }

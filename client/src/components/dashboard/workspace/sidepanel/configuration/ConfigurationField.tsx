@@ -32,7 +32,7 @@ const ConfigurationField = ({
             }
           />
         );
-      case "multiselect":
+      case "multi-select":
         return (
           <Controller
             name={field.name}
@@ -58,6 +58,22 @@ const ConfigurationField = ({
                 {...selectField}
                 placeholder={field.placeholder}
                 className="bg-lightbackground rounded w-full px-3 py-2 focus:outline-none text-sm focus:border focus:border-secondary"
+              />
+            )}
+          />
+        );
+      case "number":
+        return (
+          <Controller
+            control={control}
+            name={field.name}
+            render={({ field: selectField }) => (
+              <input
+                type="number"
+                id={field.name}
+                {...selectField}
+                placeholder={field.placeholder}
+                className="bg-lightbackground rounded w-full px-3 py-2 focus:outline-none text-sm focus:border focus:border-secondary appearance-none"
               />
             )}
           />

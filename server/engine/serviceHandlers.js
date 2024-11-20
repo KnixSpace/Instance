@@ -14,58 +14,63 @@ const executeHandler = async (data, executionContext) => {
     const renderedValue = mustache.render(template, context);
     return renderedValue !== "" ? renderedValue : template;
   };
-  
+
   switch (data.service) {
     case "Google":
       switch (data.action) {
-        case "createFile":
-          const filename = renderWithFallback(data.config.filename, executionContext);
+        case "CREATE_DOC" || "CREATE_SHEET":
+          const filename = renderWithFallback(
+            data.config.filename,
+            executionContext
+          );
           return await createFile(
             filename,
             data.config.fileType,
             data.config.folderId,
             accountId
           );
-        case "createFolder":
-          const folderName = renderWithFallback(data.config.folderName, executionContext);
+        case "CREATE_FOLDER":
+          const folderName = renderWithFallback(
+            data.config.folderName,
+            executionContext
+          );
           return await createFolder(
             folderName,
             data.config.folderId,
             accountId
           );
-        case "appendRowToSheet":
+        case "APPEND_ROW":
           const values = data.config.values.map((value) => {
-            return renderWithFallback(value, executionContext);});
+            return renderWithFallback(value, executionContext);
+          });
           return await appendRowToSheet(
-            data.config.sheetId,
-            data.config.range,
+            data.config.spreadsheetId,
+            data.config.sheetName,
+            data.config.startRow,
             values,
             accountId
           );
-        case "appendTextToDocument":
+        case "APPEND_TEXT":
           const text = renderWithFallback(data.config.text, executionContext);
           return await appendTextToDocument(
             data.config.documentId,
             text,
             accountId
           );
-        
+
         default:
           break;
       }
       break;
-      case "LinkedIn":
+    case "LinkedIn":
       switch (data.action) {
-        case "createPost":
+        case "CREATE_POST":
           const text = renderWithFallback(data.config.text, executionContext);
-          return await createPost(
-            text,
-            accountId
-          ); 
+          return await createPost(text, accountId);
         default:
           break;
       }
-      default:
+    default:
       break;
   }
 };

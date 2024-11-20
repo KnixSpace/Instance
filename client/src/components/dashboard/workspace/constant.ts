@@ -21,14 +21,17 @@ export const workflowNodesConfig = [
     type: "trigger",
     data: {
       label: "Sheets",
-      triggerType: "scheduled",
+      triggerType: "scheduler",
       service: "Google",
       action: "SHEET_NEW_ENTRY",
       description: "Triggered when new entry in a sheet",
       icon: appIcons.sheets,
       authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/integration/register`,
-        scope: ["https://www.googleapis.com/auth/spreadsheets"],
+        scope: [
+          "https://www.googleapis.com/auth/spreadsheets",
+          "https://www.googleapis.com/auth/drive",
+        ],
       },
     },
   },
@@ -119,7 +122,7 @@ export const workflowNodesConfig = [
     data: {
       label: "LinkedIn",
       service: "LinkedIn",
-      action: "SHARE_POST",
+      action: "CREATE_POST",
       description: "Share a post on LinkedIn",
       icon: appIcons.linkedin,
       authAccountInfo: {
@@ -136,40 +139,43 @@ export const actionConfig: ActionConfig[] = [
     icon: appIcons.github,
     configFields: [
       {
-        name: "event",
-        label: "Event",
-        type: "multiselect",
+        name: "events",
+        label: "Events",
+        type: "multi-select",
         placeholder: "Select events",
         isDynamic: false,
         options: [
-          { label: "New Commit", value: "PUSH" },
-          { label: "New Issue", value: "ISSUE" },
-          { label: "New Pull Request", value: "PULL" },
+          { label: "New Commit", value: "push" },
+          { label: "New Issue", value: "issue" },
+          { label: "New Pull Request", value: "pull" },
         ],
         allowedCustomInput: false,
         validation: Yup.array()
           .min(1, "Select at least one event")
           .required("Event is required"),
       },
-
       {
         name: "repoName",
         label: "Repository Name",
         type: "select",
         placeholder: "Select a repository",
         isDynamic: true,
-
         dynamicOptions: {
-          url: `${process.env.NEXT_PUBLIC_BASE_URL}/github/repos`,
-          headers: {
-            // "671f79f92e1c600ff209857f"
-          },
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/github/service/getRepos`,
         },
         allowedCustomInput: false,
         validation: Yup.object().required("Repository Name is required"),
       },
     ],
-    outputFields: ["commitId", "commitMessage", "commitLink", "repoName"],
+    outputFields: [
+      { label: "Repo id", value: "repository.id" },
+      { label: "Repo name", value: "repository.name" },
+      { label: "Repo url", value: "repository.url" },
+      { label: "Commit id", value: "commit.id" },
+      { label: "Commit message", value: "commit.message" },
+      { label: "Commit url", value: "commit.url" },
+      { label: "Modified files", value: "commit.modifiedFiles" },
+    ],
   },
   {
     action: "SHEET_NEW_ENTRY",
@@ -177,31 +183,51 @@ export const actionConfig: ActionConfig[] = [
     icon: appIcons.sheets,
     configFields: [
       {
-        name: "sheetId",
-        label: "Sheet",
+        name: "spreadsheetId",
+        label: "Spreadsheet",
         type: "select",
-        placeholder: "Select a sheet",
+        placeholder: "Select a spreadsheet",
         isDynamic: true,
         dynamicOptions: {
-          url: "https://sheets.googleapis.com/v4/spreadsheets",
-          headers: {},
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/service/getDriveFiles`,
+          body: {
+            mimeType: "sheets",
+          },
         },
         allowedCustomInput: false,
         validation: Yup.object().required("Sheet is required"),
       },
       {
-        name: "range",
-        label: "Range",
-        type: "text",
-        placeholder: "Enter range SHEET_NAME!A1:Z100",
+        name: "sheetName",
+        label: "Sheet Name",
+        type: "select",
+        placeholder: "Select a sheet name",
+        isDynamic: true,
+        dynamicOptions: {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/service/getSheetNames`,
+        },
+        dependentOn: ["spreadsheetId"],
+        allowedCustomInput: false,
+        validation: Yup.object().required("Sheet Name is required"),
+      },
+      {
+        name: "lastProcessedRow",
+        label: "Start Row",
+        type: "number",
+        placeholder: "Select a start row to track new entries",
         isDynamic: false,
-        allowedCustomInput: true,
-        validation: Yup.string()
-          .required("Range is required")
-          .matches(/^[A-Za-z0-9_!]+$/, "Invalid range"),
+        allowedCustomInput: false,
+        validation: Yup.number()
+          .required("Start Row is required")
+          .min(1, "Start Row should be greater than 0")
+          .max(1000, "Start Row should be less than 1000"),
       },
     ],
-    outputFields: ["newEntry", "sheetId", "sheetLink"],
+    outputFields: [
+      { label: "Sheet Id", value: "spreadsheetId" },
+      { label: "Sheet Name", value: "sheetName" },
+      { label: "New Entry", value: "newEntry" },
+    ],
   },
   {
     action: "CREATE_DOC",
@@ -217,21 +243,24 @@ export const actionConfig: ActionConfig[] = [
         allowedCustomInput: true,
         validation: Yup.object().required("Filename is required"),
       },
-      {
-        name: "folderId",
-        label: "Folder",
-        type: "select",
-        placeholder: "Select a folder",
-        isDynamic: true,
-        dynamicOptions: {
-          url: "https://drive.googleapis.com/v3/files",
-          headers: {},
-        },
-        allowedCustomInput: false,
-        validation: Yup.object(),
-      },
+      // {
+      //   name: "folderId",
+      //   label: "Folder",
+      //   type: "select",
+      //   placeholder: "Select a folder",
+      //   isDynamic: true,
+      //   dynamicOptions: {
+      //     url: "https://drive.googleapis.com/v3/files",
+      //   },
+      //   allowedCustomInput: false,
+      //   validation: Yup.object(),
+      // },
     ],
-    outputFields: ["docId", "docLink", "docTitle"],
+    outputFields: [
+      { label: "File id", value: "fileId" },
+      { label: "File link", value: "fileLink" },
+      { label: "File Name", value: "fileName" },
+    ],
   },
   {
     action: "CREATE_SHEET",
@@ -247,21 +276,24 @@ export const actionConfig: ActionConfig[] = [
         allowedCustomInput: true,
         validation: Yup.object().required("Filename is required"),
       },
-      {
-        name: "folderId",
-        label: "Folder",
-        type: "select",
-        placeholder: "Select a folder",
-        isDynamic: true,
-        dynamicOptions: {
-          url: "https://drive.googleapis.com/v3/files",
-          headers: {},
-        },
-        allowedCustomInput: false,
-        validation: Yup.object(),
-      },
+      // {
+      //   name: "folderId",
+      //   label: "Folder",
+      //   type: "select",
+      //   placeholder: "Select a folder",
+      //   isDynamic: true,
+      //   dynamicOptions: {
+      //     url: "https://drive.googleapis.com/v3/files",
+      //   },
+      //   allowedCustomInput: false,
+      //   validation: Yup.object(),
+      // },
     ],
-    outputFields: ["sheetId", "sheetLink", "sheetTitle"],
+    outputFields: [
+      { label: "Sheet id", value: "fileId" },
+      { label: "Sheet link", value: "fileLink" },
+      { label: "Sheet Name", value: "fileName" },
+    ],
   },
   {
     action: "APPEND_ROW",
@@ -269,40 +301,58 @@ export const actionConfig: ActionConfig[] = [
     icon: appIcons.sheets,
     configFields: [
       {
-        name: "sheetId",
+        name: "spreadsheetId",
         label: "Sheet",
         type: "select",
         placeholder: "Select a sheet",
         isDynamic: true,
         dynamicOptions: {
           url: "https://sheets.googleapis.com/v4/spreadsheets",
-          headers: {},
         },
         allowedCustomInput: false,
         validation: Yup.object().required("Sheet is required"),
       },
       {
-        name: "range",
-        label: "Range",
-        type: "text",
-        placeholder: "Enter range SHEET_NAME!A1:Z100",
+        name: "sheetName",
+        label: "Sheet Name",
+        type: "select",
+        placeholder: "Select a sheet name",
+        isDynamic: true,
+        dynamicOptions: {
+          url: "https://sheets.googleapis.com/v4/spreadsheets",
+        },
+        dependentOn: ["sheetId"],
+        allowedCustomInput: false,
+        validation: Yup.object().required("Sheet Name is required"),
+      },
+      {
+        name: "startRow",
+        label: "Starting row to append",
+        type: "number",
+        placeholder: "Select a start row to append values",
         isDynamic: false,
-        allowedCustomInput: true,
-        validation: Yup.string()
-          .required("Range is required")
-          .matches(/^[A-Za-z0-9_!]+$/, "Invalid range"),
+        allowedCustomInput: false,
+        validation: Yup.number()
+          .required("Start Row is required")
+          .min(1, "Start Row should be greater than 0")
+          .max(1000, "Start Row should be less than 1000"),
       },
       {
         name: "values",
         label: "Values",
-        type: "text",
-        placeholder: "Enter values",
+        type: "multi-select",
+        placeholder: "Select values to append",
         isDynamic: false,
-        allowedCustomInput: true,
-        validation: Yup.string().required("Values are required"),
+        allowedCustomInput: false,
+        validation: Yup.array()
+          .min(1, "Select at least one event")
+          .required("Values are required"),
       },
     ],
-    outputFields: ["updatedSheet", "sheetId", "sheetLink"],
+    outputFields: [
+      { label: "Sheet id", value: "spreadsheetId" },
+      { label: "Updated rows", value: "updatedRows" },
+    ],
   },
   {
     action: "APPEND_TEXT",
@@ -310,14 +360,13 @@ export const actionConfig: ActionConfig[] = [
     icon: appIcons.docs,
     configFields: [
       {
-        name: "docId",
+        name: "documentId",
         label: "Doc",
         type: "select",
         placeholder: "Select a document",
         isDynamic: true,
         dynamicOptions: {
           url: "https://drive.googleapis.com/v3/files",
-          headers: {},
         },
         allowedCustomInput: false,
         validation: Yup.object().required("Document is required"),
@@ -332,6 +381,6 @@ export const actionConfig: ActionConfig[] = [
         validation: Yup.object().required("Text is required"),
       },
     ],
-    outputFields: ["updatedDoc", "docId", "docLink"],
+    outputFields: [{ label: "Document id", value: "documentId" }],
   },
 ];

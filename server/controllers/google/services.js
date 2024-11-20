@@ -6,7 +6,7 @@ const sheets = google.sheets("v4");
 const drive = google.drive("v3");
 
 //drive services
-async function getAllFiles(req, res) {
+async function getDriveFiles(req, res) {
   try {
     const { accountId, pageToken, mimeType } = req.body;
 
@@ -96,12 +96,14 @@ async function getFileMetadata(fileId, userId, email) {
   return response.data;
 }
 
-async function getAllSpreadsheetSheets(req, res) {
+async function getSheetNames(req, res) {
   try {
     const { spreadsheetId, accountId } = req.body;
 
     if (!spreadsheetId || !accountId) {
-      return res.status(400).json({ message: "Spreadsheet ID and Account ID are required" });
+      return res
+        .status(400)
+        .json({ message: "Spreadsheet ID and Account ID are required" });
     }
 
     const account = await Google.findById(accountId);
@@ -133,7 +135,9 @@ async function getAllSpreadsheetSheets(req, res) {
     if (error.response?.status === 404) {
       return res.status(404).json({ message: "Spreadsheet not found" });
     } else if (error.response?.status === 403) {
-      return res.status(403).json({ message: "Access denied to the spreadsheet" });
+      return res
+        .status(403)
+        .json({ message: "Access denied to the spreadsheet" });
     }
 
     // Generic error response
@@ -169,22 +173,25 @@ async function getSheetData(spreadsheetId, range, userId, email) {
   return response.data.values;
 }
 
-async function getNewEntryOfSheet(auth, spreadsheetId, range, lastProcessedRow) {
+async function getNewEntryOfSheet(
+  auth,
+  spreadsheetId,
+  sheetName,
+  lastProcessedRow
+) {
   try {
     const sheets = google.sheets({ version: "v4", auth });
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range,
+      range: `${sheetName}!A${lastProcessedRow + 1}:Z`,
     });
 
-    const rows = response.data.values;
+    const newEntries = response.data.values;
 
-    if (rows && rows.length > lastProcessedRow) {
-      const newEntries = rows.slice(lastProcessedRow);
+    if (newEntries && newEntries.length > 0) {
       return {
         newEntries,
-        row: rows.length,
       };
     }
 
@@ -196,9 +203,9 @@ async function getNewEntryOfSheet(auth, spreadsheetId, range, lastProcessedRow) 
 }
 
 module.exports = {
-  getAllFiles,
+  getDriveFiles,
   getFileMetadata,
-  getAllSpreadsheetSheets,
+  getSheetNames,
   getSheetData,
   getNewEntryOfSheet,
 };

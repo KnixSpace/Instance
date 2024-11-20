@@ -32,6 +32,7 @@ export interface Node {
     description: string;
     icon: string;
     authAccountInfo: Account;
+    config?: Record<string, any>;
   };
   selected: boolean;
 }
@@ -45,7 +46,8 @@ export interface workflowState {
     isWarning: boolean;
     message: string | null;
   };
-  adjacencyList: {
+  forwardList: {
     [key: string]: string[];
   };
+  backwardList: { [key: string]: string[] };
 }

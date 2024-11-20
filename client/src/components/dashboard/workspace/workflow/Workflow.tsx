@@ -16,7 +16,7 @@ import "@xyflow/react/dist/style.css";
 import TriggerNode from "./customNodes/TriggerNode";
 import ActionNode from "./customNodes/ActionNode";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { v4 } from "uuid";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
@@ -26,10 +26,10 @@ import {
   selectNode,
   setAdjacencyList,
   setDeletedNodes,
-  setSidePanelMode,
   setWarning,
 } from "@/lib/features/workflow/workflowSlice";
 import { Node } from "@/types/workflowTypes";
+import { getNextNodes } from "@/utils/workflowUtils";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -46,16 +46,14 @@ const Workflow = (props: Props) => {
   const dispatch = useAppDispatch();
 
   const onConnect = useCallback(
-    (params: any) => {
-      setEdges((edges) => {
-        const newEdges = addEdge(params, edges);
-        dispatch(addNewEdge(newEdges));
-        return newEdges;
-      });
-      dispatch(setAdjacencyList());
-    },
-    [dispatch, setEdges]
+    (params: any) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
   );
+
+  useEffect(() => {
+    dispatch(addNewEdge(edges));
+    dispatch(setAdjacencyList());
+  }, [edges, nodes, dispatch]);
 
   const onDragOver = (event: any) => {
     event.preventDefault();
@@ -93,7 +91,6 @@ const Workflow = (props: Props) => {
     });
 
     dispatch(addNewNode(newNode));
-    dispatch(setAdjacencyList());
     dispatch(selectNode(newNode.id));
   };
 
@@ -106,14 +103,12 @@ const Workflow = (props: Props) => {
 
   const handlePaneClick = useCallback(() => {
     dispatch(selectNode(null));
-    dispatch(setSidePanelMode("action"));
   }, [dispatch]);
 
   const onEdgesDelete = useCallback(
     (deletedEdges: Edge[]) => {
       const updatedEdges = edges.filter((edge) => !deletedEdges.includes(edge));
       dispatch(addNewEdge(updatedEdges));
-      dispatch(setAdjacencyList());
     },
     [edges, dispatch]
   );
@@ -131,11 +126,24 @@ const Workflow = (props: Props) => {
         return;
       }
 
-      const nodesToSave = nodes.filter((node) => !deletedNodes.includes(node));
-      dispatch(setDeletedNodes(nodesToSave));
-      dispatch(setSidePanelMode("action"));
-      dispatch(setAdjacencyList());
+      const deletedDecendants = deletedNodes.flatMap((node) => {
+        return getNextNodes(flow.forwardList, node.id, true);
+      });
+
+      dispatch(setDeletedNodes(deletedDecendants));
+      setNodes((prevNodes) => {
+        return prevNodes.filter((node) => !deletedDecendants.includes(node.id));
+      });
+      setEdges((prevEdges) => {
+        return prevEdges.filter(
+          (edge) =>
+            !deletedDecendants.includes(edge.source) &&
+            !deletedDecendants.includes(edge.target)
+        );
+      });
+      dispatch(addNewEdge(edges));
     },
+
     [nodes, dispatch]
   );
 

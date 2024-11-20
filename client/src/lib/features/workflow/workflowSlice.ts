@@ -1,9 +1,11 @@
+import { workflowNodesConfig } from "@/components/dashboard/workspace/constant";
 import {
   Account,
   Node,
   SidePanelMode,
   workflowState,
 } from "@/types/workflowTypes";
+import { createAdjacencyList, getNextNodes } from "@/utils/workflowUtils";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { Edge } from "@xyflow/react";
 
@@ -16,7 +18,8 @@ const initialState: workflowState = {
     isWarning: false,
     message: null,
   },
-  adjacencyList: {},
+  forwardList: {},
+  backwardList: {},
 };
 
 const workflowSlice = createSlice({
@@ -43,11 +46,30 @@ const workflowSlice = createSlice({
       state.sidePanel = "configuration";
     },
 
-    setDeletedNodes: (state, action: PayloadAction<Node[]>) => {
-      state.nodes = action.payload;
+    setDeletedNodes: (state, action: PayloadAction<string[]>) => {
+      state.nodes = state.nodes.filter(
+        (node) => !action.payload.includes(node.id)
+      );
+      state.selectedNode = null;
+      state.sidePanel = "action";
+      // state.edges = state.edges.filter(
+      //   (edge) =>
+      //     !action.payload.includes(edge.source) &&
+      //     !action.payload.includes(edge.target)
+      // );
     },
 
     selectNode: (state, action: PayloadAction<string | null>) => {
+      // console.log(action.payload);
+      if (action.payload === null) {
+        if (state.nodes.length > 0) {
+          state.sidePanel = "action";
+          state.selectedNode = null;
+        } else {
+          state.sidePanel = "trigger";
+        }
+      }
+
       const isNode = state.nodes.find((node) => node.id === action.payload);
       if (isNode) {
         state.selectedNode = isNode;
@@ -75,17 +97,16 @@ const workflowSlice = createSlice({
     },
 
     setAdjacencyList: (state) => {
-      const adjacencyList: { [key: string]: string[] } = {};
-
-      for (let node of state.nodes) {
-        adjacencyList[node.id] = [];
-      }
-
-      for (let edge of state.edges) {
-        adjacencyList[edge.target].push(edge.source);
-      }
-
-      state.adjacencyList = adjacencyList;
+      state.backwardList = createAdjacencyList(
+        state.nodes,
+        state.edges,
+        "backward"
+      );
+      state.forwardList = createAdjacencyList(
+        state.nodes,
+        state.edges,
+        "forward"
+      );
     },
 
     setNodeAccount: (
@@ -109,6 +130,29 @@ const workflowSlice = createSlice({
         state.selectedNode = node;
       }
     },
+
+    updateNodeConfig: (
+      state,
+      action: PayloadAction<{ nodeId: string; config: Record<string, any> }>
+    ) => {
+      const node = state.nodes.find(
+        (node) => node.id === action.payload.nodeId
+      );
+      if (node) {
+        node.data.config = action.payload.config;
+        state.sidePanel = "action";
+      }
+    },
+
+    resetNodeConfig: (state, action: PayloadAction<Node>) => {
+      const defaultConfig = workflowNodesConfig.find(
+        (config) => config.data.action === action.payload.data.action
+      )?.data.config;
+      const node = state.nodes.find((node) => node.id === action.payload.id);
+      if (node) {
+        node.data.config = defaultConfig;
+      }
+    },
   },
 });
 
@@ -123,6 +167,8 @@ export const {
   setWarning,
   setAdjacencyList,
   setNodeAccount,
+  updateNodeConfig,
+  resetNodeConfig,
 } = workflowSlice.actions;
 
 export default workflowSlice.reducer;

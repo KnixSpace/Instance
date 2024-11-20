@@ -1,95 +1,103 @@
 import * as Yup from "yup";
-import { useEffect } from "react";
+import { memo, useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { useNodeConfiguration } from "./useNodeConfiguration";
-import ConfigurationField from "./ConfigurationField";
 import { Node } from "@/types/workflowTypes";
-import { setSidePanelMode } from "@/lib/features/workflow/workflowSlice";
+import {
+  resetNodeConfig,
+  setSidePanelMode,
+  updateNodeConfig,
+} from "@/lib/features/workflow/workflowSlice";
 import { useAppDispatch } from "@/lib/hooks";
+import { actionConfig } from "../../constant";
+import { useNodeConfiguration } from "@/hooks/useNodeConfiguration";
+import AccountInfo from "../account/AccountInfo";
+import ConfigurationForm from "./ConfigurationForm";
+import { useDefalutValues } from "@/hooks/useDefaultValues";
 
 const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   const dispatch = useAppDispatch();
 
-  const { nodeConfig, dynamicOptions } = useNodeConfiguration(selectedNode);
-  const account = selectedNode.data.authAccountInfo;
-  if (!nodeConfig) {
-    return null;
-  }
+  const nodeConfig = useMemo(
+    () =>
+      actionConfig.find((config) => config.action === selectedNode.data.action),
+    [selectedNode.data.action]
+  );
 
-  const schema = Yup.object().shape(
-    nodeConfig.configFields.reduce((acc, field) => {
-      acc[field.name] = field.validation;
-      return acc;
-    }, {} as Record<string, Yup.AnySchema>)
+  if (!nodeConfig) return null;
+
+  const defaultValues = useDefalutValues(nodeConfig.configFields);
+
+  const schema = useMemo(
+    () =>
+      Yup.object().shape(
+        nodeConfig.configFields.reduce((acc, field) => {
+          acc[field.name] = field.validation;
+          return acc;
+        }, {} as Record<string, Yup.AnySchema>)
+      ),
+    [nodeConfig.configFields]
   );
 
   const {
     control,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<Record<string, any>>({
     resolver: yupResolver(schema),
     mode: "onSubmit",
+    defaultValues,
   });
 
+  const { dynamicOptions } = useNodeConfiguration(
+    selectedNode,
+    nodeConfig,
+    watch
+  );
+
+  const handleChangeAccount = useCallback(() => {
+    dispatch(setSidePanelMode("account"));
+    dispatch(resetNodeConfig(selectedNode));
+  }, [dispatch]);
+
+  //WIP: handle form submit
+  const handleFormSubmit = useCallback(
+    (data: Record<string, any>) => {
+      console.log(data);
+      // Add your submit logic here
+      if (window.confirm("Sure to submit?")) {
+        dispatch(updateNodeConfig({ nodeId: selectedNode.id, config: data }));
+      }
+    },
+    [dispatch, selectedNode.id]
+  );
+
   useEffect(() => {
-    //WIP: reset form with initial values or previously saved values in redux node.data.config
-    reset();
-  }, [selectedNode, reset, nodeConfig]);
+    reset(defaultValues);
+    if (selectedNode.data.config) {
+      reset(selectedNode.data.config);
+    }
+  }, [selectedNode.id, reset]);
 
   return (
     <div className="flex-1 flex flex-col gap-4 overflow-auto">
-      <div className="mb-2">
-        <div
-          className="text-sm mb-2 text-gray-400 cursor-pointer"
-          onClick={() => {
-            dispatch(setSidePanelMode("account"));
-          }}
-        >
-          Change Account
-        </div>
-        <div className="flex gap-4">
-          <div className="size-8 rounded bg-lightbackground overflow-hidden">
-            <img
-              src={account.avatar}
-              alt={account.name}
-              className="object-contain"
-            />
-          </div>
-          <div className="flex-1">
-            <h2 className="font-medium text-sm">{account.name}</h2>
-            <p className="text-xs text-gray-400 text-wrap">{account.email}</p>
-          </div>
-        </div>
-      </div>
+      <AccountInfo
+        account={selectedNode.data.authAccountInfo}
+        onChangeAccount={handleChangeAccount}
+      />
       <div className="flex-1 overflow-auto">
-        <form
-          className="flex flex-col h-full gap-4"
-          onSubmit={handleSubmit((data) => {
-            console.log(data);
-          })}
-        >
-          {nodeConfig.configFields.map((field) => (
-            <ConfigurationField
-              key={field.name}
-              field={field}
-              control={control}
-              errors={errors}
-              dynamicOptions={dynamicOptions[field.name]}
-            />
-          ))}
-          <button
-            type="submit"
-            className="bg-cta text-sm w-full text-white px-4 py-2 rounded focus:outline-none"
-          >
-            Save
-          </button>
-        </form>
+        <ConfigurationForm
+          nodeConfig={nodeConfig}
+          control={control}
+          errors={errors}
+          dynamicOptions={dynamicOptions}
+          onSubmit={handleSubmit(handleFormSubmit)}
+        />
       </div>
     </div>
   );
 };
-export default Configuration;
+export default memo(Configuration);

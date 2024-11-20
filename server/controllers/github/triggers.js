@@ -5,7 +5,6 @@ const { FlowEngine } = require("../../engine/flowEngine");
 
 async function createWebhook(repoId, repoName, events, accountId) {
   try {
-
     const sanitizedRepoId = repoId.value;
     const sanitizedRepoName = repoName.value;
     const sanitizedEvents = events.value.map((event) => event.value);
@@ -18,13 +17,15 @@ async function createWebhook(repoId, repoName, events, accountId) {
     const { accessToken, webhooks } = githubAccount;
     const webhookUrl = `${process.env.HOST_URL}/api/v1/github/webhook/notifications`;
 
-    const existingWebhook = webhooks.find((webhook) => webhook.repoId === sanitizedRepoId);
+    const existingWebhook = webhooks.find(
+      (webhook) => webhook.repoId === sanitizedRepoId
+    );
 
     if (existingWebhook) {
-
       const existingEvents = existingWebhook.events;
       const areEventsSame =
-        JSON.stringify(sanitizedEvents.sort()) === JSON.stringify(existingEvents.sort());
+        JSON.stringify(sanitizedEvents.sort()) ===
+        JSON.stringify(existingEvents.sort());
 
       if (areEventsSame) {
         return res.status(200).json({
@@ -32,7 +33,6 @@ async function createWebhook(repoId, repoName, events, accountId) {
           webhookId: existingWebhook.webhookId,
         });
       }
-
 
       const updateResponse = await updateWebhook(
         sanitizedRepoName,
@@ -58,7 +58,6 @@ async function createWebhook(repoId, repoName, events, accountId) {
       accessToken
     );
 
-
     githubAccount.webhooks.push({
       repoId: sanitizedRepoId,
       repoName: sanitizedRepoName,
@@ -67,18 +66,26 @@ async function createWebhook(repoId, repoName, events, accountId) {
     });
     await githubAccount.save();
 
-    res.status(201).json({
+    return {
       message: "Webhook created successfully",
-      webhook: webhookResponse.data,
-    });
+      webhookId: webhookResponse.data.id,
+      events: webhookResponse.data.events,
+    };
   } catch (error) {
-    console.error("Error creating/updating webhook:", error.response?.data || error);
-    res.status(500).json({ message: "Failed to create or update webhook" });
+    console.error(
+      "Error creating/updating webhook:",
+      error.response?.data || error
+    );
   }
 }
 
-
-async function updateWebhook(repoName, webhookId, webhookUrl, events, accessToken) {
+async function updateWebhook(
+  repoName,
+  webhookId,
+  webhookUrl,
+  events,
+  accessToken
+) {
   const url = `https://api.github.com/repos/${repoName}/hooks/${webhookId}`;
   const config = {
     config: {
@@ -96,7 +103,6 @@ async function updateWebhook(repoName, webhookId, webhookUrl, events, accessToke
 
   return axios.patch(url, config, { headers });
 }
-
 
 async function createNewWebhook(repoName, webhookUrl, events, accessToken) {
   const url = `https://api.github.com/repos/${repoName}/hooks`;
@@ -130,14 +136,21 @@ const handleWebhookEvent = async (req, res) => {
       return res.status(200).json({ message: "Ping event received" });
     }
 
-
     const { repository, pusher, head_commit } = req.body;
 
     if (!repository || !head_commit) {
       return res.status(400).json({ message: "Invalid webhook payload" });
     }
 
-    const eventData = mapEventData(eventType, hookId, targetType, userAgent, repository, pusher, head_commit);
+    const eventData = mapEventData(
+      eventType,
+      hookId,
+      targetType,
+      userAgent,
+      repository,
+      pusher,
+      head_commit
+    );
 
     const query = {
       status: "active",
@@ -158,12 +171,12 @@ const handleWebhookEvent = async (req, res) => {
     }
 
     response = {
-      status : true,
-      data : {
-        eventData
-      }
-    }
-    
+      status: true,
+      data: {
+        eventData,
+      },
+    };
+
     for (const workflow of matchingWorkflows) {
       const flowEngine = new FlowEngine();
       await flowEngine.executeEngine(workflow, response);
@@ -176,21 +189,28 @@ const handleWebhookEvent = async (req, res) => {
   }
 };
 
-
-const mapEventData = (eventType, hookId, targetType, userAgent, repository, pusher, head_commit) => ({
+const mapEventData = (
   eventType,
   hookId,
   targetType,
   userAgent,
+  repository,
+  pusher,
+  head_commit
+) => ({
+  // eventType,
+  // hookId,
+  // targetType,
+  // userAgent,
   repository: {
     id: repository.id,
     name: repository.full_name,
     url: repository.html_url,
   },
-  pusher: {
-    email: pusher?.email || null,
-    name: pusher?.name || null,
-  },
+  // pusher: {
+  //   email: pusher?.email || null,
+  //   name: pusher?.name || null,
+  // },
   commit: {
     id: head_commit.id,
     message: head_commit.message,

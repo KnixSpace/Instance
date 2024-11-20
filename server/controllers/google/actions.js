@@ -8,7 +8,12 @@ const sheets = google.sheets("v4");
 const calendar = google.calendar("v3");
 
 //drive actions
-async function createFile(fileName, fileType, parentFolderId = null, accountId) {
+async function createFile(
+  fileName,
+  fileType,
+  parentFolderId = null,
+  accountId
+) {
   try {
     const account = await Google.findById(accountId);
 
@@ -162,7 +167,14 @@ async function appendTextToDocument(documentId, text, accountId) {
 }
 
 //sheets
-async function appendRowToSheet(spreadsheetId, range, values, accountId) {
+//WIP: check if this is the correct function
+async function appendRowToSheet(
+  spreadsheetId,
+  sheetName,
+  startRow,
+  values,
+  accountId
+) {
   try {
     const account = await Google.findById(accountId);
 
@@ -182,11 +194,11 @@ async function appendRowToSheet(spreadsheetId, range, values, accountId) {
 
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range,
+      range: `${sheetName}!A${startRow}`,
       auth: oauth2Client,
       requestBody: {
         majorDimension: "ROWS",
-        values,
+        values: [values.map((item) => item.value)],
       },
       valueInputOption: "RAW",
       insertDataOption: "INSERT_ROWS",

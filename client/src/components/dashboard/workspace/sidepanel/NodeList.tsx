@@ -3,13 +3,13 @@ import NodeCard from "./NodeCard";
 
 type NodeListProps = {
   debouncedQuery: string;
-  nodes: any[]; // Adjust type according to your node structure
+  mode: "trigger" | "action"; // Adjust type according to your node structure
 };
 
-const NodeList = ({ debouncedQuery, nodes }: NodeListProps) => {
+const NodeList = ({ debouncedQuery, mode }: NodeListProps) => {
   // Filter nodes based on debounced query
   const filteredNodes = workflowNodesConfig.filter((node) => {
-    const nodeType = nodes.length > 0 ? "action" : "trigger";
+    const nodeType = mode === "action" ? "action" : "trigger";
     return (
       (node.type === nodeType &&
         node.data.label.toLowerCase().includes(debouncedQuery.toLowerCase())) ||
