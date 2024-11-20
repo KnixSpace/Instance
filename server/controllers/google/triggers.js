@@ -4,7 +4,7 @@ const { FlowEngine } = require("../../engine/flowEngine");
 
 async function processSheetEntryTrigger(workflow, triggerNode) {
   try {
-    const { spreadsheetId, lastProcessedRow, sheetName } =
+    const { spreadsheetId, sheetName, lastProcessedRow } =
       triggerNode.data.config;
     const accountId = triggerNode.data.authAccountInfo._id;
 
@@ -24,7 +24,7 @@ async function processSheetEntryTrigger(workflow, triggerNode) {
     oauth2Client.setCredentials({ access_token });
 
     // Fetch all new entries from the sheet
-    const { newEntries} = await getNewEntriesFromSheet(
+    const { newEntries } = await getNewEntriesFromSheet(
       oauth2Client,
       spreadsheetId,
       sheetName,
@@ -38,9 +38,11 @@ async function processSheetEntryTrigger(workflow, triggerNode) {
           status: true,
           data: {
             newEntry: entry,
+            spreadsheetId,
+            sheetName,
           },
         };
-        
+
         await flowEngine.executeEngine(workflow, response);
         workflow.nodes[0].data.config.lastProcessedRow += 1;
         await workflow.save();

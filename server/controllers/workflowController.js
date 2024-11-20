@@ -74,6 +74,14 @@ async function updateWorkflow(req, res) {
   res.json(await workflow.save());
 }
 
+//WIP: Implement the status active update function
+
+//WIP: Implement the workflow description update function
+
+//WIP: get all the workflows (title, description, status,id)
+
+//WIP: get all the details of a workflow
+
 async function fetchServiceAccount(req, res) {
   try {
     if (!req.body.service) {
