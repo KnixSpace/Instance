@@ -1,10 +1,13 @@
+"use client";
 import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import axios from "axios";
 import * as yup from "yup";
+import { useParams } from "next/navigation";
+
 
 type Props = {
-  workflowId: string;
   setEdit: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
@@ -23,6 +26,8 @@ const schema = yup.object().shape({
 });
 
 const EditWorkflow = (props: Props) => {
+  const { workflowId } = useParams();
+
   const {
     control,
     handleSubmit,
@@ -31,9 +36,15 @@ const EditWorkflow = (props: Props) => {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
     console.log(data);
     // Handle your form submission logic here
+    const response = await axios.patch(`${process.env.NEXT_PUBLIC_BASE_URL}/workflow/updateMetaData`, {
+      name: data.name,
+      description: data.description,
+      workflowId
+    });
+    console.log(response.data);
     props.setEdit(false);
   };
 

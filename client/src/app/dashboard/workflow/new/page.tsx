@@ -14,8 +14,17 @@ interface FormData {
 }
 
 const schema = yup.object().shape({
-  name: yup.string().required("Workflow Name is required"),
-  description: yup.string().required("Workflow Description is required"),
+  name: yup
+    .string()
+    .trim()
+    .required("Workflow Name is required")
+    .min(3, "Min 3 letter name is required"),
+  description: yup
+    .string()
+    .trim()
+    .required("Workflow Description is required")
+    .min(10, "Minimum 10 letter description is required")
+    .max(20, "Maximum 20 letter description is required"),
 });
 
 type Props = {};
