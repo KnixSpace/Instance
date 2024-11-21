@@ -63,7 +63,7 @@ const page = (props: Props) => {
   return (
     <>
       {warnings.isWarning && <Warning message={warnings.message} />}
-      {edit && <EditWorkflow workflowId="" setEdit={setEdit} />}
+      {edit && <EditWorkflow setEdit={setEdit} />}
       <section className="h-full flex divide-x divide-darkSecondary">
         <div className="flex-1 flex flex-col divide-y divide-darkSecondary">
           <div className="flex justify-between items-center p-4 text-lg select-none">
@@ -90,9 +90,8 @@ const page = (props: Props) => {
                 }}
               >
                 <div
-                  className={`size-4 rounded-full transition-all duration-500 ease-in-out  ${
-                    active ? "translate-x-5 bg-cta" : "bg-background"
-                  }`}
+                  className={`size-4 rounded-full transition-all duration-500 ease-in-out  ${active ? "translate-x-5 bg-cta" : "bg-background"
+                    }`}
                 />
               </div>
               <div
@@ -115,9 +114,8 @@ const page = (props: Props) => {
           </div>
         </div>
         <div
-          className={`${
-            open ? (small ? "w-80" : "w-0 lg:w-80") : "w-0"
-          } transition-all overflow-hidden duration-500 ease-in-out`}
+          className={`${open ? (small ? "w-80" : "w-0 lg:w-80") : "w-0"
+            } transition-all overflow-hidden duration-500 ease-in-out`}
         >
           <SidePanel />
         </div>
