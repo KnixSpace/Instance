@@ -1,4 +1,4 @@
-import { useAppSelector } from "@/lib/hooks";
+import { useAppSelector } from "@/redux/hooks";
 import {
   ActionConfig,
   ConfigField,

@@ -1,6 +1,6 @@
 "use client";
-import { initializeUser } from "@/lib/features/user/userSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { initializeUser } from "@/redux/features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { ReactNode, useEffect } from "react";
 import axios from "axios";
 

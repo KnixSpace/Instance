@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
-import workflowReducer from "@/lib/features/workflow/workflowSlice";
-import userReducer from "@/lib/features/user/userSlice";
+import workflowReducer from "@/redux/features/workflow/workflowSlice";
+import userReducer from "@/redux/features/user/userSlice";
 
 export const makeStore = () => {
   return configureStore({

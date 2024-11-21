@@ -1,5 +1,5 @@
-import { setNodeAccount } from "@/lib/features/workflow/workflowSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { setNodeAccount } from "@/redux/features/workflow/workflowSlice";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { Account, Node } from "@/types/workflowTypes";
 import axios from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";

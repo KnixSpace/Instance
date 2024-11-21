@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { navList } from "@/lib/constants";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { initializeUser } from "@/lib/features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { initializeUser } from "@/redux/features/user/userSlice";
 
 type Props = {};
 

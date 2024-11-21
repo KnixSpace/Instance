@@ -4,8 +4,8 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/lib/hooks";
-import { initializedNewWorkflow } from "@/lib/features/workflow/workflowSlice";
+import { useAppDispatch } from "@/redux/hooks";
+import { initializedNewWorkflow } from "@/redux/features/workflow/workflowSlice";
 import axios from "axios";
 
 interface FormData {
@@ -44,7 +44,7 @@ const Page: React.FC<Props> = (props) => {
         body,
         { withCredentials: true }
       );
-      
+
       const workflowId = response.data._id;
       dispatch(initializedNewWorkflow());
       push(`/dashboard/workflow/${workflowId}`);

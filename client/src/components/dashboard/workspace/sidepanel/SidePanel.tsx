@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import NodeList from "./NodeList";
-import { useAppSelector } from "@/lib/hooks";
+import { useAppSelector } from "@/redux/hooks";
 import SearchNodes from "./SearchNodes";
 import Configuration from "./configuration/Configuration";
 import Account from "./account/Account";

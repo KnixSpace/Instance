@@ -3,8 +3,8 @@ import EditWorkflow from "@/components/dashboard/workspace/workflow/EditWorkflow
 import SidePanel from "@/components/dashboard/workspace/sidepanel/SidePanel";
 import Warning from "@/components/dashboard/workspace/workflow/Warning";
 import Workflow from "@/components/dashboard/workspace/workflow/Workflow";
-import { setWarning } from "@/lib/features/workflow/workflowSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { setWarning } from "@/redux/features/workflow/workflowSlice";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

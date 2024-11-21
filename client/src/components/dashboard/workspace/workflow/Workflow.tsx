@@ -18,7 +18,7 @@ import ActionNode from "./customNodes/ActionNode";
 
 import { useCallback, useEffect } from "react";
 import { v4 } from "uuid";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   addNewEdge,
   addNewNode,
@@ -27,7 +27,7 @@ import {
   setAdjacencyList,
   setDeletedNodes,
   setWarning,
-} from "@/lib/features/workflow/workflowSlice";
+} from "@/redux/features/workflow/workflowSlice";
 import { Node } from "@/types/workflowTypes";
 import { getNextNodes } from "@/utils/workflowUtils";
 

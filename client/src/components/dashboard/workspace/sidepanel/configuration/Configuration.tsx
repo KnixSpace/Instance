@@ -8,8 +8,8 @@ import {
   resetNodeConfig,
   setSidePanelMode,
   updateNodeConfig,
-} from "@/lib/features/workflow/workflowSlice";
-import { useAppDispatch } from "@/lib/hooks";
+} from "@/redux/features/workflow/workflowSlice";
+import { useAppDispatch } from "@/redux/hooks";
 import { actionConfig } from "../../constant";
 import { useNodeConfiguration } from "@/hooks/useNodeConfiguration";
 import AccountInfo from "../account/AccountInfo";
