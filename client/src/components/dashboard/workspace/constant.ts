@@ -243,18 +243,21 @@ export const actionConfig: ActionConfig[] = [
         allowedCustomInput: true,
         validation: Yup.object().required("Filename is required"),
       },
-      // {
-      //   name: "folderId",
-      //   label: "Folder",
-      //   type: "select",
-      //   placeholder: "Select a folder",
-      //   isDynamic: true,
-      //   dynamicOptions: {
-      //     url: "https://drive.googleapis.com/v3/files",
-      //   },
-      //   allowedCustomInput: false,
-      //   validation: Yup.object(),
-      // },
+      {
+        name: "folderId",
+        label: "Folder",
+        type: "select",
+        placeholder: "Select a folder",
+        isDynamic: true,
+        dynamicOptions: {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/service/getDriveFiles`,
+          body: {
+            mimeType: "folders",
+          },
+        },
+        allowedCustomInput: false,
+        validation: Yup.object(),
+      },
     ],
     outputFields: [
       { label: "File id", value: "fileId" },
@@ -276,18 +279,21 @@ export const actionConfig: ActionConfig[] = [
         allowedCustomInput: true,
         validation: Yup.object().required("Filename is required"),
       },
-      // {
-      //   name: "folderId",
-      //   label: "Folder",
-      //   type: "select",
-      //   placeholder: "Select a folder",
-      //   isDynamic: true,
-      //   dynamicOptions: {
-      //     url: "https://drive.googleapis.com/v3/files",
-      //   },
-      //   allowedCustomInput: false,
-      //   validation: Yup.object(),
-      // },
+      {
+        name: "folderId",
+        label: "Folder",
+        type: "select",
+        placeholder: "Select a folder",
+        isDynamic: true,
+        dynamicOptions: {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/service/getDriveFiles`,
+          body: {
+            mimeType: "folders",
+          },
+        },
+        allowedCustomInput: false,
+        validation: Yup.object(),
+      },
     ],
     outputFields: [
       { label: "Sheet id", value: "fileId" },
@@ -307,7 +313,10 @@ export const actionConfig: ActionConfig[] = [
         placeholder: "Select a sheet",
         isDynamic: true,
         dynamicOptions: {
-          url: "https://sheets.googleapis.com/v4/spreadsheets",
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/service/getDriveFiles`,
+          body: {
+            mimeType: "sheets",
+          },
         },
         allowedCustomInput: false,
         validation: Yup.object().required("Sheet is required"),
@@ -319,9 +328,9 @@ export const actionConfig: ActionConfig[] = [
         placeholder: "Select a sheet name",
         isDynamic: true,
         dynamicOptions: {
-          url: "https://sheets.googleapis.com/v4/spreadsheets",
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/service/getSheetNames`,
         },
-        dependentOn: ["sheetId"],
+        dependentOn: ["spreadsheetId"],
         allowedCustomInput: false,
         validation: Yup.object().required("Sheet Name is required"),
       },
@@ -366,7 +375,10 @@ export const actionConfig: ActionConfig[] = [
         placeholder: "Select a document",
         isDynamic: true,
         dynamicOptions: {
-          url: "https://drive.googleapis.com/v3/files",
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/service/getSheetNames`,
+          body: {
+            mimeType: "docs",
+          },
         },
         allowedCustomInput: false,
         validation: Yup.object().required("Document is required"),
