@@ -56,11 +56,16 @@ async function updateWorkflow(req, res) {
 
   const executionOrder = topologicalSort(adjacencyList);
   try {
-    const workflow = await WorkFlow.findByIdAndUpdate(workflowId, {
-      nodes: req.body.nodes,
-      edges: req.body.edges,
-      executionOrder: executionOrder,
-    }, { $inc: { version: 1 } }, { new: true });
+    const workflow = await WorkFlow.findByIdAndUpdate(
+      workflowId,
+      {
+        nodes: req.body.nodes,
+        edges: req.body.edges,
+        executionOrder: executionOrder,
+      },
+      { $inc: { version: 1 } },
+      { new: true }
+    );
 
     if (!workflow) {
       return res.status(404).json({ message: "Workflow not found" });
@@ -73,7 +78,7 @@ async function updateWorkflow(req, res) {
 }
 
 //Implement the status active update function
-async function statusUpdate(req, res) {
+async function updateStatus(req, res) {
   const { workflowId, status } = req.body;
 
   try {
@@ -82,32 +87,37 @@ async function statusUpdate(req, res) {
       workflow.status = "inactive";
       workflow = await workflow.save();
       return res.status(400).json({ status: workflow.status });
-    }
-    else {
+    } else {
       workflow.status = "active";
       workflow = await workflow.save();
       return res.status(200).json({ status: workflow.status });
     }
-  }
-  catch (error) {
+  } catch (error) {
     return res.status(500).json({ message: "Error updating workflow status" });
   }
-};
+}
 
 //Implement the workflow description update function
 async function updateMetaData(req, res) {
   const { workflowId, description, name } = req.body;
   try {
-    let workflow = await WorkFlow.findByIdAndUpdate(workflowId, { $set: { description: description, name: name } }, { new: true });
-    console.log("workflow", workflow);
-    return res.status(200).json({ name: workflow.name, description: workflow.description });
+    let workflow = await WorkFlow.findByIdAndUpdate(
+      workflowId,
+      { $set: { description: description, name: name } },
+      { new: true }
+    );
+    return res
+      .status(200)
+      .json({ name: workflow.name, description: workflow.description });
   } catch (error) {
-    return res.status(500).json({ message: "Error updating workflow title and description" });
+    return res
+      .status(500)
+      .json({ message: "Error updating workflow title and description" });
   }
 }
 
 // get all the workflows (title, description, status,id)
-async function getWorkflowSummary(req, res) {
+async function getAllWorkflows(req, res) {
   const { workflowId } = req.body;
   try {
     const workflows = await WorkFlow.findById(workflowId);
@@ -115,25 +125,42 @@ async function getWorkflowSummary(req, res) {
       workflowId,
       name: workflows.name,
       description: workflows.description,
-      status: workflows.status
+      status: workflows.status,
     };
     res.status(200).json(summary);
-  }
-  catch (error) {
+  } catch (error) {
     return res.status(500).json({ message: "Error fetching workflows" });
   }
-
 }
 
 //get all the details of a workflow
 
-async function getWorkflowdetails(req, res) {
+async function getWorkflow(req, res) {
   const { workflowId } = req.body;
   try {
     const workflows = await WorkFlow.findById(workflowId);
+    if (!workflows) {
+      return res.status(404).json({ message: "Workflow not found" });
+    }
     res.status(200).json(workflows);
+  } catch (error) {
+    return res.status(500).json({ message: "Error fetching workflows" });
   }
-  catch (error) {
+}
+
+async function existWorkflow(req, res) {
+  const { workflowId } = req.params;
+  const userId = req.user.userId;
+  try {
+    const workflow = await WorkFlow.exists({
+      _id: workflowId,
+      "metadata.userId": userId,
+    });
+    if (!workflow) {
+      return res.status(404).json({ message: "Workflow not found" });
+    }
+    return res.status(200).json({ message: "Workflow found" });
+  } catch (error) {
     return res.status(500).json({ message: "Error fetching workflows" });
   }
 }
@@ -153,8 +180,8 @@ async function fetchServiceAccount(req, res) {
       match:
         service === "google" && scopes?.length > 0
           ? {
-            scopes: { $all: scopes },
-          }
+              scopes: { $all: scopes },
+            }
           : {},
       select: "email name avatar",
     });
@@ -179,6 +206,7 @@ async function createWorkflow(req, res) {
     description,
     metadata: {
       createdBy: username,
+      userId: req.user.userId,
     },
   });
 
@@ -190,4 +218,13 @@ async function createWorkflow(req, res) {
   }
 }
 
-module.exports = { createWorkflow, fetchServiceAccount, updateWorkflow, statusUpdate, getWorkflowSummary, getWorkflowdetails, updateMetaData };
+module.exports = {
+  createWorkflow,
+  fetchServiceAccount,
+  updateWorkflow,
+  updateStatus,
+  getAllWorkflows,
+  getWorkflow,
+  updateMetaData,
+  existWorkflow,
+};

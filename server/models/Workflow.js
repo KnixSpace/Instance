@@ -41,7 +41,6 @@ const edgeSchema = new mongoose.Schema({
       required: true,
     },
   },
-
 });
 
 const workflowSchema = new mongoose.Schema(
@@ -64,6 +63,7 @@ const workflowSchema = new mongoose.Schema(
     edges: [edgeSchema],
     executionOrder: [String],
     metadata: {
+      userId: { type: mongoose.Schema.Types.ObjectId, required: true },
       createdBy: String,
       lastModified: {
         type: Date,
