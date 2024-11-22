@@ -10,6 +10,8 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { Edge } from "@xyflow/react";
 
 const initialState: workflowState = {
+  name: null,
+  description: null,
   nodes: [],
   edges: [],
   selectedNode: null,
@@ -26,8 +28,12 @@ const workflowSlice = createSlice({
   name: "workflow",
   initialState,
   reducers: {
-    initializedNewWorkflow: (state) => {
-      return initialState;
+    initializedNewWorkflow: (
+      state,
+      action: PayloadAction<{ name: string; description: string }>
+    ) => {
+      state.name = action.payload.name;
+      state.description = action.payload.description;
     },
 
     initializedExistingWorkflow: (state, action: PayloadAction<any>) => {
@@ -35,10 +41,22 @@ const workflowSlice = createSlice({
       state.edges = action.payload.edges;
       state.selectedNode = null;
       if (state.nodes.length > 0) {
-        state.sidePanel = "configuration";
+        state.sidePanel = "action";
       } else {
         state.sidePanel = "trigger";
       }
+      state.forwardList = action.payload.forwardList;
+      state.backwardList = action.payload.backwardList;
+      state.name = action.payload.name;
+      state.description = action.payload.description;
+    },
+
+    setMetaData: (
+      state,
+      action: PayloadAction<{ name: string; description: string }>
+    ) => {
+      state.name = action.payload.name;
+      state.description = action.payload.description;
     },
 
     addNewNode: (state, action: PayloadAction<Node>) => {
@@ -51,12 +69,11 @@ const workflowSlice = createSlice({
         (node) => !action.payload.includes(node.id)
       );
       state.selectedNode = null;
-      state.sidePanel = "action";
-      // state.edges = state.edges.filter(
-      //   (edge) =>
-      //     !action.payload.includes(edge.source) &&
-      //     !action.payload.includes(edge.target)
-      // );
+      if (state.nodes.length > 0) {
+        state.sidePanel = "action";
+      } else {
+        state.sidePanel = "trigger";
+      }
     },
 
     selectNode: (state, action: PayloadAction<string | null>) => {
@@ -159,6 +176,7 @@ const workflowSlice = createSlice({
 export const {
   initializedNewWorkflow,
   initializedExistingWorkflow,
+  setMetaData,
   addNewNode,
   addNewEdge,
   selectNode,

@@ -38,6 +38,8 @@ export interface Node {
 }
 
 export interface workflowState {
+  name: string | null;
+  description: string | null;
   nodes: Node[];
   edges: Edge[];
   selectedNode: Node | null;

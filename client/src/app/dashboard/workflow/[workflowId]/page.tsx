@@ -3,10 +3,13 @@ import EditWorkflow from "@/components/dashboard/workspace/workflow/EditWorkflow
 import SidePanel from "@/components/dashboard/workspace/sidepanel/SidePanel";
 import Warning from "@/components/dashboard/workspace/workflow/Warning";
 import Workflow from "@/components/dashboard/workspace/workflow/Workflow";
-import { setWarning } from "@/redux/features/workflow/workflowSlice";
+import {
+  initializedExistingWorkflow,
+  setWarning,
+} from "@/redux/features/workflow/workflowSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Props = {};
@@ -17,7 +20,8 @@ const page = (props: Props) => {
   const [active, setAcive] = useState<boolean>(false);
   const dispatch = useAppDispatch();
   const warnings = useAppSelector((state) => state.workflow.warning);
-  const { push } = useRouter();
+  const workflowName = useAppSelector((state) => state.workflow.name);
+  const { workflowId } = useParams();
 
   if (warnings.isWarning) {
     setTimeout(() => {
@@ -33,31 +37,23 @@ const page = (props: Props) => {
     }
   });
 
-  //call to api to get the workflow with id from url and set the redux state for this.
-  //if id workflow not found then redirect to /dashboard
-  //if workflow is found then set the redux state and render the workflow
   const getWorkfow = async () => {
     try {
       const response = await axios.post(
-        "",
-        { userId: "", workflowId: "" },
+        `${process.env.NEXT_PUBLIC_BASE_URL}/workflow/getWorkflow`,
+        { workflowId },
         { withCredentials: true }
       );
-
       if (response.status === 200) {
-        // dispatch(initializedExistingWorkflow(response.data));
-      } else {
-        push("/dashboard");
+        dispatch(initializedExistingWorkflow(response.data));
       }
-
-      // dispatch(initializedExistingWorkflow(response.data));
     } catch (error) {
-      console.log("workflow not found", error);
+      console.log("Workflow initialization failed", error);
     }
   };
 
   useEffect(() => {
-    // getWorkfow();
+    getWorkfow();
   }, []);
 
   return (
@@ -68,7 +64,7 @@ const page = (props: Props) => {
         <div className="flex-1 flex flex-col divide-y divide-darkSecondary">
           <div className="flex justify-between items-center p-4 text-lg select-none">
             <div className="flex gap-4 items-center">
-              <span>Workflow</span>
+              <span className="truncate max-w-36">{workflowName}</span>
               <div className="p-1 flex justify-center items-center hover:bg-lightbackground rounded-md cursor-pointer">
                 <span
                   className="material-symbols-rounded"
@@ -90,8 +86,9 @@ const page = (props: Props) => {
                 }}
               >
                 <div
-                  className={`size-4 rounded-full transition-all duration-500 ease-in-out  ${active ? "translate-x-5 bg-cta" : "bg-background"
-                    }`}
+                  className={`size-4 rounded-full transition-all duration-500 ease-in-out  ${
+                    active ? "translate-x-5 bg-cta" : "bg-background"
+                  }`}
                 />
               </div>
               <div
@@ -114,8 +111,9 @@ const page = (props: Props) => {
           </div>
         </div>
         <div
-          className={`${open ? (small ? "w-80" : "w-0 lg:w-80") : "w-0"
-            } transition-all overflow-hidden duration-500 ease-in-out`}
+          className={`${
+            open ? (small ? "w-80" : "w-0 lg:w-80") : "w-0"
+          } transition-all overflow-hidden duration-500 ease-in-out`}
         >
           <SidePanel />
         </div>

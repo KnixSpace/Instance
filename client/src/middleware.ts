@@ -44,9 +44,44 @@ export async function middleware(request: NextRequest) {
     );
   }
 
+  const match = pathname.match(/\/dashboard\/workflow\/([^/]+)/);
+  const workflowId = match ? match[1] : null;
+  if (workflowId === "new") {
+    return NextResponse.next();
+  }
+  if (workflowId && cookieSession) {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/workflow/existWorkflow/${workflowId}`,
+        {
+          headers: {
+            Cookie: `connect.sid=${cookieSession.value}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        return NextResponse.next();
+      }
+    } catch (error: any) {
+      if (
+        error.response?.status === 404 ||
+        error.response?.status === 401 ||
+        error.response?.status === 500
+      ) {
+        return NextResponse.redirect(new URL("/", request.url));
+      }
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/", "/about", "/register"],
+  matcher: [
+    "/dashboard/:path*",
+    "/dashboard/workflow/:path*",
+    "/",
+    "/about",
+    "/register",
+  ],
 };

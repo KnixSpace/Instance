@@ -22,7 +22,6 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   addNewEdge,
   addNewNode,
-  initializedNewWorkflow,
   selectNode,
   setAdjacencyList,
   setDeletedNodes,
@@ -115,17 +114,6 @@ const Workflow = (props: Props) => {
 
   const onNodesDelete = useCallback(
     (deletedNodes: Node[]) => {
-      const triggerNodeDeleted = deletedNodes.some(
-        (node) => node.type === "trigger"
-      );
-
-      if (triggerNodeDeleted) {
-        setNodes([]);
-        setEdges([]);
-        dispatch(initializedNewWorkflow());
-        return;
-      }
-
       const deletedDecendants = deletedNodes.flatMap((node) => {
         return getNextNodes(flow.forwardList, node.id, true);
       });

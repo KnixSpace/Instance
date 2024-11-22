@@ -1,11 +1,12 @@
 "use client";
-import React from "react";
+ import React, { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
 import * as yup from "yup";
 import { useParams } from "next/navigation";
-
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { setMetaData } from "@/redux/features/workflow/workflowSlice";
 
 type Props = {
   setEdit: React.Dispatch<React.SetStateAction<boolean>>;
@@ -27,31 +28,55 @@ const schema = yup.object().shape({
 
 const EditWorkflow = (props: Props) => {
   const { workflowId } = useParams();
+  const { name, description } = useAppSelector((state) => state.workflow);
+  const dispatch = useAppDispatch();
 
   const {
     control,
     handleSubmit,
+    setValue,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
   });
+
+  useEffect(() => {
+    setValue("name", name as string);
+    setValue("description", description as string);
+  }, [name, description]);
 
   const onSubmit = async (data: any) => {
     console.log(data);
     // Handle your form submission logic here
-    const response = await axios.patch(`${process.env.NEXT_PUBLIC_BASE_URL}/workflow/updateMetaData`, {
-      name: data.name,
-      description: data.description,
-      workflowId
-    });
-    console.log(response.data);
-    props.setEdit(false);
+    const response = await axios.patch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/workflow/updateMetaData`,
+      {
+        name: data.name,
+        description: data.description,
+        workflowId,
+      }
+    );
+
+    if (response.status === 200) {
+      console.log(response.data);
+      dispatch(
+        setMetaData({
+          name: response.data.name,
+          description: response.data.description,
+        })
+      );
+      props.setEdit(false);
+      reset();
+    }
   };
 
   return (
-    <div
-      className="top-0 left-0 w-full h-dvh fixed z-10 bg-background/5 backdrop-filter backdrop-blur-[1px] flex justify-center items-center"
-    >
+    <div className="top-0 left-0 w-full h-dvh fixed z-10 bg-background/5 backdrop-filter backdrop-blur-[1px] flex justify-center items-center">
       <div className="w-96 bg-lightbackground rounded-md p-4">
         <h1 className="text-xl font-medium text-center mb-8">Edit Workflow</h1>
         <form onSubmit={handleSubmit(onSubmit)}>

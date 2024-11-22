@@ -55,7 +55,12 @@ const Page: React.FC<Props> = (props) => {
       );
 
       const workflowId = response.data._id;
-      dispatch(initializedNewWorkflow());
+      dispatch(
+        initializedNewWorkflow({
+          name: response.data.name,
+          description: response.data.description,
+        })
+      );
       push(`/dashboard/workflow/${workflowId}`);
     } catch (error) {
       console.error(error);
