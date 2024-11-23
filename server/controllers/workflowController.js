@@ -48,7 +48,7 @@ function topologicalSort(graph) {
 
 //WIP: Implement the updateWorkflow function
 async function updateWorkflow(req, res) {
-  const { adjacencyList, workflowId } = req.body;
+  const { adjacencyList, workflowId, nodes, edges } = req.body;
 
   if (!adjacencyList) {
     return res.status(400).json({ message: "Adjacency list is required." });
@@ -59,9 +59,9 @@ async function updateWorkflow(req, res) {
     const workflow = await WorkFlow.findByIdAndUpdate(
       workflowId,
       {
-        nodes: req.body.nodes,
-        edges: req.body.edges,
-        executionOrder: executionOrder,
+        nodes,
+        edges,
+        executionOrder,
       },
       { $inc: { version: 1 } },
       { new: true }
@@ -214,6 +214,7 @@ async function createWorkflow(req, res) {
     const newWorkflow = await workflow.save();
     res.status(200).json(newWorkflow);
   } catch (error) {
+    console.log("error", error);
     res.status(500).json({ message: "Error creating workflow" });
   }
 }

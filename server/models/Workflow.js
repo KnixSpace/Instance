@@ -1,47 +1,55 @@
 // workflow.schema.js
 const mongoose = require("mongoose");
 
-const nodeSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
+const nodeSchema = new mongoose.Schema(
+  {
+    id: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      required: true,
+      enum: ["trigger", "action", "condition", "loop"],
+    },
+    data: {
+      type: mongoose.Schema.Types.Mixed,
+      config: {},
+    },
+    position: {
+      x: Number,
+      y: Number,
+    },
+    selected: Boolean,
   },
-  type: {
-    type: String,
-    required: true,
-    enum: ["trigger", "action", "condition", "loop"],
-  },
-  data: {
-    type: mongoose.Schema.Types.Mixed,
-    config: {},
-  },
-  position: {
-    x: Number,
-    y: Number,
-  },
-  selected: Boolean,
-});
+  { _id: false }
+);
 //pending edges
-const edgeSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  source: {
-    nodeId: {
+const edgeSchema = new mongoose.Schema(
+  {
+    id: {
+      type: String,
+      required: true,
+    },
+    source: {
+      type: String,
+      required: true,
+    },
+    sourceHandle: {
+      type: String,
+      required: true,
+    },
+    target: {
+      type: String,
+      required: true,
+    },
+    targetHandle: {
       type: String,
       required: true,
     },
   },
-  target: {
-    nodeId: {
-      type: String,
-      required: true,
-    },
-  },
-});
+  { _id: false }
+);
 
 const workflowSchema = new mongoose.Schema(
   {
