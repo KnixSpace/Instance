@@ -7,15 +7,16 @@ class FlowEngine extends EventEmitter {
     super();
     this.workflowQueue = queue;
     this.workflowQueue.process(this.processWorkflowNode.bind(this));
-  }
-
-  async executeEngine(workflow, response) {
-    const executionContext = {
-      workflowId: workflow._id,
+    this.executionContext = {
+      workflowId:"",
       data: {},
       nodeStatus: new Map(),
       logs: [],
     };
+  }
+
+  async executeEngine(workflow, response) {
+  
     console.log(`Initializing workflow execution for ${workflow._id}`);
 
     try {
@@ -24,8 +25,9 @@ class FlowEngine extends EventEmitter {
         (node) => node.id === workflow.executionOrder[0]
       );
       console.log(`Processing trigger node: ${triggerNode.id}`);
-      executionContext.data[triggerNode.id] = response.data;
-      executionContext.nodeStatus.set(triggerNode.id, "success");
+      this.executionContext.workflowId = workflow._id;
+      this.executionContext.data[triggerNode.id] = response.data;
+      this.executionContext.nodeStatus.set(triggerNode.id, "success");
       console.log(
         `Trigger node ${triggerNode.id} processed. Initial data set:`,
         response.data
@@ -48,7 +50,6 @@ class FlowEngine extends EventEmitter {
           await this.workflowQueue.add({
             node,
             workflowId: workflow._id,
-            executionContext,
           });
         }
       }
@@ -59,10 +60,10 @@ class FlowEngine extends EventEmitter {
   }
 
   async processWorkflowNode(job) {
-    const { node, workflowId, executionContext } = job.data;
+    const { node, workflowId} = job.data;
 
     try {
-      executionContext.nodeStatus.set(node.id, "running");
+      this.executionContext.nodeStatus.set(node.id, "running");
       this.emit("nodeStatusUpdate", {
         workflowId,
         nodeId: node.id,
@@ -70,8 +71,8 @@ class FlowEngine extends EventEmitter {
       });
 
       // Execute the step using the service handler
-      const handlerResult = await executeHandler(node.data, executionContext);
-      executionContext.nodeStatus.set(node.id, handlerResult.status);
+      const handlerResult = await executeHandler(node.data, this.executionContext.data);
+      this.executionContext.nodeStatus.set(node.id, handlerResult.status);
 
       if (!handlerResult.status) {
         console.error(
@@ -81,13 +82,14 @@ class FlowEngine extends EventEmitter {
         console.error(`Workflow execution failed: ${handlerResult.error}`);
         return; // Stop further execution
       }
+      
+      this.executionContext.data[node.id] = this.executionContext.data[node.id] || {};
 
-      Object.assign(executionContext.data[node.id], handlerResult.data);
+      Object.assign(this.executionContext.data[node.id], handlerResult.data);
 
-      // Log execution history in the console
       console.log(
         "Execution Context for Step:",
-        JSON.stringify(executionContext, null, 2)
+        JSON.stringify(this.executionContext, null, 2)
       );
 
       console.log(

@@ -1,5 +1,6 @@
 const { Integration } = require("../models/Integration");
 const { WorkFlow } = require("../models/Workflow");
+const { createWebhook } = require("./github/triggers");
 
 // Kahn's algorithm for topological sorting
 function topologicalSort(graph) {
@@ -55,11 +56,33 @@ async function updateWorkflow(req, res) {
   }
 
   const executionOrder = topologicalSort(adjacencyList);
+  //WIP - Implement the webhook creation logic
+  let webhookData;
+  let node = nodes.find(n => n.id === executionOrder[0]);
+  if (node) {
+    webhookData = {
+      events: node.data.config.events,
+      repoName: node.data.config.repoName,
+      accountId: node.data.authAccountInfo._id
+    }
+  }
+
+  let response = await createWebhook(webhookData.repoName, webhookData.events, webhookData.accountId);
+  node.data.config.webhookId = response.webhookId;
+
+  const updatedNodes = nodes.map(n => {
+    if (n.id === node.id) {
+      return node;
+    } else {
+      return n;
+    }
+  })
+
   try {
     const workflow = await WorkFlow.findByIdAndUpdate(
       workflowId,
       {
-        nodes,
+        nodes: updatedNodes,
         edges,
         executionOrder,
       },
@@ -70,6 +93,8 @@ async function updateWorkflow(req, res) {
     if (!workflow) {
       return res.status(404).json({ message: "Workflow not found" });
     }
+
+
 
     res.status(200).json(workflow);
   } catch (error) {
@@ -180,8 +205,8 @@ async function fetchServiceAccount(req, res) {
       match:
         service === "google" && scopes?.length > 0
           ? {
-              scopes: { $all: scopes },
-            }
+            scopes: { $all: scopes },
+          }
           : {},
       select: "email name avatar",
     });

@@ -3,11 +3,12 @@ const { Github } = require("../../models/Github");
 const { WorkFlow } = require("../../models/Workflow");
 const { FlowEngine } = require("../../engine/flowEngine");
 
-async function createWebhook(repoId, repoName, events, accountId) {
+async function createWebhook(repoName, events, accountId) {
   try {
-    const sanitizedRepoId = repoId.value;
-    const sanitizedRepoName = repoName.value;
-    const sanitizedEvents = events.value.map((event) => event.value);
+    const sanitizedRepoId = repoName.value;
+    const sanitizedRepoName = repoName.label;
+    const sanitizedEvents = events.map((event) => event.value);
+
 
     const githubAccount = await Github.findById(accountId);
     if (!githubAccount) {
@@ -18,9 +19,8 @@ async function createWebhook(repoId, repoName, events, accountId) {
     const webhookUrl = `${process.env.HOST_URL}/api/v1/github/webhook/notifications`;
 
     const existingWebhook = webhooks.find(
-      (webhook) => webhook.repoId === sanitizedRepoId
+      (webhook) => webhook.repoId === sanitizedRepoId.toString(),
     );
-
     if (existingWebhook) {
       const existingEvents = existingWebhook.events;
       const areEventsSame =
@@ -28,7 +28,7 @@ async function createWebhook(repoId, repoName, events, accountId) {
         JSON.stringify(existingEvents.sort());
 
       if (areEventsSame) {
-        return res.status(200).json({
+        return ({
           message: "Webhook already exists with the same events",
           webhookId: existingWebhook.webhookId,
         });
@@ -45,10 +45,11 @@ async function createWebhook(repoId, repoName, events, accountId) {
       existingWebhook.events = sanitizedEvents;
       await githubAccount.save();
 
-      return res.status(200).json({
+      return ({
         message: "Webhook updated successfully",
-        webhook: updateResponse.data,
+        webhookId: updateResponse.data.id,
       });
+
     }
 
     const webhookResponse = await createNewWebhook(
@@ -69,7 +70,6 @@ async function createWebhook(repoId, repoName, events, accountId) {
     return {
       message: "Webhook created successfully",
       webhookId: webhookResponse.data.id,
-      events: webhookResponse.data.events,
     };
   } catch (error) {
     console.error(
@@ -157,8 +157,8 @@ const handleWebhookEvent = async (req, res) => {
       nodes: {
         $elemMatch: {
           type: "trigger",
-          "data.config.webhookId": eventData.hookId,
-          "data.config.events": { $in: [eventData.eventType] },
+          "data.config.webhookId": eventData.hookId.toString(),
+          "data.config.events.value": { $in: [eventData.eventType] },
         },
       },
     };
@@ -172,9 +172,7 @@ const handleWebhookEvent = async (req, res) => {
 
     response = {
       status: true,
-      data: {
-        eventData,
-      },
+      data: eventData,
     };
 
     for (const workflow of matchingWorkflows) {
@@ -198,8 +196,8 @@ const mapEventData = (
   pusher,
   head_commit
 ) => ({
-  // eventType,
-  // hookId,
+  eventType,
+  hookId,
   // targetType,
   // userAgent,
   repository: {

@@ -8,11 +8,11 @@ const {
 } = require("../controllers/google/actions");
 
 const executeHandler = async (data, executionContext) => {
-  const accountId = data.config.accountId;
+  const accountId = data.authAccountInfo._id;
 
   const renderWithFallback = (template, context) => {
-    const renderedValue = mustache.render(template, context);
-    return renderedValue !== "" ? renderedValue : template;
+    const renderedValue = mustache.render(template.value, context);
+    return renderedValue !== "" ? renderedValue : template.value;
   };
 
   switch (data.service) {
@@ -26,7 +26,7 @@ const executeHandler = async (data, executionContext) => {
           return await createFile(
             filename,
             data.config.fileType,
-            data.config.folderId,
+            data.config.folderId.value,
             accountId
           );
         case "CREATE_FOLDER":
