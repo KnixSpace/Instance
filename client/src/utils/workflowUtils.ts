@@ -12,12 +12,14 @@ export const getNodes = (
   while (stack.length) {
     const currentNodeId = stack.pop();
     if (currentNodeId) {
+      if(adjacencyList[currentNodeId]){ 
       for (const node of adjacencyList[currentNodeId]) {
         if (!previousNodeSet.has(node)) {
           previousNodeSet.add(node);
           stack.push(node);
         }
       }
+    }
     }
   }
 
