@@ -12,12 +12,11 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { useCallback, useEffect, useRef } from "react";
+import { v4 } from "uuid";
 
 import TriggerNode from "./customNodes/TriggerNode";
 import ActionNode from "./customNodes/ActionNode";
-
-import { useCallback, useEffect } from "react";
-import { v4 } from "uuid";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   addNewEdge,
@@ -27,8 +26,8 @@ import {
   setDeletedNodes,
   setWarning,
 } from "@/redux/features/workflow/workflowSlice";
-import { Node } from "@/types/workflowTypes";
 import { getNextNodes } from "@/utils/workflowUtils";
+import { Node } from "@/types/workflowTypes";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -36,23 +35,51 @@ const nodeTypes = {
 };
 
 type Props = {};
+
 const Workflow = (props: Props) => {
   const flow = useAppSelector((state) => state.workflow);
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(flow.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(flow.edges);
-
+  // console.log("f nodes", flow.nodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(flow?.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(flow?.edges);
   const { screenToFlowPosition } = useReactFlow();
   const dispatch = useAppDispatch();
 
+  const isUserAction = useRef(false);
+
+  // useEffect(() => {
+  //   dispatch(addNewEdge(edges));
+  //   dispatch(setAdjacencyList());
+  // }, [nodes, edges, dispatch]);
+
+  useEffect(() => {
+    if (flow?.nodes) {
+      setNodes(flow.nodes);
+    }
+    if (flow?.edges) {
+      setEdges(flow.edges);
+    }
+  }, [flow?.nodes, flow?.edges]);
+
+  useEffect(() => {
+    if (isUserAction.current) {
+      dispatch(addNewEdge(edges));
+      dispatch(setAdjacencyList());
+      isUserAction.current = false;
+    }
+  }, [edges, dispatch]);//add node here
+
   const onConnect = useCallback(
-    (params: any) => setEdges((eds) => addEdge(params, eds)),
+    (params: any) => {
+      isUserAction.current = true;
+      setEdges((eds) => addEdge(params, eds));
+    },
     [setEdges]
   );
 
-  useEffect(() => {
-    dispatch(addNewEdge(edges));
-    dispatch(setAdjacencyList());
-  }, [edges, nodes, dispatch]);
+  // useEffect(() => {
+  //   console.log("u nodes", nodes);
+  //   console.log("u edges", edges);
+  // }, [flow.nodes, flow.edges]);
 
   const onDragOver = (event: any) => {
     event.preventDefault();
@@ -106,6 +133,7 @@ const Workflow = (props: Props) => {
 
   const onEdgesDelete = useCallback(
     (deletedEdges: Edge[]) => {
+      isUserAction.current = true;
       const updatedEdges = edges.filter((edge) => !deletedEdges.includes(edge));
       dispatch(addNewEdge(updatedEdges));
     },
@@ -114,6 +142,7 @@ const Workflow = (props: Props) => {
 
   const onNodesDelete = useCallback(
     (deletedNodes: Node[]) => {
+      isUserAction.current = true;
       const deletedDecendants = deletedNodes.flatMap((node) => {
         return getNextNodes(flow.forwardList, node.id, true);
       });
@@ -132,48 +161,47 @@ const Workflow = (props: Props) => {
       dispatch(addNewEdge(edges));
     },
 
-    [nodes, dispatch]
+    [nodes, dispatch, flow.forwardList]
   );
 
-  const isValidConnection = (connection: any): boolean => {
-    const { source, target } = connection;
+  const isValidConnection = useCallback(
+    (connection: any): boolean => {
+      const { source, target } = connection;
 
-    const sourceNode = nodes.find((node) => node.id === source);
-    const targetNode = nodes.find((node) => node.id === target);
+      const sourceNode = nodes.find((node) => node.id === source);
+      const targetNode = nodes.find((node) => node.id === target);
 
-    if (!sourceNode || !targetNode) return false;
+      if (!sourceNode || !targetNode) return false;
 
-    if (source === target) {
-      dispatch(
-        setWarning({
-          isWarning: true,
-          message: "Cannot connect a node to itself.",
-        })
-      );
-      return false;
-    }
-
-    if (sourceNode.type === "trigger") {
-      const triggerConnections = edges.filter((edge) => edge.source === source);
-      if (triggerConnections.length >= 1) {
+      if (source === target) {
         dispatch(
           setWarning({
             isWarning: true,
-            message: "Trigger node can only have one connection.",
+            message: "Cannot connect a node to itself.",
           })
         );
         return false;
       }
-    }
 
-    // const allowedTargets = allowedConnections[sourceNode.type as string];
-    // if (!allowedTargets || !allowedTargets.includes(targetNode.type as string)) {
-    //   console.warn(`Cannot connect ${sourceNode.type} node to ${targetNode.type} node.`);
-    //   return false;
-    // }
+      if (sourceNode.type === "trigger") {
+        const triggerConnections = edges.filter(
+          (edge) => edge.source === source
+        );
+        if (triggerConnections.length >= 1) {
+          dispatch(
+            setWarning({
+              isWarning: true,
+              message: "Trigger node can only have one connection.",
+            })
+          );
+          return false;
+        }
+      }
 
-    return true;
-  };
+      return true;
+    },
+    [nodes, edges, dispatch]
+  );
 
   return (
     <div className="w-full h-full">
@@ -186,10 +214,16 @@ const Workflow = (props: Props) => {
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
         nodes={nodes}
-        onNodesChange={onNodesChange}
+        onNodesChange={(changes) => {
+          isUserAction.current = true;
+          onNodesChange(changes);
+        }}
         onNodeClick={handleNodeClick}
         edges={edges}
-        onEdgesChange={onEdgesChange}
+        onEdgesChange={(changes) => {
+          isUserAction.current = true;
+          onEdgesChange(changes);
+        }}
         onConnect={onConnect}
         onPaneClick={handlePaneClick}
         onEdgesDelete={onEdgesDelete}

@@ -45,8 +45,6 @@ const workflowSlice = createSlice({
       } else {
         state.sidePanel = "trigger";
       }
-      state.forwardList = action.payload.forwardList;
-      state.backwardList = action.payload.backwardList;
       state.name = action.payload.name;
       state.description = action.payload.description;
     },

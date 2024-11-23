@@ -5,11 +5,12 @@ import Warning from "@/components/dashboard/workspace/workflow/Warning";
 import Workflow from "@/components/dashboard/workspace/workflow/Workflow";
 import {
   initializedExistingWorkflow,
+  setAdjacencyList,
   setWarning,
 } from "@/redux/features/workflow/workflowSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import axios from "axios";
-import { useParams, useRouter } from "next/navigation";
+import { useParams} from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Props = {};
@@ -19,11 +20,10 @@ const page = (props: Props) => {
   const [edit, setEdit] = useState<boolean>(false);
   const [active, setAcive] = useState<boolean>(false);
   const dispatch = useAppDispatch();
-  const warnings = useAppSelector((state) => state.workflow.warning);
-  const workflowName = useAppSelector((state) => state.workflow.name);
+  const flow = useAppSelector((state) => state.workflow);
   const { workflowId } = useParams();
 
-  if (warnings.isWarning) {
+  if (flow.warning.isWarning) {
     setTimeout(() => {
       dispatch(setWarning({ isWarning: false, message: null }));
     }, 3000);
@@ -46,6 +46,7 @@ const page = (props: Props) => {
       );
       if (response.status === 200) {
         dispatch(initializedExistingWorkflow(response.data));
+        dispatch(setAdjacencyList());
       }
     } catch (error) {
       console.log("Workflow initialization failed", error);
@@ -56,15 +57,36 @@ const page = (props: Props) => {
     getWorkfow();
   }, []);
 
+  const handleWorkflowSave = async () => {
+    try {
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/workflow/updateWorkflow`,
+        {
+          workflowId,
+          nodes: flow.nodes,
+          edges: flow.edges,
+          adjacencyList: flow.forwardList,
+        },
+        { withCredentials: true }
+      );
+      if (response.status === 200) {
+        console.log("Workflow saved successfully");
+        // dispatch(initializedExistingWorkflow(response.data));
+      }
+    } catch (error) {
+      console.log("Workflow initialization failed", error);
+    }
+  };
+
   return (
     <>
-      {warnings.isWarning && <Warning message={warnings.message} />}
+      {flow.warning.isWarning && <Warning message={flow.warning.message} />}
       {edit && <EditWorkflow setEdit={setEdit} />}
       <section className="h-full flex divide-x divide-darkSecondary">
         <div className="flex-1 flex flex-col divide-y divide-darkSecondary">
           <div className="flex justify-between items-center p-4 text-lg select-none">
             <div className="flex gap-4 items-center">
-              <span className="truncate max-w-36">{workflowName}</span>
+              <span className="truncate max-w-36">{flow.name}</span>
               <div className="p-1 flex justify-center items-center hover:bg-lightbackground rounded-md cursor-pointer">
                 <span
                   className="material-symbols-rounded"
@@ -75,6 +97,12 @@ const page = (props: Props) => {
                 >
                   edit
                 </span>
+              </div>
+              <div
+                className="text-xs py-1 px-4 rounded border border-darkSecondary hover:border-cta transition-all duration-300 ease-in-out cursor-pointer"
+                onClick={handleWorkflowSave}
+              >
+                Save
               </div>
             </div>
             <div className="flex items-center gap-4">
