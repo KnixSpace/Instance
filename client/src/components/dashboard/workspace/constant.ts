@@ -1,9 +1,11 @@
 import * as Yup from "yup";
 import { appIcons } from "@/lib/constants";
 import { ActionConfig } from "@/types/configurationTypes";
+import { SiSlack } from "react-icons/si";
+import { label } from "framer-motion/client";
 
 export const workflowNodesConfig = [
-  {
+  { 
     type: "trigger",
     data: {
       label: "Github",
@@ -130,6 +132,34 @@ export const workflowNodesConfig = [
       },
     },
   },
+  {
+    type:"action",
+    data:{
+      label:"Notion",
+      service:"Notion",
+      action:"ADD_CONTENT",
+      description:"Add Contnent to page",
+      icon: appIcons.notion,
+      authAccountInfo:{
+        url: `${process.env.NEXT_PUBLIC_BASE_URL}/notion/integration/register`,
+      }
+
+    }
+  },
+    {
+      type:"action",
+      data:{
+        label:"Slack",
+        service:"Slack",
+        action:"CREATE_CHANNEL",
+        description:"Create your channel on Slack",
+        icon: appIcons.slack, 
+        authAccountInfo:{
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
+       }
+      }
+    }
+  
 ];
 
 export const actionConfig: ActionConfig[] = [
@@ -395,4 +425,64 @@ export const actionConfig: ActionConfig[] = [
     ],
     outputFields: [{ label: "Document id", value: "documentId" }],
   },
+  {
+    action: "SHARE_POST",
+    service:"Linkedin",
+    icon:appIcons.linkedin,
+    configFields:[
+      {
+        name:"text",
+        label:"Text Data",
+        type:"text",
+        placeholder:"Enter text to post on linkedin",
+        isDynamic:true,
+        allowedCustomInput:true,
+        validation:Yup.string().required("text is required")
+      }
+    ],
+    outputFields:["text"]
+  }, 
+  {
+    action: "ADD_CONTENT",
+    service:"Notion",
+    icon:appIcons.notion,
+    configFields:[
+      {
+        name:"text",
+        label:"Content",
+        type:"text",
+        placeholder:"Enter content to add on notion page",
+        isDynamic:true,
+        allowedCustomInput:true,
+        validation:Yup.string().required("text is required")
+      }
+    ],
+    outputFields:["text"]
+  },
+  {
+    action: "CREATE_CHANNEL",
+    service:"Slack",
+    icon:appIcons.slack,
+    configFields:[
+      {
+        name:"channelName",
+        label:"Chanel Name",
+        type:"text", 
+        placeholder:"Enter Your Chanel Name",
+        isDynamic:false,
+        allowedCustomInput:true,
+        validation:Yup.string().required("text is required")
+      },{
+        name:"isPrivate",
+        label:"Chanel Name",
+        type:"boolean", 
+        placeholder:"Enter Your Chanel Name",
+        isDynamic:false,
+        allowedCustomInput:true,
+        validation:Yup.string().required("text is required")
+      }
+    ],
+    outputFields:["text"]
+  }
+  
 ];

@@ -45,12 +45,14 @@ async function callback(req, res) {
         Authorization: `Bearer ${tokens.access_token}`,
       },
     });
-
+     
+    console.log(profileResponse);
     const id = profileResponse.data.sub;
     const email = profileResponse.data.email;
     const picture = profileResponse.data.avatar;
+    const name = profileResponse.data.name
 
-    await handleIntegration(req.user.userId, id, email, picture, tokens);
+    await handleIntegration(req.user.userId, id, email, picture, tokens,name);
 
     res.send(`
       <html>
@@ -70,7 +72,8 @@ async function handleIntegration(
   accountId,
   accountEmail,
   avatar,
-  tokens
+  tokens,
+  name
 ) {
   const existingIntegration = await Integration.findOne({
     userId,
@@ -84,10 +87,11 @@ async function handleIntegration(
       accountId,
       accountEmail,
       avatar,
-      tokens
+      tokens,
+      name
     );
   } else {
-    await createNewIntegration(userId, accountId, accountEmail, avatar, tokens);
+    await createNewIntegration(userId, accountId, accountEmail, avatar, tokens,name);
   }
 }
 
@@ -97,7 +101,8 @@ async function updateExistingIntegration(
   accountId,
   accountEmail,
   avatar,
-  tokens
+  tokens,
+  name
 ) {
   const accountExists = integration.accounts.some(
     (account) => account.accountId === accountId
@@ -112,6 +117,7 @@ async function updateExistingIntegration(
       accountId,
       accessToken: tokens.access_token,
       refreshToken: tokens.refresh_token,
+      name:name
     }).save();
 
     integration.accounts.push(newAccount._id);
@@ -126,7 +132,8 @@ async function createNewIntegration(
   accountId,
   accountEmail,
   avatar,
-  tokens
+  tokens,
+  name
 ) {
   const newIntegration = await new Integration({
     userId,
@@ -141,6 +148,7 @@ async function createNewIntegration(
     accountId,
     accessToken: tokens.access_token,
     refreshToken: tokens.refresh_token,
+    name:name
   }).save();
 
   newIntegration.accounts.push(newAccount._id);
@@ -149,6 +157,6 @@ async function createNewIntegration(
   const user = await User.findById(userId);
   user.integrations.push(newIntegration._id);
   await user.save();
-}
+} 
 
 module.exports = { register, callback };
