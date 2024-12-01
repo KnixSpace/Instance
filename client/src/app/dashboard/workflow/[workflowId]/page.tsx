@@ -10,7 +10,7 @@ import {
 } from "@/redux/features/workflow/workflowSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import axios from "axios";
-import { useParams} from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Props = {};
@@ -63,7 +63,12 @@ const page = (props: Props) => {
         `${process.env.NEXT_PUBLIC_BASE_URL}/workflow/updateWorkflow`,
         {
           workflowId,
-          nodes: flow.nodes,
+          nodes: flow.nodes.map((node) => {
+            return {
+              ...node,
+              selected: false,
+            };
+          }),
           edges: flow.edges,
           adjacencyList: flow.forwardList,
         },

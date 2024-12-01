@@ -39,17 +39,12 @@ type Props = {};
 const Workflow = (props: Props) => {
   const flow = useAppSelector((state) => state.workflow);
   // console.log("f nodes", flow.nodes);
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(flow?.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(flow?.edges);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition } = useReactFlow();
   const dispatch = useAppDispatch();
 
   const isUserAction = useRef(false);
-
-  // useEffect(() => {
-  //   dispatch(addNewEdge(edges));
-  //   dispatch(setAdjacencyList());
-  // }, [nodes, edges, dispatch]);
 
   useEffect(() => {
     if (flow?.nodes) {
@@ -66,7 +61,7 @@ const Workflow = (props: Props) => {
       dispatch(setAdjacencyList());
       isUserAction.current = false;
     }
-  }, [edges, dispatch]);//add node here
+  }, [edges, dispatch]);
 
   const onConnect = useCallback(
     (params: any) => {
@@ -75,11 +70,6 @@ const Workflow = (props: Props) => {
     },
     [setEdges]
   );
-
-  // useEffect(() => {
-  //   console.log("u nodes", nodes);
-  //   console.log("u edges", edges);
-  // }, [flow.nodes, flow.edges]);
 
   const onDragOver = (event: any) => {
     event.preventDefault();
@@ -107,14 +97,6 @@ const Workflow = (props: Props) => {
       data,
       selected: true,
     };
-
-    setNodes((prevNodes) => {
-      const updatedNodes = prevNodes.map((node) => ({
-        ...node,
-        selected: false,
-      }));
-      return [...updatedNodes, newNode];
-    });
 
     dispatch(addNewNode(newNode));
     dispatch(selectNode(newNode.id));
@@ -216,6 +198,7 @@ const Workflow = (props: Props) => {
         nodes={nodes}
         onNodesChange={(changes) => {
           isUserAction.current = true;
+          // console.log("node chnages", changes);
           onNodesChange(changes);
         }}
         onNodeClick={handleNodeClick}

@@ -58,6 +58,12 @@ const workflowSlice = createSlice({
     },
 
     addNewNode: (state, action: PayloadAction<Node>) => {
+      state.nodes = state.nodes.map((node) => {
+        return {
+          ...node,
+          selected: false,
+        };
+      });
       state.nodes.push(action.payload);
       state.sidePanel = "configuration";
     },
@@ -80,6 +86,12 @@ const workflowSlice = createSlice({
         if (state.nodes.length > 0) {
           state.sidePanel = "action";
           state.selectedNode = null;
+          state.nodes = state.nodes.map((node) => {
+            return {
+              ...node,
+              selected: false,
+            };
+          });
         } else {
           state.sidePanel = "trigger";
         }
@@ -88,6 +100,12 @@ const workflowSlice = createSlice({
       const isNode = state.nodes.find((node) => node.id === action.payload);
       if (isNode) {
         state.selectedNode = isNode;
+        state.nodes = state.nodes.map((node) => {
+          return {
+            ...node,
+            selected: node.id === action.payload,
+          };
+        });
         if (isNode.data.authAccountInfo._id) {
           state.sidePanel = "configuration";
         } else {
