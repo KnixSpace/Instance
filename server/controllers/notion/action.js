@@ -5,8 +5,8 @@ const {Notion} = require("../../models/Notion");
 
 async function getPages (req, res){
     try {
-        const accountId = "2e370a4a-573b-4713-8dc1-8cf6a0c1f602"; 
-        // const accountId = req.params.id 
+       // const accountId = "2e370a4a-573b-4713-8dc1-8cf6a0c1f602"; 
+         const accountId = req.params.id 
         const user = await Notion.findOne({ accountId });
         
         if (!user) {
@@ -14,7 +14,7 @@ async function getPages (req, res){
                 success: false,
                 message: 'User not found'
             });
-        }
+        } 
         const response = await axios.post('https://api.notion.com/v1/search', 
             {
                 filter: { property: 'object', value: 'page' }
@@ -47,12 +47,12 @@ async function getPages (req, res){
     }
 };
 async function addContent(req, res) {
-    const pageId = "4b4a9740-3287-4d59-8961-05ecdbd553cc";
-    //const pageId = req.params.id;
-    const text = "Minor Project Instance";
-   // const text = req.body.text;
-    const accountId = "2e370a4a-573b-4713-8dc1-8cf6a0c1f602";
-   // const accountId = req.params.accountId
+   // const pageId = "4b4a9740-3287-4d59-8961-05ecdbd553cc";
+    const pageId = req.params.id;
+   // const text = "Minor Project Instance";
+    const text = req.body.text;
+  //  const accountId = "2e370a4a-573b-4713-8dc1-8cf6a0c1f602";
+    const accountId = req.params.accountId
     try {
         const user = await Notion.findOne({ accountId });
 
@@ -111,4 +111,4 @@ async function addContent(req, res) {
     }
 }
 
-module.exports = { getPages, addContent };
+module.exports = { getPages, addContent }; 

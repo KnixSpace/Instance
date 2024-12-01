@@ -63,12 +63,14 @@ async function callback(req, res) {
 
     const userData = userResponse.data;
     const id = userData.id;
-    const avatar = userData.avatar_url;
+    const avatar = userData.avatar_url; 
+    const name = userData.name;
     await handleIntegration(
       req.user.userId,
       id,
       avatar,
-      tokens 
+      tokens,
+      name
     );
 
     res.send(`
@@ -88,7 +90,8 @@ async function handleIntegration(
   userId,
   accountId,
   avatar,
-  tokens
+  tokens,
+  name
 ) {
   const existingIntegration = await Integration.findOne({
     userId,
@@ -101,7 +104,8 @@ async function handleIntegration(
       existingIntegration,
       accountId,
       avatar,
-      tokens
+      tokens,
+      name
     );
   } else {
     await createNewIntegration(
@@ -109,6 +113,7 @@ async function handleIntegration(
       accountId,
       avatar,
       tokens,
+      name
     );
   }
 }
@@ -118,7 +123,8 @@ async function updateExistingIntegration(
   integration,
   accountId,
   avatar,
-  tokens
+  tokens,
+  name
 ) {
   const accountExists = integration.accounts.some(
     (account) => account.accountId === accountId
@@ -130,7 +136,8 @@ async function updateExistingIntegration(
       integrationId: integration._id,
       avatar,
       accountId,
-      accessToken: tokens.access_token
+      accessToken: tokens.access_token,
+      name:name
     }).save();
     integration.accounts.push(newAccount._id);
     await integration.save();
@@ -144,6 +151,7 @@ async function createNewIntegration(
   accountId,
   avatar,
   tokens,
+  name
 ) {
   const newIntegration = await new Integration({
     userId,
@@ -155,7 +163,8 @@ async function createNewIntegration(
     integrationId: newIntegration._id,
     avatar,
     accountId,
-    accessToken: tokens.access_token
+    accessToken: tokens.access_token,
+    name
   }).save();
 
   newIntegration.accounts.push(newAccount._id);

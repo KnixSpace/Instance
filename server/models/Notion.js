@@ -10,7 +10,8 @@ const notionAccountSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref:"Integration",
         required: true,
-    },
+    }, 
+    name: { type: String, required: true },
     avatar:{type:String},
     accountId: {type:String,required:true},
     accessToken:{type:String,required:true}

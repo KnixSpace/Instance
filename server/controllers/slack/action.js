@@ -4,7 +4,6 @@ const { Slack } = require('../../models/Slack');
 
 async function createChannel(req,res){
 
-
     try{ 
         const accountId = "U07CM8QF065"; // req.params.accountId
         const channelName = "new-channel-01"; // req.body.channelName

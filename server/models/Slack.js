@@ -11,7 +11,9 @@ const slackAccountSchema = new mongoose.Schema({
         ref:"Integration",
         required: true,
     },
+
     avatar:{type:String},
+    name: { type: String, required: true },
     accountId: {type:String,required:true},
     accessToken:{type:String,required:true},
     email:{type: String, unique: true, required: true }

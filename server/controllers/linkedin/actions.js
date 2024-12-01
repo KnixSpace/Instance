@@ -7,7 +7,7 @@ async function postShare(text, userId, email) {
   // const email = "prakashbhukan95@gmail.com";
 
   const user = await Linkedin.findOne({ email });
-  // console.log(user);
+ 
 
   if (!user) {
     return {
