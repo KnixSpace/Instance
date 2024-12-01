@@ -5,7 +5,7 @@ import {
   SidePanelMode,
   workflowState,
 } from "@/types/workflowTypes";
-import { createAdjacencyList, getNextNodes } from "@/utils/workflowUtils";
+import { createAdjacencyList} from "@/utils/workflowUtils";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { Edge } from "@xyflow/react";
 
@@ -47,6 +47,18 @@ const workflowSlice = createSlice({
       }
       state.name = action.payload.name;
       state.description = action.payload.description;
+    },
+
+    updateNodePositions: (state, action: PayloadAction<Node[]>) => {
+      state.nodes = action.payload.map((node) => {
+        return {
+          ...node,
+          position: {
+            x: node.position.x,
+            y: node.position.y,
+          },
+        };
+      });
     },
 
     setMetaData: (
@@ -192,6 +204,7 @@ const workflowSlice = createSlice({
 export const {
   initializedNewWorkflow,
   initializedExistingWorkflow,
+  updateNodePositions,
   setMetaData,
   addNewNode,
   addNewEdge,

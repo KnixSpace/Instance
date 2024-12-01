@@ -25,6 +25,7 @@ import {
   setAdjacencyList,
   setDeletedNodes,
   setWarning,
+  updateNodePositions,
 } from "@/redux/features/workflow/workflowSlice";
 import { getNextNodes } from "@/utils/workflowUtils";
 import { Node } from "@/types/workflowTypes";
@@ -54,6 +55,10 @@ const Workflow = (props: Props) => {
       setEdges(flow.edges);
     }
   }, [flow?.nodes, flow?.edges]);
+
+  const onNodeDragStop = useCallback(() => {
+    dispatch(updateNodePositions(nodes));
+  }, [nodes, dispatch]);
 
   useEffect(() => {
     if (isUserAction.current) {
@@ -202,6 +207,7 @@ const Workflow = (props: Props) => {
           onNodesChange(changes);
         }}
         onNodeClick={handleNodeClick}
+        onNodeDragStop={onNodeDragStop}
         edges={edges}
         onEdgesChange={(changes) => {
           isUserAction.current = true;
