@@ -57,6 +57,6 @@ async function createPost(text, accountId) {
       message: `Failed to create post: ${errorMessage}`,
     };
   }
-}
+} 
 
 module.exports = { createPost };

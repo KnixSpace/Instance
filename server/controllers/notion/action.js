@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 
 const {Notion} = require("../../models/Notion"); 
 
-async function getPages (req, res){
+async function getPages (req, res){ 
     try {
        // const accountId = "2e370a4a-573b-4713-8dc1-8cf6a0c1f602"; 
          const accountId = req.params.id 
@@ -34,7 +34,7 @@ async function getPages (req, res){
         }));
     
         res.json({
-            pages
+            pages 
         });
 
     } catch (error) {
@@ -93,7 +93,7 @@ async function addContent(req, res) {
                 }
             }
         );
-
+             
         console.log('Page updated successfully');
         return res.status(200).json({
             success: true,
