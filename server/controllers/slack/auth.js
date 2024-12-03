@@ -33,7 +33,7 @@ async function register(req,res){
        process.env.SLACK_CALLBACK_URI
      }&state=${state}&scope=${BOT_SCOPES.join(",")}&user_scope=${USER_SCOPES.join(",")}`;
 
-    res.redirect(authUrl);
+     res.status(200).json({ authUrl });
 };
 
 async function callback(req,res) {

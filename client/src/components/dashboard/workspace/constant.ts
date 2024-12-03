@@ -144,7 +144,7 @@ export const workflowNodesConfig = [
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/notion/integration/register`,
       }
 
-    }
+    } 
   },
     {
       type:"action",
@@ -440,7 +440,7 @@ export const actionConfig: ActionConfig[] = [
         validation:Yup.string().required("text is required")
       }
     ],
-    outputFields:["text"] 
+    outputFields:[] 
   }, 
   {
     action: "ADD_CONTENT",
@@ -457,7 +457,7 @@ export const actionConfig: ActionConfig[] = [
         validation:Yup.string().required("text is required")
       }
     ],
-    outputFields:["text"] 
+    outputFields:[] 
   }, 
   {
     action: "CREATE_CHANNEL",
@@ -482,7 +482,6 @@ export const actionConfig: ActionConfig[] = [
         validation:Yup.string().required("text is required")
       }
     ],
-    outputFields:["text"]
+    outputFields:[]
   }
-  
 ];

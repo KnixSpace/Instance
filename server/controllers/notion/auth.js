@@ -25,7 +25,7 @@ async function register(req, res) {
   }&redirect_uri=${
     process.env.NOTION_CALLBACK_URI
   }&response_type=code&owner=user&state=${state}&scope=${NOTION_SCOPES.join(",")}`;
-  res.redirect(authUrl);
+  res.status(200).json({ authUrl });
 } 
 
 async function callback(req, res) {
