@@ -172,5 +172,8 @@ async function startChangeStream() {
 //     } catch (error) {
 //         console.error("Error setting up change streams:", error);
 //     }
+//     } catch (error) {
+//         console.error("Error setting up change streams:", error);
+//     }
 }
 module.exports = { startChangeStream };
