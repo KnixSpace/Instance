@@ -48,8 +48,8 @@ async function postShare(text, userId, email) {
     return {
       success: true,
       message: "Post shared successfully on LinkedIn!",
-      data: response.data,
-    };
+      data: response.data, 
+    }; 
   } catch (error) {
     return {
       success: false,
@@ -57,6 +57,6 @@ async function postShare(text, userId, email) {
       error: error.response ? error.response.data : error.message,
     };
   }
-}
+} 
 
 module.exports = { postShare };

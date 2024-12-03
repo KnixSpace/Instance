@@ -34,7 +34,7 @@ async function createChannel(req,res){
                 id: result.channel.id,
                 name: result.channel.name,
                 is_private: result.channel.is_private
-            }
+            } 
         });
 
     } catch (error) {
@@ -79,7 +79,7 @@ async function getChannelList(req, res) {
 
         res.json({
             success: true,
-            channels
+            channels 
         });
 
     } catch (error) {
@@ -91,8 +91,8 @@ async function getChannelList(req, res) {
         });
     }
 } 
-async function sendMessage(req, res) {
-    try {
+async function sendMessage(req, res) { 
+    try { 
         const accountId = "U07CM8QF065"; // req.params.accountId
         const channelId = "C07CXCDPPU0"; // req.body.channelId
         const message = "Hello from API"; // req.body.message

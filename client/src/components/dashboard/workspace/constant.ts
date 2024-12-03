@@ -136,7 +136,7 @@ export const workflowNodesConfig = [
       service:"Notion",
       action:"ADD_CONTENT",
       description:"Add Contnent to page",
-      icon: appIcons.notion,
+      icon: appIcons.meet,
       authAccountInfo:{
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/notion/integration/register`,
       }
@@ -150,7 +150,7 @@ export const workflowNodesConfig = [
         service:"Slack",
         action:"CREATE_CHANNEL",
         description:"Create your channel on Slack",
-        icon: appIcons.slack, 
+        icon: appIcons.meet, 
         authAccountInfo:{
           url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
        }
@@ -379,29 +379,29 @@ export const actionConfig: ActionConfig[] = [
         validation:Yup.string().required("text is required")
       }
     ],
-    outputFields:["text"]
+    outputFields:["text"] 
   }, 
   {
     action: "ADD_CONTENT",
     service:"Notion",
-    icon:appIcons.notion,
+    icon:appIcons.meet,
     configFields:[
       {
         name:"text",
         label:"Content",
-        type:"text",
+        type:"select",
         placeholder:"Enter content to add on notion page",
-        isDynamic:true,
+        isDynamic:false,
         allowedCustomInput:true,
         validation:Yup.string().required("text is required")
       }
     ],
-    outputFields:["text"]
-  },
+    outputFields:["text"] 
+  }, 
   {
     action: "CREATE_CHANNEL",
     service:"Slack",
-    icon:appIcons.slack,
+    icon:appIcons.meet,
     configFields:[
       {
         name:"channelName",
