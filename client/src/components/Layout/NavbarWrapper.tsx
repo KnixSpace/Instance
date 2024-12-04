@@ -29,7 +29,7 @@ function Navbar() {
           <h1 className="font-semibold max-sm:text-lg">Instance</h1>
           <TextGenerateEffect
             words="Automation Flow Builder"
-            className="text-xs hidden sm:block"
+            className="text-xs hidden sm:block text-secondary"
           />
         </div>
       </aside>
