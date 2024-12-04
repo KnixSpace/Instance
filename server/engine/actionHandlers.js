@@ -9,67 +9,68 @@ const {
 
 const executeHandler = async (data, executionContext) => {
   const accountId = data.authAccountInfo._id;
-
-  const renderWithFallback = (template, context) => {
-    const renderedValue = mustache.render(template.value, context);
-    return renderedValue !== "" ? renderedValue : template.value;
-  };
+  const info = data.config;
 
   switch (data.service) {
     case "Google":
-      switch (data.action) {
-        case "CREATE_DOC" || "CREATE_SHEET":
-          const filename = renderWithFallback(
-            data.config.filename,
-            executionContext
-          );
-          return await createFile(
-            filename,
-            data.config.fileType,
-            data.config.folderId.value,
-            accountId
-          );
-        case "CREATE_FOLDER":
-          const folderName = renderWithFallback(
-            data.config.folderName,
-            executionContext
-          );
-          return await createFolder(
-            folderName,
-            data.config.folderId,
-            accountId
-          );
-        case "APPEND_ROW":
-          const values = data.config.values.map((value) => {
-            return renderWithFallback(value, executionContext);
-          });
-          return await appendRowToSheet(
-            data.config.spreadsheetId,
-            data.config.sheetName,
-            data.config.startRow,
-            values,
-            accountId
-          );
-        case "APPEND_TEXT":
-          const text = renderWithFallback(data.config.text, executionContext);
-          return await appendTextToDocument(
-            data.config.documentId,
-            text,
-            accountId
-          );
-
-        default:
-          break;
-      }
-      break;
+      return await handleGoogleActions(data.action, info, executionContext, accountId);
     case "LinkedIn":
-      switch (data.action) {
-        case "CREATE_POST":
-          const text = renderWithFallback(data.config.text, executionContext);
-          return await createPost(text, accountId);
-        default:
-          break;
-      }
+      return await handleLinkedInActions(data.action, info, executionContext, accountId);
+    default:
+      break;
+  }
+};
+
+const renderWithFallback = (template, context) => {
+  const renderedValue = mustache.render(template.value, context);
+  return renderedValue !== "" ? renderedValue : template.value;
+};
+
+const handleGoogleActions = async (action, info, executionContext, accountId) => {
+  switch (action) {
+    case "CREATE_DOC" || "CREATE_SHEET":
+      const filename = renderWithFallback(info.filename, executionContext);
+      return await createFile(
+        filename,
+        info.fileType,
+        info.folderId.value,
+        accountId
+      );
+    case "CREATE_FOLDER":
+      const folderName = renderWithFallback(info.folderName, executionContext);
+      return await createFolder(
+        folderName,
+        info.folderId,
+        accountId
+      );
+    case "APPEND_ROW":
+      const values = info.values.map((value) => {
+        return renderWithFallback(value, executionContext);
+      });
+      return await appendRowToSheet(
+        info.spreadsheetId,
+        info.sheetName,
+        info.startRow,
+        values,
+        accountId
+      );
+    case "APPEND_TEXT":
+      const text = renderWithFallback(info.text, executionContext);
+      return await appendTextToDocument(
+        info.documentId,
+        text,
+        accountId
+      );
+
+    default:
+      break;
+  }
+}
+const handleLinkedInActions = async (action, info, executionContext, accountId) => {
+  switch (action) {
+    case "CREATE_POST":
+      const text = renderWithFallback(info.text, executionContext);
+      return await createPost(text, accountId);
     default:
       break;
   }

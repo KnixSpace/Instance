@@ -2,93 +2,54 @@ const mongoose = require("mongoose");
 const { Integration } = require("../models/Integration");
 const { WorkFlow } = require("../models/Workflow");
 const { createWebhook } = require("./github/triggers");
+const { topologicalSort } = require("../utils/topologicalsort");
 
-// Kahn's algorithm for topological sorting
-function topologicalSort(graph) {
-  const inDegree = {};
-  for (const node in graph) {
-    inDegree[node] = 0;
-  }
-  for (const node in graph) {
-    if (graph[node]) {
-      //Handle cases where a node might not have outgoing edges.
-      for (const neighbor of graph[node]) {
-        inDegree[neighbor]++;
-      }
-    }
-  }
-
-  const queue = [];
-  for (const node in inDegree) {
-    if (inDegree[node] === 0) {
-      queue.push(node);
-    }
-  }
-
-  const sorted = [];
-  while (queue.length > 0) {
-    const node = queue.shift();
-    sorted.push(node);
-    if (graph[node]) {
-      for (const neighbor of graph[node]) {
-        inDegree[neighbor]--;
-        if (inDegree[neighbor] === 0) {
-          queue.push(neighbor);
-        }
-      }
-    }
-  }
-
-  if (sorted.length !== Object.keys(graph).length) {
-    throw new Error(
-      "Cycle detected in the graph. Topological sort is not possible."
-    );
-  }
-
-  return sorted;
-}
-
-//WIP: Implement the updateWorkflow function
+//Implement the updateWorkflow function
 async function updateWorkflow(req, res) {
-  const { adjacencyList, workflowId, nodes, edges } = req.body;
+  const { adjacencyList, workflowId, edges } = req.body;
+  let nodes = req.body.nodes;
 
   if (!adjacencyList) {
     return res.status(400).json({ message: "Adjacency list is required." });
   }
 
   const executionOrder = topologicalSort(adjacencyList);
-  //WIP - Implement the webhook creation logic update this for the webhook creation
-  let webhookData;
+  //webhook creation logic update this for the webhook creation
+
   let node = nodes.find((n) => n.id === executionOrder[0]);
-  if (node) {
-    webhookData = {
-      events: node.data.config.events,
-      repoName: node.data.config.repoName,
-      accountId: node.data.authAccountInfo._id,
-    };
+  if (node && node.data.service == "Github") {    
+    let webhookData;
+      webhookData = {
+        events: node.data.config.events,
+        repoName: node.data.config.repoName,
+        accountId: node.data.authAccountInfo._id,
+      };
+
+    let response = await createWebhook(
+      webhookData.repoName,
+      webhookData.events,
+      webhookData.accountId
+    );
+    node.data.config.webhookId = response.webhookId;
+
+    const updatedNodes = nodes.map((n) => {
+      if (n.id === node.id) {
+        return node;
+      } else {
+        return n;
+      }
+    });
+    nodes = updatedNodes;
   }
 
-  let response = await createWebhook(
-    webhookData.repoName,
-    webhookData.events,
-    webhookData.accountId
-  );
-  node.data.config.webhookId = response.webhookId;
 
-  const updatedNodes = nodes.map((n) => {
-    if (n.id === node.id) {
-      return node;
-    } else {
-      return n;
-    }
-  });
 
   try {
     const workflow = await WorkFlow.findByIdAndUpdate(
       workflowId,
       {
         $set: {
-          nodes: updatedNodes,
+          nodes:nodes,
           edges,
           executionOrder,
         },
@@ -173,7 +134,6 @@ async function getAllWorkflows(req, res) {
 }
 
 //get all the details of a workflow
-
 async function getWorkflow(req, res) {
   const { workflowId } = req.body;
   try {
@@ -219,8 +179,8 @@ async function fetchServiceAccount(req, res) {
       match:
         service === "google" && scopes?.length > 0
           ? {
-              scopes: { $all: scopes },
-            }
+            scopes: { $all: scopes },
+          }
           : {},
       select: "email name avatar",
     });

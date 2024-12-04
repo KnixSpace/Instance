@@ -22,6 +22,7 @@ async function getNewTokens(refreshToken) {
 
 //update new tokens
 async function updateTokens(account) {
+  try{
   const credentials = await getNewTokens(account.tokens.refreshToken);
 
   const { access_token, refresh_token, expiry_date } = credentials;
@@ -30,8 +31,10 @@ async function updateTokens(account) {
   account.tokens.refreshToken = refresh_token;
   account.tokens.expiry = expiry_date;
 
-  await account.save();
-  return credentials;
+  await account.save();}
+  catch(err){
+    console.log(err);
+  } 
 }
 
 module.exports = { oauth2Client, isTokenExpired, updateTokens };

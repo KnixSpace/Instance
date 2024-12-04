@@ -1,11 +1,11 @@
 const { EventEmitter } = require("events");
-const { queue } = require("../config/queue");
+const { newQueue } = require("../utils/queue");
 const { executeHandler } = require("./actionHandlers");
 
 class FlowEngine extends EventEmitter {
-  constructor() {
+  constructor(queueName) {
     super();
-    this.workflowQueue = queue;
+    this.workflowQueue = newQueue(queueName);
     this.workflowQueue.process(this.processWorkflowNode.bind(this));
     this.executionContext = {
       workflowId:"",

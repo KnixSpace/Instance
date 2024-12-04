@@ -176,7 +176,7 @@ const handleWebhookEvent = async (req, res) => {
     };
 
     for (const workflow of matchingWorkflows) {
-      const flowEngine = new FlowEngine();
+      const flowEngine = new FlowEngine(workflow._id);
       await flowEngine.executeEngine(workflow, response);
     }
 
