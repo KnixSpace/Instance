@@ -1,5 +1,5 @@
-const mustache = require("mustache");
 const { createPost } = require("../controllers/linkedin/actions");
+const { renderWithFallback } = require("../utils/renderValues");
 const {
   createFile,
   createFolder,
@@ -21,15 +21,13 @@ const executeHandler = async (data, executionContext) => {
   }
 };
 
-const renderWithFallback = (template, context) => {
-  const renderedValue = mustache.render(template.value, context);
-  return renderedValue !== "" ? renderedValue : template.value;
-};
 
 const handleGoogleActions = async (action, info, executionContext, accountId) => {
   switch (action) {
     case "CREATE_DOC" || "CREATE_SHEET":
       const filename = renderWithFallback(info.filename, executionContext);
+      console.log("filename", filename);
+      
       return await createFile(
         filename,
         info.fileType,
