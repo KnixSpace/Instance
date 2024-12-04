@@ -139,7 +139,7 @@ export const workflowNodesConfig = [
       service:"Notion",
       action:"ADD_CONTENT",
       description:"Add Contnent to page",
-      icon: appIcons.meet,
+      icon: appIcons,
       authAccountInfo:{
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/notion/integration/register`,
       }
@@ -153,7 +153,33 @@ export const workflowNodesConfig = [
         service:"Slack",
         action:"CREATE_CHANNEL",
         description:"Create your channel on Slack",
-        icon: appIcons.meet, 
+        icon: appIcons, 
+        authAccountInfo:{
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
+       }
+      }
+    },
+    {
+      type:"action",
+      data:{
+        label:"Slack",
+        service:"Slack",
+        action:"GET_CHANNELS",
+        description:"Your Channels",
+        icon: appIcons, 
+        authAccountInfo:{
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
+       }
+      }
+    },
+    {
+      type:"action",
+      data:{
+        label:"Slack",
+        service:"Slack",
+        action:"SEND_MESSAGE",
+        description:"Send Message on your channel",
+        icon: appIcons, 
         authAccountInfo:{
           url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
        }
@@ -438,9 +464,10 @@ export const actionConfig: ActionConfig[] = [
         isDynamic:true,
         allowedCustomInput:true,
         validation:Yup.string().required("text is required")
-      }
+      } 
     ],
-    outputFields:[] 
+    outputFields:[{ label:"Post Content",value:"text"}
+    ] 
   }, 
   {
     action: "ADD_CONTENT",
@@ -448,16 +475,29 @@ export const actionConfig: ActionConfig[] = [
     icon:appIcons.meet,
     configFields:[
       {
+        name:"accountId",
+        label:"Page",
+        type:"select",
+        placeholder:"Select Page",
+        isDynamic:true,
+        dynamicOptions: {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/notion/integration/getPage`,
+        },
+        allowedCustomInput:true,
+        validation:Yup.object().required("Page is required")
+      },
+      {
         name:"text",
         label:"Content",
-        type:"select",
+        type:"text",
         placeholder:"Enter content to add on notion page",
         isDynamic:false,
         allowedCustomInput:true,
-        validation:Yup.string().required("text is required")
+        validation:Yup.string().required("Content is required")
       }
     ],
-    outputFields:[] 
+    outputFields:[{label:"Content",value:"text"},
+      ] 
   }, 
   {
     action: "CREATE_CHANNEL",
@@ -474,14 +514,48 @@ export const actionConfig: ActionConfig[] = [
         validation:Yup.string().required("text is required")
       },{
         name:"isPrivate",
-        label:"Chanel Name",
-        type:"boolean", 
-        placeholder:"Enter Your Chanel Name",
+        label:"Public or Private",
+        type:"text", 
+        placeholder:"Enter your publicity",
         isDynamic:false,
         allowedCustomInput:true,
         validation:Yup.string().required("text is required")
       }
     ],
-    outputFields:[]
+    outputFields:[{label:"Slack Channel Name",value:"channelName"}]
+  },
+  {
+    action: "GET_CHANNELS",
+    service:"Slack",
+    icon:appIcons.calendar,
+    configFields:[
+      {
+        name:"channel.name",
+        label:"Channel Names",
+        type:"select", 
+        placeholder:"Your channel",
+        isDynamic:false,
+        allowedCustomInput:false,
+        validation:Yup.object().required("Chennel is required")
+      }
+    ],
+    outputFields:[{label:"Slack Channel Name",value:"channelName"}]
+  },
+  {
+    action: "SEND_MESSAGE",
+    service:"Slack",
+    icon:appIcons.calendar,
+    configFields:[
+      {
+        name:"message",
+        label:"Your Message",
+        type:"text", 
+        placeholder:"Enter your message",
+        isDynamic:true,
+        allowedCustomInput:true,
+        validation:Yup.string().required("text is required")
+      }
+    ],
+    outputFields:[{label:"Your Message",value:"message"}]
   }
 ];

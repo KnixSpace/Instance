@@ -31,7 +31,7 @@ async function register(req, res) {
 async function callback(req, res) {
   try {
     const { code } = req.query;
-    console.log(code);
+
     if (!code) {
       return res.status(400).json({ message: "Authorization code is missing" });
     }
@@ -52,6 +52,7 @@ async function callback(req, res) {
         },
       }
     );
+   
     const tokens = tokenResponse.data;
 
     const userResponse = await axios.get(NOTION_USER_URL, {
@@ -62,6 +63,7 @@ async function callback(req, res) {
     });
 
     const userData = userResponse.data;
+    
     const id = userData.id;
     const avatar = userData.avatar_url; 
     const name = userData.name;
@@ -79,7 +81,7 @@ async function callback(req, res) {
           <p>Closing the window and refresh accounts...</p>
         </body>
       </html>
-    `);
+    `); 
   } catch (error) {
     console.error("Error handling Notion callback:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -124,7 +126,7 @@ async function updateExistingIntegration(
   accountId,
   avatar,
   tokens,
-  name
+  name 
 ) {
   const accountExists = integration.accounts.some(
     (account) => account.accountId === accountId

@@ -2,13 +2,10 @@ const axios = require('axios');
 const { WebClient } = require('@slack/web-api');
 const { Slack } = require('../../models/Slack');
 
-async function createChannel(req,res){
-
-    try{ 
-        const accountId = "U07CM8QF065"; // req.params.accountId
-        const channelName = "new-channel-01"; // req.body.channelName
-        const isPrivate = false; // req.body.isPrivate
-
+async function createChannel(accountId="U07CM8QF065",channelName="hello",isPrivate="false"){
+           
+    try{  
+         
         // Find user's Slack credentials from database
         const user = await Slack.findOne({ accountId });
 
@@ -28,29 +25,29 @@ async function createChannel(req,res){
             is_private: isPrivate
         });
 
-        res.json({
+        return{
             success: true,
             channel: {
                 id: result.channel.id,
                 name: result.channel.name,
                 is_private: result.channel.is_private
             } 
-        });
+        };
 
     } catch (error) {
-        console.error('Error creating channel:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to create channel',
-            error: error.message
-        });
+        const errorMessage = error.response
+        ? error.response.data.message || error.response.data
+        : error.message;
+    
+      return {
+        success: false,
+        message: `Failed to send message: ${errorMessage}`,
+      };
     }
 } 
 
-async function getChannelList(req, res) {
+async function getChannelList(accountId="U07CM8QF065") {
     try {
-        const accountId = "U07CM8QF065"; // req.params.accountId
-        
         // Find user's Slack credentials
         const user = await Slack.findOne({ accountId });
 
@@ -77,26 +74,25 @@ async function getChannelList(req, res) {
             member_count: channel.num_members
         }));
 
-        res.json({
+        return {
             success: true,
             channels 
-        });
+        };
 
     } catch (error) {
-        console.error('Error fetching channels:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch channels',
-            error: error.message
-        });
+           // Capture and return error details
+           const errorMessage = error.response
+           ? error.response.data.message || error.response.data
+           : error.message;
+     
+         return {
+           success: false,
+           message: `Failed to get channels: ${errorMessage}`,
+         };
     }
 } 
-async function sendMessage(req, res) { 
+async function sendMessage(accountId,channelId,message) { 
     try { 
-        const accountId = "U07CM8QF065"; // req.params.accountId
-        const channelId = "C07CXCDPPU0"; // req.body.channelId
-        const message = "Hello from API"; // req.body.message
-
         // Find user's Slack credentials
         const user = await Slack.findOne({ accountId });
 
@@ -116,22 +112,24 @@ async function sendMessage(req, res) {
             text: message
         });
 
-        res.json({
+       return{
             success: true,
-            message: 'Message sent successfully',
             messageDetails: {
                 ts: result.ts,
                 channel: result.channel
-            }
-        });
+            } 
+        };
 
     } catch (error) {
-        console.error('Error sending message:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to send message',
-            error: error.message
-        });
+    // Capture and return error details
+    const errorMessage = error.response
+    ? error.response.data.message || error.response.data
+    : error.message;
+
+  return {
+    success: false,
+    message: `Failed to send message: ${errorMessage}`,
+  };
     }
 }
 

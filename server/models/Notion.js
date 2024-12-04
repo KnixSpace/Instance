@@ -14,8 +14,7 @@ const notionAccountSchema = new mongoose.Schema({
     name: { type: String, required: true },
     avatar:{type:String},
     accountId: {type:String,required:true},
-    accessToken:{type:String,required:true}
-    
+    accessToken:{type:String,required:true}   
 }); 
 
 const Notion = mongoose.model("notion",notionAccountSchema);

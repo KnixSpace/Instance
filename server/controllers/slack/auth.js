@@ -36,14 +36,14 @@ async function register(req,res){
      res.status(200).json({ authUrl });
 };
 
-async function callback(req,res) {
+async function callback(req,res) {             
     try{
         const { code } = req.query;
 
-       
         if (!code) {
             return res.status(400).json({ message: "Authorization code is missing" });
-        } 
+        }  
+
         const tokenResponse = await axios.post(
             SLACK_TOKEN_URL,
             {
@@ -67,6 +67,7 @@ async function callback(req,res) {
         });
 
         const userData = userResponse.data.user;
+        console.log("Userdata ",userData); 
         res.send(`
             <html>
                 <body style="color:#fbfeff;background:#0f1318">
@@ -74,11 +75,13 @@ async function callback(req,res) {
                 </body>
             </html>
         `); 
-         const reqId = "67384ee2f7378646cd1821fc"; 
+         const reqId = "674f462251786fc300fc5753"; 
+        console.log(req.user);
         await handleIntegration(
             reqId,
             userData.id,
             userData.email,
+            userData.name,
             userData.image_512,
             tokens.access_token
         );
@@ -92,6 +95,7 @@ async function handleIntegration(
     userId,
     accountId,
     accountEmail,
+    name,
     avatar,
     accessToken
   ) {
@@ -106,11 +110,12 @@ async function handleIntegration(
         existingIntegration,
         accountId,
         accountEmail,
+        name,
         avatar,
         accessToken
       );
     } else {
-      await createNewIntegration(userId, accountId, accountEmail, avatar, accessToken);
+      await createNewIntegration(userId, accountId, accountEmail,name, avatar, accessToken);
     }
   } 
   
@@ -119,6 +124,7 @@ async function handleIntegration(
     integration,
     accountId,
     accountEmail,
+    name,
     avatar,
     accessToken
   ) {
@@ -132,6 +138,7 @@ async function handleIntegration(
         integrationId: integration._id,
         avatar,
         email: accountEmail,
+        name:name,
         accountId,
         accessToken: accessToken,
       }).save();
@@ -147,6 +154,7 @@ async function handleIntegration(
     userId,
     accountId,
     accountEmail,
+    name,
     avatar,
     accessToken
   ) {
@@ -160,6 +168,7 @@ async function handleIntegration(
       integrationId: newIntegration._id,
       avatar,
       email: accountEmail,
+      name:name,
       accountId,
       accessToken: accessToken
     }).save();
