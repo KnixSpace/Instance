@@ -11,6 +11,7 @@ const linkedinAccountSchema = new mongoose.Schema({
         ref:"Integration",
         required: true,
     },
+    name: { type: String, required: true },
     avatar: { type: String },
     email: { type: String, unique: true, required: true },
     accountId: { type: String, required: true },

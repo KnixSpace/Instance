@@ -168,13 +168,13 @@ async function fetchServiceAccount(req, res) {
   try {
     if (!req.body.service) {
       return res.status(400).json({ message: "Service is required" });
-    }
+    } 
     const { service, scopes } = req.body;
 
     const integration = await Integration.findOne({
       userId: req.user.userId,
       provider: service,
-    }).populate({
+    }).populate({ 
       path: "accounts",
       match:
         service === "google" && scopes?.length > 0
@@ -184,7 +184,7 @@ async function fetchServiceAccount(req, res) {
           : {},
       select: "email name avatar",
     });
-
+       
     if (!integration || !integration.accounts.length) {
       return res.status(404).json({ message: "No account found" });
     }

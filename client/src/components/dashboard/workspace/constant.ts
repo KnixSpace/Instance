@@ -1,9 +1,11 @@
 import * as Yup from "yup";
 import { appIcons } from "@/lib/constants";
 import { ActionConfig } from "@/types/configurationTypes";
+import { SiSlack } from "react-icons/si";
+import { label } from "framer-motion/client";
 
 export const workflowNodesConfig = [
-  {
+  { 
     type: "trigger",
     data: {
       label: "Github",
@@ -136,6 +138,60 @@ export const workflowNodesConfig = [
       },
     },
   },
+  {
+    type:"action",
+    data:{
+      label:"Notion",
+      service:"Notion",
+      action:"ADD_CONTENT",
+      description:"Add Contnent to page",
+      icon: appIcons,
+      authAccountInfo:{
+        url: `${process.env.NEXT_PUBLIC_BASE_URL}/notion/integration/register`,
+      }
+
+    } 
+  },
+    {
+      type:"action",
+      data:{
+        label:"Slack",
+        service:"Slack",
+        action:"CREATE_CHANNEL",
+        description:"Create your channel on Slack",
+        icon: appIcons, 
+        authAccountInfo:{
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
+       }
+      }
+    },
+    {
+      type:"action",
+      data:{
+        label:"Slack",
+        service:"Slack",
+        action:"GET_CHANNELS",
+        description:"Your Channels",
+        icon: appIcons, 
+        authAccountInfo:{
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
+       }
+      }
+    },
+    {
+      type:"action",
+      data:{
+        label:"Slack",
+        service:"Slack",
+        action:"SEND_MESSAGE",
+        description:"Send Message on your channel",
+        icon: appIcons, 
+        authAccountInfo:{
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
+       }
+      }
+    }
+  
 ];
 
 export const actionConfig: ActionConfig[] = [
@@ -401,4 +457,111 @@ export const actionConfig: ActionConfig[] = [
     ],
     outputFields: [{ label: "Document id", value: "documentId" }],
   },
+  {
+    action: "SHARE_POST",
+    service:"Linkedin",
+    icon:appIcons.linkedin,
+    configFields:[
+      {
+        name:"text",
+        label:"Text Data",
+        type:"text",
+        placeholder:"Enter text to post on linkedin",
+        isDynamic:true,
+        allowedCustomInput:true,
+        validation:Yup.string().required("text is required")
+      } 
+    ],
+    outputFields:[{ label:"Post Content",value:"text"}
+    ] 
+  }, 
+  {
+    action: "ADD_CONTENT",
+    service:"Notion",
+    icon:appIcons.meet,
+    configFields:[
+      {
+        name:"accountId",
+        label:"Page",
+        type:"select",
+        placeholder:"Select Page",
+        isDynamic:true,
+        dynamicOptions: {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/notion/integration/getPage`,
+        },
+        allowedCustomInput:true,
+        validation:Yup.object().required("Page is required")
+      },
+      {
+        name:"text",
+        label:"Content",
+        type:"text",
+        placeholder:"Enter content to add on notion page",
+        isDynamic:false,
+        allowedCustomInput:true,
+        validation:Yup.string().required("Content is required")
+      }
+    ],
+    outputFields:[{label:"Content",value:"text"},
+      ] 
+  }, 
+  {
+    action: "CREATE_CHANNEL",
+    service:"Slack",
+    icon:appIcons.meet,
+    configFields:[
+      {
+        name:"channelName",
+        label:"Chanel Name",
+        type:"text", 
+        placeholder:"Enter Your Chanel Name",
+        isDynamic:false,
+        allowedCustomInput:true,
+        validation:Yup.string().required("text is required")
+      },{
+        name:"isPrivate",
+        label:"Public or Private",
+        type:"text", 
+        placeholder:"Enter your publicity",
+        isDynamic:false,
+        allowedCustomInput:true,
+        validation:Yup.string().required("text is required")
+      }
+    ],
+    outputFields:[{label:"Slack Channel Name",value:"channelName"}]
+  },
+  {
+    action: "GET_CHANNELS",
+    service:"Slack",
+    icon:appIcons.calendar,
+    configFields:[
+      {
+        name:"channel.name",
+        label:"Channel Names",
+        type:"select", 
+        placeholder:"Your channel",
+        isDynamic:false,
+        allowedCustomInput:false,
+        validation:Yup.object().required("Chennel is required")
+      }
+    ],
+    outputFields:[{label:"Slack Channel Name",value:"channelName"}]
+  },
+  {
+    action: "SEND_MESSAGE",
+    service:"Slack",
+    icon:appIcons.calendar,
+    configFields:[
+      {
+        name:"message",
+        label:"Your Message",
+        type:"text", 
+        placeholder:"Enter your message",
+        isDynamic:true,
+        allowedCustomInput:true,
+        validation:Yup.string().required("text is required")
+      }
+    ],
+    outputFields:[{label:"Your Message",value:"message"}]
+  }
 ];

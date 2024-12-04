@@ -37,7 +37,7 @@ const AccountList = ({
           scopes: scope ? scope : null,
         },
         { withCredentials: true }
-      );
+      ); 
       console.log(response.data);
       setAccounts(response.data.accounts);
     } catch (error: any) {
@@ -55,7 +55,7 @@ const AccountList = ({
   useEffect(() => {
     fetchAccounts();
   }, [isAccountListUpdated, fetchAccounts]);
-
+    console.log(accounts);
   const filteredAccounts = useMemo(
     () =>
       accounts.filter(
