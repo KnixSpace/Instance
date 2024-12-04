@@ -18,6 +18,7 @@ export const connectedApps = [
   { appName: "github", icon: "/apps/github.webp" },
   { appName: "linkedin", icon: "/apps/linkedin.webp" },
   { appName: "meet", icon: "/apps/meet.webp" },
+  { appName: "notion", icon: "/apps/notion.webp" },
 ];
 
 export const appIcons = {
@@ -29,4 +30,6 @@ export const appIcons = {
   meet: "/apps/meet.webp",
   github: "/apps/github.webp",
   linkedin: "/apps/linkedin.webp",
+  google: "/apps/google.webp",
+  notion: "/apps/notion.webp",
 };
