@@ -1,12 +1,12 @@
 "use client";
- import React, { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
 import * as yup from "yup";
 import { useParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { setMetaData } from "@/redux/features/workflow/workflowSlice";
+import { updateWorkflowMetadata } from "@/redux/features/workflow/workflowSlice";
 
 type Props = {
   setEdit: React.Dispatch<React.SetStateAction<boolean>>;
@@ -65,7 +65,7 @@ const EditWorkflow = (props: Props) => {
     if (response.status === 200) {
       console.log(response.data);
       dispatch(
-        setMetaData({
+        updateWorkflowMetadata({
           name: response.data.name,
           description: response.data.description,
         })

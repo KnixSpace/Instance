@@ -4,9 +4,9 @@ import SidePanel from "@/components/dashboard/workspace/sidepanel/SidePanel";
 import Warning from "@/components/dashboard/workspace/workflow/Warning";
 import Workflow from "@/components/dashboard/workspace/workflow/Workflow";
 import {
-  initializedExistingWorkflow,
-  setAdjacencyList,
-  setWarning,
+  loadExistingWorkflow,
+  rebuildAdjacencyLists,
+  setWorkflowWarning,
 } from "@/redux/features/workflow/workflowSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import axios from "axios";
@@ -25,7 +25,7 @@ const page = (props: Props) => {
 
   if (flow.warning.isWarning) {
     setTimeout(() => {
-      dispatch(setWarning({ isWarning: false, message: null }));
+      dispatch(setWorkflowWarning({ isWarning: false, message: null }));
     }, 3000);
   }
 
@@ -45,8 +45,8 @@ const page = (props: Props) => {
         { withCredentials: true }
       );
       if (response.status === 200) {
-        dispatch(initializedExistingWorkflow(response.data));
-        dispatch(setAdjacencyList());
+        dispatch(loadExistingWorkflow(response.data));
+        dispatch(rebuildAdjacencyLists());
       }
     } catch (error) {
       console.log("Workflow initialization failed", error);

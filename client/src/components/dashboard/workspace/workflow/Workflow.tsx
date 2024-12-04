@@ -19,13 +19,13 @@ import TriggerNode from "./customNodes/TriggerNode";
 import ActionNode from "./customNodes/ActionNode";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
-  addNewEdge,
-  addNewNode,
-  selectNode,
-  setAdjacencyList,
-  setDeletedNodes,
-  setWarning,
-  updateNodePositions,
+  insertEdges,
+  insertNode,
+  focusNode,
+  rebuildAdjacencyLists,
+  removeNodes,
+  setWorkflowWarning,
+  updateNodeLayout,
 } from "@/redux/features/workflow/workflowSlice";
 import { getNextNodes } from "@/utils/workflowUtils";
 import { Node } from "@/types/workflowTypes";
@@ -57,13 +57,13 @@ const Workflow = (props: Props) => {
   }, [flow?.nodes, flow?.edges]);
 
   const onNodeDragStop = useCallback(() => {
-    dispatch(updateNodePositions(nodes));
+    dispatch(updateNodeLayout(nodes));
   }, [nodes, dispatch]);
 
   useEffect(() => {
     if (isUserAction.current) {
-      dispatch(addNewEdge(edges));
-      dispatch(setAdjacencyList());
+      dispatch(insertEdges(edges));
+      dispatch(rebuildAdjacencyLists());
       isUserAction.current = false;
     }
   }, [edges, dispatch]);
@@ -103,26 +103,26 @@ const Workflow = (props: Props) => {
       selected: true,
     };
 
-    dispatch(addNewNode(newNode));
-    dispatch(selectNode(newNode.id));
+    dispatch(insertNode(newNode));
+    dispatch(focusNode(newNode.id));
   };
 
   const handleNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
-      dispatch(selectNode(node.id));
+      dispatch(focusNode(node.id));
     },
     [dispatch]
   );
 
   const handlePaneClick = useCallback(() => {
-    dispatch(selectNode(null));
+    dispatch(focusNode(null));
   }, [dispatch]);
 
   const onEdgesDelete = useCallback(
     (deletedEdges: Edge[]) => {
       isUserAction.current = true;
       const updatedEdges = edges.filter((edge) => !deletedEdges.includes(edge));
-      dispatch(addNewEdge(updatedEdges));
+      dispatch(insertEdges(updatedEdges));
     },
     [edges, dispatch]
   );
@@ -134,7 +134,7 @@ const Workflow = (props: Props) => {
         return getNextNodes(flow.forwardList, node.id, true);
       });
 
-      dispatch(setDeletedNodes(deletedDecendants));
+      dispatch(removeNodes(deletedDecendants));
       setNodes((prevNodes) => {
         return prevNodes.filter((node) => !deletedDecendants.includes(node.id));
       });
@@ -145,7 +145,7 @@ const Workflow = (props: Props) => {
             !deletedDecendants.includes(edge.target)
         );
       });
-      dispatch(addNewEdge(edges));
+      dispatch(insertEdges(edges));
     },
 
     [nodes, dispatch, flow.forwardList]
@@ -162,7 +162,7 @@ const Workflow = (props: Props) => {
 
       if (source === target) {
         dispatch(
-          setWarning({
+          setWorkflowWarning({
             isWarning: true,
             message: "Cannot connect a node to itself.",
           })
@@ -176,7 +176,7 @@ const Workflow = (props: Props) => {
         );
         if (triggerConnections.length >= 1) {
           dispatch(
-            setWarning({
+            setWorkflowWarning({
               isWarning: true,
               message: "Trigger node can only have one connection.",
             })

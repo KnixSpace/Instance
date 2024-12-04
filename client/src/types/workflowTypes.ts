@@ -37,7 +37,7 @@ export interface Node {
   selected: boolean;
 }
 
-export interface workflowState {
+export interface  WorkflowState {
   name: string | null;
   description: string | null;
   nodes: Node[];

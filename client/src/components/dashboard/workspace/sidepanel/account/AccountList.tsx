@@ -1,4 +1,4 @@
-import { setNodeAccount } from "@/redux/features/workflow/workflowSlice";
+import { configureNodeAccount } from "@/redux/features/workflow/workflowSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { Account, Node } from "@/types/workflowTypes";
 import axios from "axios";
@@ -69,7 +69,7 @@ const AccountList = ({
   const handleAccountSelect = (account: Account) => {
     if (window.confirm("Are you sure you want to select this account?")) {
       dispatch(
-        setNodeAccount({
+        configureNodeAccount({
           nodeId: selectedNode.id,
           account: account,
           userId: user.data?.userId as string,

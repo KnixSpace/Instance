@@ -5,9 +5,9 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 import { Node } from "@/types/workflowTypes";
 import {
-  resetNodeConfig,
-  setSidePanelMode,
-  updateNodeConfig,
+  resetNodeToDefaultConfig,
+  changeSidePanelMode,
+  updateNodeConfiguration,
 } from "@/redux/features/workflow/workflowSlice";
 import { useAppDispatch } from "@/redux/hooks";
 import { actionConfig } from "../../constant";
@@ -59,8 +59,8 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
   );
 
   const handleChangeAccount = useCallback(() => {
-    dispatch(setSidePanelMode("account"));
-    dispatch(resetNodeConfig(selectedNode));
+    dispatch(changeSidePanelMode("account"));
+    dispatch(resetNodeToDefaultConfig(selectedNode));
   }, [dispatch]);
 
   //WIP: handle form submit
@@ -69,7 +69,9 @@ const Configuration = ({ selectedNode }: { selectedNode: Node }) => {
       console.log(data);
       // Add your submit logic here
       if (window.confirm("Sure to submit?")) {
-        dispatch(updateNodeConfig({ nodeId: selectedNode.id, config: data }));
+        dispatch(
+          updateNodeConfiguration({ nodeId: selectedNode.id, config: data })
+        );
       }
     },
     [dispatch, selectedNode.id]

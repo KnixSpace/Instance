@@ -1,15 +1,15 @@
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Edge } from "@xyflow/react";
 import { workflowNodesConfig } from "@/components/dashboard/workspace/constant";
 import {
   Account,
   Node,
   SidePanelMode,
-  workflowState,
+  WorkflowState,
 } from "@/types/workflowTypes";
-import { createAdjacencyList} from "@/utils/workflowUtils";
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { Edge } from "@xyflow/react";
+import { createAdjacencyList } from "@/utils/workflowUtils";
 
-const initialState: workflowState = {
+const initialState: WorkflowState = {
   name: null,
   description: null,
   nodes: [],
@@ -28,28 +28,29 @@ const workflowSlice = createSlice({
   name: "workflow",
   initialState,
   reducers: {
-    initializedNewWorkflow: (
+    createNewWorkflow: (
       state,
       action: PayloadAction<{ name: string; description: string }>
     ) => {
       state.name = action.payload.name;
       state.description = action.payload.description;
+      state.sidePanel = "trigger";
     },
 
-    initializedExistingWorkflow: (state, action: PayloadAction<any>) => {
-      state.nodes = action.payload.nodes;
-      state.edges = action.payload.edges;
+    loadExistingWorkflow: (state, action: PayloadAction<WorkflowState>) => {
+      const { nodes, edges, name, description } = action.payload;
+
+      state.nodes = nodes;
+      state.edges = edges;
+      state.name = name;
+      state.description = description;
       state.selectedNode = null;
-      if (state.nodes.length > 0) {
-        state.sidePanel = "action";
-      } else {
-        state.sidePanel = "trigger";
-      }
-      state.name = action.payload.name;
-      state.description = action.payload.description;
+
+      // More robust panel state determination
+      state.sidePanel = nodes.length > 0 ? "action" : "trigger";
     },
 
-    updateNodePositions: (state, action: PayloadAction<Node[]>) => {
+    updateNodeLayout: (state, action: PayloadAction<Node[]>) => {
       state.nodes = action.payload.map((node) => {
         return {
           ...node,
@@ -61,7 +62,7 @@ const workflowSlice = createSlice({
       });
     },
 
-    setMetaData: (
+    updateWorkflowMetadata: (
       state,
       action: PayloadAction<{ name: string; description: string }>
     ) => {
@@ -69,7 +70,7 @@ const workflowSlice = createSlice({
       state.description = action.payload.description;
     },
 
-    addNewNode: (state, action: PayloadAction<Node>) => {
+    insertNode: (state, action: PayloadAction<Node>) => {
       state.nodes = state.nodes.map((node) => {
         return {
           ...node,
@@ -80,68 +81,61 @@ const workflowSlice = createSlice({
       state.sidePanel = "configuration";
     },
 
-    setDeletedNodes: (state, action: PayloadAction<string[]>) => {
+    removeNodes: (state, action: PayloadAction<string[]>) => {
       state.nodes = state.nodes.filter(
         (node) => !action.payload.includes(node.id)
       );
+
       state.selectedNode = null;
-      if (state.nodes.length > 0) {
-        state.sidePanel = "action";
-      } else {
-        state.sidePanel = "trigger";
-      }
+      state.sidePanel = state.nodes.length > 0 ? "action" : "trigger";
     },
 
-    selectNode: (state, action: PayloadAction<string | null>) => {
+    focusNode: (state, action: PayloadAction<string | null>) => {
       // console.log(action.payload);
       if (action.payload === null) {
-        if (state.nodes.length > 0) {
-          state.sidePanel = "action";
-          state.selectedNode = null;
-          state.nodes = state.nodes.map((node) => {
-            return {
-              ...node,
-              selected: false,
-            };
-          });
-        } else {
-          state.sidePanel = "trigger";
-        }
+        state.selectedNode = null;
+        state.nodes = state.nodes.map((node) => ({
+          ...node,
+          selected: false,
+        }));
+        state.sidePanel = state.nodes.length > 0 ? "action" : "trigger";
+        return;
       }
 
-      const isNode = state.nodes.find((node) => node.id === action.payload);
-      if (isNode) {
-        state.selectedNode = isNode;
-        state.nodes = state.nodes.map((node) => {
-          return {
-            ...node,
-            selected: node.id === action.payload,
-          };
-        });
-        if (isNode.data.authAccountInfo._id) {
-          state.sidePanel = "configuration";
-        } else {
-          state.sidePanel = "account";
-        }
+      const selectedNode = state.nodes.find(
+        (node) => node.id === action.payload
+      );
+
+      if (selectedNode) {
+        state.selectedNode = selectedNode;
+        state.nodes = state.nodes.map((node) => ({
+          ...node,
+          selected: node.id === action.payload,
+        }));
+
+        // Determine side panel based on node's account status
+        state.sidePanel = selectedNode.data.authAccountInfo._id
+          ? "configuration"
+          : "account";
       }
     },
 
-    addNewEdge: (state, action: PayloadAction<Edge[]>) => {
+    insertEdges: (state, action: PayloadAction<Edge[]>) => {
       state.edges = action.payload;
     },
 
-    setSidePanelMode: (state, action: PayloadAction<SidePanelMode>) => {
+    changeSidePanelMode: (state, action: PayloadAction<SidePanelMode>) => {
       state.sidePanel = action.payload;
     },
 
-    setWarning: (
+    setWorkflowWarning: (
       state,
       action: PayloadAction<{ isWarning: boolean; message: string | null }>
     ) => {
       state.warning = action.payload;
     },
 
-    setAdjacencyList: (state) => {
+    rebuildAdjacencyLists: (state) => {
       state.backwardList = createAdjacencyList(
         state.nodes,
         state.edges,
@@ -154,7 +148,7 @@ const workflowSlice = createSlice({
       );
     },
 
-    setNodeAccount: (
+    configureNodeAccount: (
       state,
       action: PayloadAction<{
         nodeId: string;
@@ -176,7 +170,7 @@ const workflowSlice = createSlice({
       }
     },
 
-    updateNodeConfig: (
+    updateNodeConfiguration: (
       state,
       action: PayloadAction<{ nodeId: string; config: Record<string, any> }>
     ) => {
@@ -189,7 +183,7 @@ const workflowSlice = createSlice({
       }
     },
 
-    resetNodeConfig: (state, action: PayloadAction<Node>) => {
+    resetNodeToDefaultConfig: (state, action: PayloadAction<Node>) => {
       const defaultConfig = workflowNodesConfig.find(
         (config) => config.data.action === action.payload.data.action
       )?.data.config;
@@ -202,20 +196,20 @@ const workflowSlice = createSlice({
 });
 
 export const {
-  initializedNewWorkflow,
-  initializedExistingWorkflow,
-  updateNodePositions,
-  setMetaData,
-  addNewNode,
-  addNewEdge,
-  selectNode,
-  setDeletedNodes,
-  setSidePanelMode,
-  setWarning,
-  setAdjacencyList,
-  setNodeAccount,
-  updateNodeConfig,
-  resetNodeConfig,
+  createNewWorkflow,
+  loadExistingWorkflow,
+  updateNodeLayout,
+  updateWorkflowMetadata,
+  insertNode,
+  removeNodes,
+  focusNode,
+  insertEdges,
+  changeSidePanelMode,
+  setWorkflowWarning,
+  rebuildAdjacencyLists,
+  configureNodeAccount,
+  updateNodeConfiguration,
+  resetNodeToDefaultConfig,
 } = workflowSlice.actions;
 
 export default workflowSlice.reducer;

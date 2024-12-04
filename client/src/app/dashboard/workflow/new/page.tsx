@@ -5,7 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/redux/hooks";
-import { initializedNewWorkflow } from "@/redux/features/workflow/workflowSlice";
+import { createNewWorkflow } from "@/redux/features/workflow/workflowSlice";
 import axios from "axios";
 
 interface FormData {
@@ -56,7 +56,7 @@ const Page: React.FC<Props> = (props) => {
 
       const workflowId = response.data._id;
       dispatch(
-        initializedNewWorkflow({
+        createNewWorkflow({
           name: response.data.name,
           description: response.data.description,
         })
