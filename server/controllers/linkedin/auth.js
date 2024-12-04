@@ -46,7 +46,7 @@ async function callback(req, res) {
       },
     });
      
-    console.log(profileResponse);
+   
     const id = profileResponse.data.sub;
     const email = profileResponse.data.email;
     const picture = profileResponse.data.avatar;

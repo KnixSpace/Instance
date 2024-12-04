@@ -34,7 +34,7 @@ async function getPages (req,res){
             value : page.id, 
             label: page.properties.title?.title[0]?.plain_text || 'Untitled'
         }));
-        res.status(200).json({ options });
+        res.status(200).json({ options }); 
  
     } catch (error) {
 

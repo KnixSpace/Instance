@@ -1,4 +1,5 @@
 const { createPost } = require("../controllers/linkedin/actions");
+const {addContent} = require("../controllers/notion/action"); 
 const { renderWithFallback } = require("../utils/renderValues");
 const {
   createFile,
@@ -16,11 +17,12 @@ const executeHandler = async (data, executionContext) => {
       return await handleGoogleActions(data.action, info, executionContext, accountId);
     case "LinkedIn":
       return await handleLinkedInActions(data.action, info, executionContext, accountId);
+    case "Notion":
+      return await handleNotionActions(data.action, info, executionContext, accountId);
     default:
       break;
   }
 };
-
 
 const handleGoogleActions = async (action, info, executionContext, accountId) => {
   switch (action) {
@@ -59,7 +61,6 @@ const handleGoogleActions = async (action, info, executionContext, accountId) =>
         text,
         accountId
       );
-
     default:
       break;
   }
@@ -73,5 +74,13 @@ const handleLinkedInActions = async (action, info, executionContext, accountId) 
       break;
   }
 };
-
+const handleNotionActions = async (action, info, executionContext, accountId) =>{
+  switch (action) {
+    case "ADD_CONTENT":
+      const text = renderWithFallback(info.text, executionContext);
+      return await addContent(info.pageId,text, accountId);
+    default:
+      break;
+  }
+}   
 module.exports = { executeHandler };

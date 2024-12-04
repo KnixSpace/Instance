@@ -112,7 +112,6 @@ async function getAllWorkflows(req, res) {
     const workflows = await WorkFlow.find({
       "metadata.userId": userId,
     });
-    console.log("workflows", workflows);
 
     if (workflows.length > 0) {
       const summary = workflows.map((workflow) => {

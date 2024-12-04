@@ -13,7 +13,7 @@ const linkedinAccountSchema = new mongoose.Schema({
     },
     name: { type: String, required: true },
     avatar: { type: String },
-    email: { type: String, unique: true, required: true },
+    email: { type: String, required: true },
     accountId: { type: String, required: true },
     accessToken: { type: String, required: true },
     //refreshToken: { type: String, required: true },

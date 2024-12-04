@@ -52,9 +52,9 @@ async function addContent(pageId,text,accountId) {
         return{
             success: true,
             message: 'Content added successfully',
-            data: response.data 
+            data: response.data.text
         }; 
-
+  
     } catch (error) {
     // Capture and return error details
     const errorMessage = error.response
