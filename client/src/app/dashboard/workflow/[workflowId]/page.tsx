@@ -45,6 +45,7 @@ const page = (props: Props) => {
         { withCredentials: true }
       );
       if (response.status === 200) {
+        setAcive(response.data.status === "active" ? true : false);
         dispatch(loadExistingWorkflow(response.data));
         dispatch(rebuildAdjacencyLists());
       }
@@ -83,6 +84,24 @@ const page = (props: Props) => {
     }
   };
 
+  const setStatus = async (status: boolean) => {
+    try {
+      const response = await axios.patch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/workflow/updateStatus`,
+        {
+          workflowId,
+          status,
+        },
+        { withCredentials: true }
+      );
+      if (response.status === 200) {
+        console.log("Workflow status updated successfully");
+      }
+    } catch (error) {
+      console.log("Workflow status update failed", error);
+    }
+  };
+
   return (
     <>
       {flow.warning.isWarning && <Warning message={flow.warning.message} />}
@@ -116,6 +135,7 @@ const page = (props: Props) => {
                 className={`rounded-full p-1 w-11 flex items-center bg-lightbackground transition-all duration-1000 ease-in-out cursor-pointer`}
                 onClick={() => {
                   setAcive(!active);
+                  setStatus(!active);
                 }}
               >
                 <div
