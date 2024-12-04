@@ -99,7 +99,10 @@ export const workflowNodesConfig = [
       icon: appIcons.sheets,
       authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/integration/register`,
-        scope: ["https://www.googleapis.com/auth/spreadsheets"],
+        scope: [
+          "https://www.googleapis.com/auth/spreadsheets",
+          "https://www.googleapis.com/auth/drive",
+        ],
       },
     },
   },
@@ -113,7 +116,10 @@ export const workflowNodesConfig = [
       icon: appIcons.docs,
       authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/integration/register`,
-        scope: ["https://www.googleapis.com/auth/documents"],
+        scope: [
+          "https://www.googleapis.com/auth/documents",
+          "https://www.googleapis.com/auth/drive",
+        ],
       },
     },
   },

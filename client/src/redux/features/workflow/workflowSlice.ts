@@ -179,6 +179,7 @@ const workflowSlice = createSlice({
       );
       if (node) {
         node.data.config = action.payload.config;
+        node.selected = false;
         state.sidePanel = "action";
       }
     },

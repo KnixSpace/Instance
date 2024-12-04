@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const { Integration } = require("../models/Integration");
 const { WorkFlow } = require("../models/Workflow");
 const { createWebhook } = require("./github/triggers");
@@ -56,45 +57,49 @@ async function updateWorkflow(req, res) {
   }
 
   const executionOrder = topologicalSort(adjacencyList);
-  //WIP - Implement the webhook creation logic
+  //WIP - Implement the webhook creation logic update this for the webhook creation
   let webhookData;
-  let node = nodes.find(n => n.id === executionOrder[0]);
+  let node = nodes.find((n) => n.id === executionOrder[0]);
   if (node) {
     webhookData = {
       events: node.data.config.events,
       repoName: node.data.config.repoName,
-      accountId: node.data.authAccountInfo._id
-    }
+      accountId: node.data.authAccountInfo._id,
+    };
   }
 
-  let response = await createWebhook(webhookData.repoName, webhookData.events, webhookData.accountId);
+  let response = await createWebhook(
+    webhookData.repoName,
+    webhookData.events,
+    webhookData.accountId
+  );
   node.data.config.webhookId = response.webhookId;
 
-  const updatedNodes = nodes.map(n => {
+  const updatedNodes = nodes.map((n) => {
     if (n.id === node.id) {
       return node;
     } else {
       return n;
     }
-  })
+  });
 
   try {
     const workflow = await WorkFlow.findByIdAndUpdate(
       workflowId,
       {
-        nodes: updatedNodes,
-        edges,
-        executionOrder,
+        $set: {
+          nodes: updatedNodes,
+          edges,
+          executionOrder,
+        },
+        $inc: { version: 1 },
       },
-      { $inc: { version: 1 } },
       { new: true }
     );
 
     if (!workflow) {
       return res.status(404).json({ message: "Workflow not found" });
     }
-
-
 
     res.status(200).json(workflow);
   } catch (error) {
@@ -105,15 +110,14 @@ async function updateWorkflow(req, res) {
 //Implement the status active update function
 async function updateStatus(req, res) {
   const { workflowId, status } = req.body;
-
   try {
     let workflow = await WorkFlow.findById(workflowId);
-    if (status === "active") {
-      workflow.status = "inactive";
-      workflow = await workflow.save();
-      return res.status(400).json({ status: workflow.status });
-    } else {
+    if (status) {
       workflow.status = "active";
+      workflow = await workflow.save();
+      return res.status(200).json({ status: workflow.status });
+    } else {
+      workflow.status = "inactive";
       workflow = await workflow.save();
       return res.status(200).json({ status: workflow.status });
     }
@@ -141,19 +145,29 @@ async function updateMetaData(req, res) {
   }
 }
 
-// get all the workflows (title, description, status,id)
 async function getAllWorkflows(req, res) {
-  const { workflowId } = req.body;
+  const userId = req.user.userId;
   try {
-    const workflows = await WorkFlow.findById(workflowId);
-    const summary = {
-      workflowId,
-      name: workflows.name,
-      description: workflows.description,
-      status: workflows.status,
-    };
-    res.status(200).json(summary);
+    const workflows = await WorkFlow.find({
+      "metadata.userId": userId,
+    });
+    console.log("workflows", workflows);
+
+    if (workflows.length > 0) {
+      const summary = workflows.map((workflow) => {
+        return {
+          workflowId: workflow._id,
+          name: workflow.name,
+          description: workflow.description,
+          status: workflow.status,
+        };
+      });
+      return res.status(200).json(summary);
+    } else {
+      return res.status(404).json({ message: "No workflows found" });
+    }
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Error fetching workflows" });
   }
 }
@@ -205,8 +219,8 @@ async function fetchServiceAccount(req, res) {
       match:
         service === "google" && scopes?.length > 0
           ? {
-            scopes: { $all: scopes },
-          }
+              scopes: { $all: scopes },
+            }
           : {},
       select: "email name avatar",
     });
