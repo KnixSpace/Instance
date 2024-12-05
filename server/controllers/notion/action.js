@@ -50,7 +50,7 @@ async function addContent(pageId,text,accountId) {
         );
              
         return{
-            success: true,
+            status: true,
             message: 'Content added successfully',
             data: response.data.text
         }; 
@@ -62,7 +62,7 @@ async function addContent(pageId,text,accountId) {
     : error.message;
 
   return {
-    success: false,
+    status: false,
     message: `Failed to add content : ${errorMessage}`,
   };
     }

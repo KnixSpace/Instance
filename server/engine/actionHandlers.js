@@ -16,6 +16,7 @@ const executeHandler = async (data, executionContext) => {
     case "Google":
       return await handleGoogleActions(data.action, info, executionContext, accountId);
     case "LinkedIn":
+      console.log("Entered linkedin");
       return await handleLinkedInActions(data.action, info, executionContext, accountId);
     case "Notion":
       return await handleNotionActions(data.action, info, executionContext, accountId);
@@ -25,13 +26,10 @@ const executeHandler = async (data, executionContext) => {
 };
 
 const handleGoogleActions = async (action, info, executionContext, accountId) => {
-  console.log("Entered google actions", action)
   switch (action) {
     case "CREATE_DOC":
     case "CREATE_SHEET":
       const filename = renderWithFallback(info.filename, executionContext);
-      console.log("filename", filename);
-
       return await createFile(
         filename,
         info.fileType,
@@ -70,6 +68,7 @@ const handleGoogleActions = async (action, info, executionContext, accountId) =>
 }
 const handleLinkedInActions = async (action, info, executionContext, accountId) => {
   switch (action) {
+    
     case "CREATE_POST":
       const text = renderWithFallback(info.text, executionContext);
       return await createPost(text, accountId);
@@ -77,6 +76,7 @@ const handleLinkedInActions = async (action, info, executionContext, accountId) 
       break;
   }
 };
+
 const handleNotionActions = async (action, info, executionContext, accountId) => {
   switch (action) {
     case "ADD_CONTENT":

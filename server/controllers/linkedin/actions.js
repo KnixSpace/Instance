@@ -13,19 +13,17 @@ async function createPost(text, accountId) {
       };
     }
 
-    const { accessToken, accountId: userId } = account;
-
     // Define LinkedIn API URL and headers
     const apiUrl = "https://api.linkedin.com/v2/ugcPosts";
     const headers = {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${account.accessToken}`,
       "Content-Type": "application/json",
       "X-Restli-Protocol-Version": "2.0.0",
     };
 
     // Post data payload
     const postData = {
-      author: `urn:li:person:${userId}`, // LinkedIn Person URN
+      author: `urn:li:person:${account.accountId}`, // LinkedIn Person URN
       lifecycleState: "PUBLISHED",
       specificContent: {
         "com.linkedin.ugc.ShareContent": {
@@ -42,7 +40,7 @@ async function createPost(text, accountId) {
     const response = await axios.post(apiUrl, postData, { headers });
 
     return {
-      success: true,
+      status: true,
       data: response.data,
       message: "Post created successfully",
     };
@@ -53,7 +51,7 @@ async function createPost(text, accountId) {
       : error.message;
 
     return {
-      success: false,
+      status: false,
       message: `Failed to create post: ${errorMessage}`,
     };
   }

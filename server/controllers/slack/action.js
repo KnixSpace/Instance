@@ -113,7 +113,7 @@ async function sendMessage(accountId,channelId,message) {
         });
 
        return{
-            success: true,
+            status: true,
             messageDetails: {
                 ts: result.ts,
                 channel: result.channel
@@ -127,7 +127,7 @@ async function sendMessage(accountId,channelId,message) {
     : error.message;
 
   return {
-    success: false,
+    status: false,
     message: `Failed to send message: ${errorMessage}`,
   };
     }

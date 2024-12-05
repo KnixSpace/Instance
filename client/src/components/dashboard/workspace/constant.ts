@@ -3,7 +3,7 @@ import { appIcons } from "@/lib/constants";
 import { ActionConfig } from "@/types/configurationTypes";
 
 export const workflowNodesConfig = [
-  { 
+  {
     type: "trigger",
     data: {
       label: "Github",
@@ -128,7 +128,7 @@ export const workflowNodesConfig = [
     data: {
       label: "LinkedIn",
       service: "LinkedIn",
-      action: "SHARE_POST",
+      action: "CREATE_POST",
       description: "Share a post on LinkedIn",
       icon: appIcons.linkedin,
       authAccountInfo: {
@@ -136,60 +136,60 @@ export const workflowNodesConfig = [
       },
     },
   },
-   {
-    type:"action",
-    data:{
-      label:"Notion",
-      service:"Notion",
-      action:"ADD_CONTENT",
-      description:"Add Contnent to page",
+  {
+    type: "action",
+    data: {
+      label: "Notion",
+      service: "Notion",
+      action: "ADD_CONTENT",
+      description: "Add Contnent to page",
       icon: appIcons.notion,
-      authAccountInfo:{
+      authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/notion/integration/register`,
       }
 
-    } 
+    }
   },
-    // {
-    //   type:"action",
-    //   data:{
-    //     label:"Slack",
-    //     service:"Slack",
-    //     action:"CREATE_CHANNEL",
-    //     description:"Create your channel on Slack",
-    //     icon: appIcons, 
-    //     authAccountInfo:{
-    //       url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
-    //    }
-    //   }
-    // },
-    // {
-    //   type:"action",
-    //   data:{
-    //     label:"Slack",
-    //     service:"Slack",
-    //     action:"GET_CHANNELS",
-    //     description:"Your Channels",
-    //     icon: appIcons, 
-    //     authAccountInfo:{
-    //       url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
-    //    }
-    //   }
-    // },
-    // {
-    //   type:"action",
-    //   data:{
-    //     label:"Slack",
-    //     service:"Slack",
-    //     action:"SEND_MESSAGE",
-    //     description:"Send Message on your channel",
-    //     icon: appIcons, 
-    //     authAccountInfo:{
-    //       url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
-    //    }
-    //   }
-    // }
-  
+  // {
+  //   type:"action",
+  //   data:{
+  //     label:"Slack",
+  //     service:"Slack",
+  //     action:"CREATE_CHANNEL",
+  //     description:"Create your channel on Slack",
+  //     icon: appIcons, 
+  //     authAccountInfo:{
+  //       url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
+  //    }
+  //   }
+  // },
+  // {
+  //   type:"action",
+  //   data:{
+  //     label:"Slack",
+  //     service:"Slack",
+  //     action:"GET_CHANNELS",
+  //     description:"Your Channels",
+  //     icon: appIcons, 
+  //     authAccountInfo:{
+  //       url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
+  //    }
+  //   }
+  // },
+  // {
+  //   type:"action",
+  //   data:{
+  //     label:"Slack",
+  //     service:"Slack",
+  //     action:"SEND_MESSAGE",
+  //     description:"Send Message on your channel",
+  //     icon: appIcons, 
+  //     authAccountInfo:{
+  //       url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
+  //    }
+  //   }
+  // }
+
 ];
 
 export const actionConfig: ActionConfig[] = [
@@ -456,53 +456,53 @@ export const actionConfig: ActionConfig[] = [
     outputFields: [{ label: "Document id", value: "documentId" }],
   },
   {
-    action: "SHARE_POST",
-    service:"LinkedIn",
-    icon:appIcons.linkedin,
-    configFields:[
+    action: "CREATE_POST",
+    service: "LinkedIn",
+    icon: appIcons.linkedin,
+    configFields: [
       {
-        name:"text",
-        label:"Text Data",
-        type:"select",
-        placeholder:"Enter text to post on linkedin",
-        isDynamic:false,
-        allowedCustomInput:true,
-        validation:Yup.object().required("text is required")
-      } 
+        name: "text",
+        label: "Text Data",
+        type: "select",
+        placeholder: "Enter text to post on linkedin",
+        isDynamic: false,
+        allowedCustomInput: false,
+        validation: Yup.object().required("text is required")
+      }
     ],
-    outputFields:[{ label:"LinkedIn Content",value:"text"}
-    ] 
-  }, 
+    outputFields: [{ label: "LinkedIn Content", value: "text" }
+    ]
+  },
   {
     action: "ADD_CONTENT",
-    service:"Notion",
-    icon:appIcons.meet,
-    configFields:[
+    service: "Notion",
+    icon: appIcons.meet,
+    configFields: [
       {
-        name:"pageId",
-        label:"Page",
-        type:"select",
-        placeholder:"Select Page",
-        isDynamic:true,
+        name: "pageId",
+        label: "Page",
+        type: "select",
+        placeholder: "Select Page",
+        isDynamic: true,
         dynamicOptions: {
           url: `${process.env.NEXT_PUBLIC_BASE_URL}/notion/integration/getPage`,
         },
-        allowedCustomInput:true,
-        validation:Yup.object().required("Page is required")
+        allowedCustomInput: true,
+        validation: Yup.object().required("Page is required")
       },
       {
-        name:"text",
-        label:"Content",
-        type:"select",
-        placeholder:"Enter content to add on notion page",
-        isDynamic:false,
-        allowedCustomInput:true,
-        validation:Yup.object().required("Content is required")
+        name: "text",
+        label: "Content",
+        type: "select",
+        placeholder: "Enter content to add on notion page",
+        isDynamic: false,
+        allowedCustomInput: true,
+        validation: Yup.object().required("Content is required")
       }
     ],
-    outputFields:[{label:"Notion Content",value:"text"},{label:"Page Id",value:"options.value"}
-      ] 
-  }, 
+    outputFields: [{ label: "Notion Content", value: "text" }, { label: "Page Id", value: "options.value" }
+    ]
+  },
   // {
   //   action: "CREATE_CHANNEL",
   //   service:"Slack",
