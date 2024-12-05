@@ -22,19 +22,21 @@ async function getNewTokens(refreshToken) {
 
 //update new tokens
 async function updateTokens(account) {
-  try{
-  const credentials = await getNewTokens(account.tokens.refreshToken);
+  try {
+    const credentials = await getNewTokens(account.tokens.refreshToken);
 
-  const { access_token, refresh_token, expiry_date } = credentials;
+    const { access_token, refresh_token, expiry_date } = credentials;
 
-  account.tokens.accessToken = access_token;
-  account.tokens.refreshToken = refresh_token;
-  account.tokens.expiry = expiry_date;
+    account.tokens.accessToken = access_token;
+    account.tokens.refreshToken = refresh_token;
+    account.tokens.expiry = expiry_date;
 
-  await account.save();}
-  catch(err){
-    console.log(err);
-  } 
+    await account.save();
+    return credentials;
+  }
+  catch (err) {
+    console.log("Refrehing token error: ",err);
+  }
 }
 
 module.exports = { oauth2Client, isTokenExpired, updateTokens };
