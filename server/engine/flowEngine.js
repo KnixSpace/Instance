@@ -53,6 +53,8 @@ class FlowEngine extends EventEmitter {
           });
         }
       }
+
+      console.log("Execution", this.executionContext);
     } catch (error) {
       console.error("Error initializing workflow execution:", error);
       throw error;
@@ -72,6 +74,7 @@ class FlowEngine extends EventEmitter {
 
       // Execute the step using the service handler
       const handlerResult = await executeHandler(node.data, this.executionContext.data);
+      console.log(`Handler Result: ${node.id}`, handlerResult);
       this.executionContext.nodeStatus.set(node.id, handlerResult.status);
 
       if (!handlerResult.status) {
@@ -87,10 +90,10 @@ class FlowEngine extends EventEmitter {
 
       Object.assign(this.executionContext.data[node.id], handlerResult.data);
 
-      console.log(
-        "Execution Context for Step:",
-        JSON.stringify(this.executionContext, null, 2)
-      );
+      // console.log(
+      //   "Execution Context for Step:",
+      //   JSON.stringify(this.executionContext, null, 2)
+      // );
 
       console.log(
         `Step ${node.id} completed successfully for workflow ${workflowId}`

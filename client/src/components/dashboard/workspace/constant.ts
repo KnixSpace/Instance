@@ -435,7 +435,7 @@ export const actionConfig: ActionConfig[] = [
         placeholder: "Select a document",
         isDynamic: true,
         dynamicOptions: {
-          url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/service/getSheetNames`,
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/service/getDriveFiles`,
           body: {
             mimeType: "docs",
           },

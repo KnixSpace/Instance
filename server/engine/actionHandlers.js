@@ -1,5 +1,5 @@
 const { createPost } = require("../controllers/linkedin/actions");
-const {addContent} = require("../controllers/notion/action"); 
+const { addContent } = require("../controllers/notion/action");
 const { renderWithFallback } = require("../utils/renderValues");
 const {
   createFile,
@@ -25,11 +25,13 @@ const executeHandler = async (data, executionContext) => {
 };
 
 const handleGoogleActions = async (action, info, executionContext, accountId) => {
+  console.log("Entered google actions", action)
   switch (action) {
-    case "CREATE_DOC" || "CREATE_SHEET":
+    case "CREATE_DOC":
+    case "CREATE_SHEET":
       const filename = renderWithFallback(info.filename, executionContext);
       console.log("filename", filename);
-      
+
       return await createFile(
         filename,
         info.fileType,
@@ -57,11 +59,12 @@ const handleGoogleActions = async (action, info, executionContext, accountId) =>
     case "APPEND_TEXT":
       const text = renderWithFallback(info.text, executionContext);
       return await appendTextToDocument(
-        info.documentId,
+        info.documentId.value,
         text,
         accountId
       );
     default:
+      console.log("Entered default");
       break;
   }
 }
@@ -74,13 +77,13 @@ const handleLinkedInActions = async (action, info, executionContext, accountId) 
       break;
   }
 };
-const handleNotionActions = async (action, info, executionContext, accountId) =>{
+const handleNotionActions = async (action, info, executionContext, accountId) => {
   switch (action) {
     case "ADD_CONTENT":
       const text = renderWithFallback(info.text, executionContext);
-      return await addContent(info.pageId,text, accountId);
+      return await addContent(info.pageId, text, accountId);
     default:
       break;
   }
-}   
+}
 module.exports = { executeHandler };
