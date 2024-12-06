@@ -23,7 +23,7 @@ const schema = yup.object().shape({
     .trim()
     .required("Workflow Description is required")
     .min(10, "Minimum 10 letter description is required")
-    .max(20, "Maximum 20 letter description is required"),
+    .max(100, "Maximum 100 letter description is required"),
 });
 
 const EditWorkflow = (props: Props) => {
