@@ -87,7 +87,7 @@ async function updateExistingIntegration(
   const newScope = tokens.scope.split(" ").filter((item) => item !== "openid");
 
   if (accountExist) {
-    const account = await Google.findOne({ accountId: id });
+    const account = await Google.findOne({ accountId: id, userId });
     account.tokens.accessToken = tokens.access_token;
     account.tokens.refreshToken = tokens.refresh_token;
     account.tokens.expiry = tokens.expiry_date;
