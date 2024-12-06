@@ -17,7 +17,14 @@ async function updateWorkflow(req, res) {
   //webhook creation logic update this for the webhook creation
 
   let node = nodes.find((n) => n.id === executionOrder[0]);
-  if (node && node.data.service === "Github" && node.data.config !== undefined && Object.keys(node.data.config).length > 0 && node.data.config.events.length > 0 && node.data.config.repoName !== "") {
+  if (
+    node &&
+    node.data.service === "Github" &&
+    node.data.config !== undefined &&
+    Object.keys(node.data.config).length > 0 &&
+    node.data.config.events.length > 0 &&
+    node.data.config.repoName !== ""
+  ) {
     const { events, repoName } = node.data.config;
     const { _id: accountId } = node.data.authAccountInfo;
 
@@ -28,7 +35,12 @@ async function updateWorkflow(req, res) {
     };
 
     try {
-      let response = await createWebhook(webhookData.repoName, webhookData.events, webhookData.accountId);
+      let response = await createWebhook(
+        webhookData.repoName,
+        webhookData.events,
+        webhookData.accountId
+      );
+      console.log("Webhook created successfully:", response);
       node.data.config.webhookId = response?.webhookId;
     } catch (error) {
       console.error("Error creating webhook:", error);
@@ -172,8 +184,8 @@ async function fetchServiceAccount(req, res) {
       match:
         service === "google" && scopes?.length > 0
           ? {
-            scopes: { $all: scopes },
-          }
+              scopes: { $all: scopes },
+            }
           : {},
       select: "email name avatar",
     });

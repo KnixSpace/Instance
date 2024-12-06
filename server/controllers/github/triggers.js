@@ -9,72 +9,86 @@ async function createWebhook(repoName, events, accountId) {
     const sanitizedRepoName = repoName.label;
     const sanitizedEvents = events.map((event) => event.value);
 
-
     const githubAccount = await Github.findById(accountId);
-    if (!githubAccount) {
-      return null;
-    }
+    const webhookUrl = `${process.env.WEBHOOK_URL}/api/v1/github/webhook/notifications`;
 
-    const { accessToken, webhooks } = githubAccount;
-    const webhookUrl = `${process.env.HOST_URL}/api/v1/github/webhook/notifications`;
+    const matchingWebhookRepo = await Github.find({
+      webhooks: { $elemMatch: { repoId: sanitizedRepoId.toString() } },
+    }).select("webhooks");
 
-    const existingWebhook = webhooks.find(
-      (webhook) => webhook.repoId === sanitizedRepoId.toString(),
+    const existingGithubDocument = matchingWebhookRepo.find(
+      (doc) => doc._id.toString() === accountId
     );
-    if (existingWebhook) {
-      const existingEvents = existingWebhook.events;
-      const areEventsSame =
-        JSON.stringify(sanitizedEvents.sort()) ===
-        JSON.stringify(existingEvents.sort());
 
-      if (areEventsSame) {
-        return ({
-          message: "Webhook already exists with the same events",
-          webhookId: existingWebhook.webhookId,
+    if (matchingWebhookRepo.length > 0) {
+      if (existingGithubDocument) {
+        const existingWebhook = existingGithubDocument.webhooks.find(
+          (webhook) => webhook.repoId === sanitizedRepoId.toString()
+        );
+
+        const areEventsSame =
+          JSON.stringify(sanitizedEvents.sort()) ===
+          JSON.stringify(existingWebhook.events.sort());
+
+        if (areEventsSame) {
+          return {
+            message: "Webhook already exists with the same events",
+            webhookId: existingWebhook.webhookId,
+          };
+        }
+
+        const updateResponse = await updateWebhook(
+          sanitizedRepoName,
+          existingWebhook.webhookId,
+          webhookUrl,
+          sanitizedEvents,
+          githubAccount.accessToken
+        );
+
+        githubAccount.webhooks.find((webhook) => {
+          if (webhook.repoId === sanitizedRepoId.toString()) {
+            webhook.events = sanitizedEvents;
+          }
         });
-      }
 
-      const updateResponse = await updateWebhook(
+        await githubAccount.save();
+
+        return {
+          message: "Webhook updated successfully",
+          webhookId: updateResponse.data.id.toString(),
+        };
+      } else {
+        //WIP
+        //add already existing webhook to current account
+        githubAccount.webhooks.push({
+          repoId: sanitizedRepoId,
+          repoName: sanitizedRepoName,
+          webhookId: matchingWebhookRepo.webhooks[0].webhookId,
+          events: sanitizedEvents,
+        });
+        await githubAccount.save();
+      }
+    } else {
+      const webhookResponse = await createNewWebhook(
         sanitizedRepoName,
-        existingWebhook.webhookId,
         webhookUrl,
         sanitizedEvents,
-        accessToken
+        githubAccount.accessToken
       );
 
-      console.log("Updated webhook", updateResponse.data)
-
-      existingWebhook.events = sanitizedEvents;
+      githubAccount.webhooks.push({
+        repoId: sanitizedRepoId,
+        repoName: sanitizedRepoName,
+        webhookId: webhookResponse.data.id.toString(),
+        events: webhookResponse.data.events,
+      });
       await githubAccount.save();
 
-      return ({
-        message: "Webhook updated successfully",
-        webhookId: updateResponse.data.id,
-      });
-
+      return {
+        message: "Webhook created successfully",
+        webhookId: webhookResponse.data.id.toString(),
+      };
     }
-
-    const webhookResponse = await createNewWebhook(
-      sanitizedRepoName,
-      webhookUrl,
-      sanitizedEvents,
-      accessToken
-    );
-
-    console.log("New webhook :", webhookResponse.data)
-
-    githubAccount.webhooks.push({
-      repoId: sanitizedRepoId,
-      repoName: sanitizedRepoName,
-      webhookId: webhookResponse.data.id.toString(),
-      events: webhookResponse.data.events,
-    });
-    await githubAccount.save();
-
-    return {
-      message: "Webhook created successfully",
-      webhookId: webhookResponse.data.id.toString(),
-    };
   } catch (error) {
     console.error(
       "Error creating/updating webhook:",
