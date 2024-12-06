@@ -146,9 +146,8 @@ export const workflowNodesConfig = [
       icon: appIcons.notion,
       authAccountInfo: {
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/notion/integration/register`,
-      }
-
-    }
+      },
+    },
   },
   // {
   //   type:"action",
@@ -157,7 +156,7 @@ export const workflowNodesConfig = [
   //     service:"Slack",
   //     action:"CREATE_CHANNEL",
   //     description:"Create your channel on Slack",
-  //     icon: appIcons, 
+  //     icon: appIcons,
   //     authAccountInfo:{
   //       url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
   //    }
@@ -170,7 +169,7 @@ export const workflowNodesConfig = [
   //     service:"Slack",
   //     action:"GET_CHANNELS",
   //     description:"Your Channels",
-  //     icon: appIcons, 
+  //     icon: appIcons,
   //     authAccountInfo:{
   //       url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
   //    }
@@ -183,13 +182,12 @@ export const workflowNodesConfig = [
   //     service:"Slack",
   //     action:"SEND_MESSAGE",
   //     description:"Send Message on your channel",
-  //     icon: appIcons, 
+  //     icon: appIcons,
   //     authAccountInfo:{
   //       url: `${process.env.NEXT_PUBLIC_BASE_URL}/slack/integration/register`,
   //    }
   //   }
   // }
-
 ];
 
 export const actionConfig: ActionConfig[] = [
@@ -206,8 +204,8 @@ export const actionConfig: ActionConfig[] = [
         isDynamic: false,
         options: [
           { label: "New Commit", value: "push" },
-          { label: "New Issue", value: "issue" },
-          { label: "New Pull Request", value: "pull" },
+          { label: "New Issue", value: "issues" },
+          { label: "New Pull Request", value: "pull_request" },
         ],
         allowedCustomInput: false,
         validation: Yup.array()
@@ -362,6 +360,42 @@ export const actionConfig: ActionConfig[] = [
     ],
   },
   {
+    action: "CREATE_FOLDER",
+    service: "Google",
+    icon: appIcons.drive,
+    configFields: [
+      {
+        name: "folderName",
+        label: "Folder Name",
+        type: "select",
+        placeholder: "Enter a folder name",
+        isDynamic: false,
+        allowedCustomInput: true,
+        validation: Yup.object().required("Folder Name is required"),
+      },
+      {
+        name: "parentFolderId",
+        label: "Parent Folder (Optional)",
+        type: "select",
+        placeholder: "Select a parent folder",
+        isDynamic: true,
+        dynamicOptions: {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/google/service/getDriveFiles`,
+          body: {
+            mimeType: "folders",
+          },
+        },
+        allowedCustomInput: false,
+        validation: Yup.object().nullable(),
+      },
+    ],
+    outputFields: [
+      { label: "Folder id", value: "folderId" },
+      { label: "Folder link", value: "folderLink" },
+      { label: "Folder Name", value: "folderName" },
+    ],
+  },
+  {
     action: "APPEND_ROW",
     service: "Google",
     icon: appIcons.sheets,
@@ -467,11 +501,10 @@ export const actionConfig: ActionConfig[] = [
         placeholder: "Enter text to post on linkedin",
         isDynamic: false,
         allowedCustomInput: false,
-        validation: Yup.object().required("text is required")
-      }
+        validation: Yup.object().required("text is required"),
+      },
     ],
-    outputFields: [{ label: "LinkedIn Content", value: "text" }
-    ]
+    outputFields: [{ label: "LinkedIn Content", value: "text" }],
   },
   {
     action: "ADD_CONTENT",
@@ -488,7 +521,7 @@ export const actionConfig: ActionConfig[] = [
           url: `${process.env.NEXT_PUBLIC_BASE_URL}/notion/integration/getPage`,
         },
         allowedCustomInput: true,
-        validation: Yup.object().required("Page is required")
+        validation: Yup.object().required("Page is required"),
       },
       {
         name: "text",
@@ -497,11 +530,13 @@ export const actionConfig: ActionConfig[] = [
         placeholder: "Enter content to add on notion page",
         isDynamic: false,
         allowedCustomInput: true,
-        validation: Yup.object().required("Content is required")
-      }
+        validation: Yup.object().required("Content is required"),
+      },
     ],
-    outputFields: [{ label: "Notion Content", value: "text" }, { label: "Page Id", value: "options.value" }
-    ]
+    outputFields: [
+      { label: "Notion Content", value: "text" },
+      { label: "Page Id", value: "options.value" },
+    ],
   },
   // {
   //   action: "CREATE_CHANNEL",
@@ -511,7 +546,7 @@ export const actionConfig: ActionConfig[] = [
   //     {
   //       name:"channelName",
   //       label:"Chanel Name",
-  //       type:"text", 
+  //       type:"text",
   //       placeholder:"Enter Your Chanel Name",
   //       isDynamic:false,
   //       allowedCustomInput:true,
@@ -519,7 +554,7 @@ export const actionConfig: ActionConfig[] = [
   //     },{
   //       name:"isPrivate",
   //       label:"Public or Private",
-  //       type:"text", 
+  //       type:"text",
   //       placeholder:"Enter your publicity",
   //       isDynamic:false,
   //       allowedCustomInput:true,
@@ -536,7 +571,7 @@ export const actionConfig: ActionConfig[] = [
   //     {
   //       name:"channel.name",
   //       label:"Channel Names",
-  //       type:"select", 
+  //       type:"select",
   //       placeholder:"Your channel",
   //       isDynamic:false,
   //       allowedCustomInput:false,
@@ -553,7 +588,7 @@ export const actionConfig: ActionConfig[] = [
   //     {
   //       name:"message",
   //       label:"Your Message",
-  //       type:"text", 
+  //       type:"text",
   //       placeholder:"Enter your message",
   //       isDynamic:true,
   //       allowedCustomInput:true,

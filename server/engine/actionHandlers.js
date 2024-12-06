@@ -40,7 +40,7 @@ const handleGoogleActions = async (action, info, executionContext, accountId) =>
       const folderName = renderWithFallback(info.folderName, executionContext);
       return await createFolder(
         folderName,
-        info.folderId,
+        info.parentFolderId.value,
         accountId
       );
     case "APPEND_ROW":
