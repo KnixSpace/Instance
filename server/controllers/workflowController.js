@@ -17,39 +17,33 @@ async function updateWorkflow(req, res) {
   //webhook creation logic update this for the webhook creation
 
   let node = nodes.find((n) => n.id === executionOrder[0]);
-  if (node && node.data.service == "Github") {    
-    let webhookData;
-      webhookData = {
-        events: node.data.config.events,
-        repoName: node.data.config.repoName,
-        accountId: node.data.authAccountInfo._id,
-      };
+  if (node && node.data.service === "Github" && node.data.config !== undefined && Object.keys(node.data.config).length > 0 && node.data.config.events.length > 0 && node.data.config.repoName !== "") {
+    const { events, repoName } = node.data.config;
+    const { _id: accountId } = node.data.authAccountInfo;
 
-    let response = await createWebhook(
-      webhookData.repoName,
-      webhookData.events,
-      webhookData.accountId
-    );
-    node.data.config.webhookId = response.webhookId;
+    let webhookData = {
+      events,
+      repoName,
+      accountId,
+    };
 
-    const updatedNodes = nodes.map((n) => {
-      if (n.id === node.id) {
-        return node;
-      } else {
-        return n;
-      }
-    });
-    nodes = updatedNodes;
+    try {
+      let response = await createWebhook(webhookData.repoName, webhookData.events, webhookData.accountId);
+      node.data.config.webhookId = response?.webhookId;
+    } catch (error) {
+      console.error("Error creating webhook:", error);
+    }
+
+    node = { ...node }; // Ensure node is updated properly
+    nodes = nodes.map((n) => (n.id === node.id ? node : n));
   }
-
-
 
   try {
     const workflow = await WorkFlow.findByIdAndUpdate(
       workflowId,
       {
         $set: {
-          nodes:nodes,
+          nodes: nodes,
           edges,
           executionOrder,
         },
@@ -167,13 +161,13 @@ async function fetchServiceAccount(req, res) {
   try {
     if (!req.body.service) {
       return res.status(400).json({ message: "Service is required" });
-    } 
+    }
     const { service, scopes } = req.body;
 
     const integration = await Integration.findOne({
       userId: req.user.userId,
       provider: service,
-    }).populate({ 
+    }).populate({
       path: "accounts",
       match:
         service === "google" && scopes?.length > 0
@@ -183,7 +177,7 @@ async function fetchServiceAccount(req, res) {
           : {},
       select: "email name avatar",
     });
-       
+
     if (!integration || !integration.accounts.length) {
       return res.status(404).json({ message: "No account found" });
     }

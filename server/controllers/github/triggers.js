@@ -12,7 +12,7 @@ async function createWebhook(repoName, events, accountId) {
 
     const githubAccount = await Github.findById(accountId);
     if (!githubAccount) {
-      return res.status(404).json({ message: "GitHub account not linked" });
+      return null;
     }
 
     const { accessToken, webhooks } = githubAccount;
@@ -42,6 +42,8 @@ async function createWebhook(repoName, events, accountId) {
         accessToken
       );
 
+      console.log("Updated webhook", updateResponse.data)
+
       existingWebhook.events = sanitizedEvents;
       await githubAccount.save();
 
@@ -59,17 +61,19 @@ async function createWebhook(repoName, events, accountId) {
       accessToken
     );
 
+    console.log("New webhook :", webhookResponse.data)
+
     githubAccount.webhooks.push({
       repoId: sanitizedRepoId,
       repoName: sanitizedRepoName,
-      webhookId: webhookResponse.data.id,
+      webhookId: webhookResponse.data.id.toString(),
       events: webhookResponse.data.events,
     });
     await githubAccount.save();
 
     return {
       message: "Webhook created successfully",
-      webhookId: webhookResponse.data.id,
+      webhookId: webhookResponse.data.id.toString(),
     };
   } catch (error) {
     console.error(
@@ -157,12 +161,11 @@ const handleWebhookEvent = async (req, res) => {
       nodes: {
         $elemMatch: {
           type: "trigger",
-          "data.config.webhookId": eventData.hookId.toString(),
+          "data.config.webhookId": eventData.hookId,
           "data.config.events.value": { $in: [eventData.eventType] },
         },
       },
     };
-
     const matchingWorkflows = await WorkFlow.find(query).exec();
 
     if (matchingWorkflows.length === 0) {
